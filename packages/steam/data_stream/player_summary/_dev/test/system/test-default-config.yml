@@ -1,0 +1,21 @@
+wait_for_data_timeout: 1m
+input: cel
+service: steam-player-summary-cel
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_key: xxxxx
+  steam_ids:
+    - "76561197971489072"
+    - "76561197971489073"
+    - "76561197971489074"
+data_stream:
+  vars:
+    # One poll per test run. This endpoint has no pagination and no incremental
+    # filter, so a shorter interval would simply re-snapshot the same three
+    # players and make hit_count depend on how many polls fit in the window.
+    interval: 10m
+    preserve_original_event: true
+assert:
+  # Three players in the single batch the program requests: one public and in a
+  # game, one public and not in a game, one private with a reduced field set.
+  hit_count: 3

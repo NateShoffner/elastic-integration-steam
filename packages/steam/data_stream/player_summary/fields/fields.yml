@@ -3,3 +3,92 @@
   dimension: true
   description: >-
     64-bit Steam ID (SteamID64) of the account this document describes. Used as the time series dimension for this data stream.
+- name: steam.player.persona_name
+  type: keyword
+  description: >-
+    Display name the account currently shows publicly. Steam allows this to be changed at any time, so it is not a stable identifier; join on `steam.player.id` instead.
+- name: steam.player.real_name
+  type: keyword
+  description: >-
+    Real name the account owner chose to publish on their profile. Optional, and absent unless the profile is public and the field was filled in.
+- name: steam.player.profile_url
+  type: keyword
+  description: >-
+    URL of the account's community profile, either the vanity form (`/id/<name>/`) if one is set or the numeric form (`/profiles/<steamid>/`).
+- name: steam.player.profile_state
+  type: long
+  description: >-
+    `1` when the account has set up a community profile, absent or `0` when it has not.
+- name: steam.player.visibility.code
+  type: long
+  description: >-
+    Raw `communityvisibilitystate` value. Documented as `1` Private, `2` Friends only, `3` Friends of Friends, `4` Users Only, `5` Public, but in practice the API only ever returns `1` or `3`, where `3` means the profile is visible to the requesting key.
+- name: steam.player.visibility.name
+  type: keyword
+  description: >-
+    Human readable form of `steam.player.visibility.code`.
+- name: steam.player.persona_state.code
+  type: long
+  description: >-
+    Raw `personastate` value. `0` Offline, `1` Online, `2` Busy, `3` Away, `4` Snooze, `5` Looking to trade, `6` Looking to play. A private profile also reports `0`, so offline and unreadable are indistinguishable without `steam.player.visibility.code`.
+- name: steam.player.persona_state.name
+  type: keyword
+  description: >-
+    Human readable form of `steam.player.persona_state.code`.
+- name: steam.player.persona_state_flags
+  type: long
+  description: >-
+    Raw `personastateflags` bit field, which indicates the kind of device the account is online from. Undocumented by Valve and frequently absent.
+- name: steam.player.in_game
+  type: boolean
+  description: >-
+    Whether the account was in a game at the time of the poll, derived from the presence of the `gameid`, `gameextrainfo` and `gameserverip` triple in the API response.
+- name: steam.player.avatar.hash
+  type: keyword
+  description: >-
+    Hash identifying the account's current avatar image. Changes whenever the avatar is changed, and is the common part of all three avatar URLs.
+- name: steam.player.avatar.small
+  type: keyword
+  description: 32x32 avatar image URL.
+- name: steam.player.avatar.medium
+  type: keyword
+  description: 64x64 avatar image URL.
+- name: steam.player.avatar.full
+  type: keyword
+  description: 184x184 avatar image URL.
+- name: steam.player.last_logoff
+  type: date
+  description: >-
+    When the account last logged off, from the `lastlogoff` Unix timestamp. Absent for accounts that have never logged off and for most private profiles.
+- name: steam.player.created
+  type: date
+  description: >-
+    When the account was created, from the `timecreated` Unix timestamp. Only returned for profiles the key can read.
+- name: steam.player.primary_clan.id
+  type: keyword
+  description: >-
+    64-bit ID of the Steam group the account displays as its primary group. Optional.
+- name: steam.player.location.country_iso_code
+  type: keyword
+  description: >-
+    Two letter country code the account owner selected on their profile, from `loccountrycode`. Self declared, not geolocated, and optional.
+- name: steam.player.location.state_code
+  type: keyword
+  description: >-
+    State or region code the account owner selected on their profile, from `locstatecode`. Only meaningful alongside `steam.player.location.country_iso_code`, and optional.
+- name: steam.player.location.city_id
+  type: long
+  description: >-
+    Steam's internal identifier for the city the account owner selected on their profile, from `loccityid`. Valve publishes no mapping from this number to a city name.
+- name: steam.player.comment_permission
+  type: long
+  description: >-
+    Whether the account allows public comments on its profile, from `commentpermission`. Optional.
+- name: steam.app.id
+  type: keyword
+  description: >-
+    Steam application ID of the game the account was in at the time of the poll, from `gameid`. Matches `steam.app.id` on the Steam client log data streams, so presence can be joined against client side session events. A non-Steam shortcut reports a large synthetic value here rather than a real application ID.
+- name: steam.app.name
+  type: keyword
+  description: >-
+    Name of the game the account was in at the time of the poll, from `gameextrainfo`. For a non-Steam shortcut this is the name the account owner gave the shortcut.

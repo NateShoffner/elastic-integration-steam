@@ -1,0 +1,190 @@
+rules:
+  # An invalid Steam Web API key is rejected with HTTP 403 and an HTML body,
+  # not JSON. Driven with key=invalid-api-key so the CEL error path can be
+  # exercised without disturbing the system test, which sends a valid key.
+  - path: /ISteamUser/GetPlayerSummaries/v2/
+    methods: ['GET']
+    query_params:
+      key: 'invalid-api-key'
+      steamids: '{steamids:.*}'
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - 'text/html; charset=UTF-8'
+        body: |-
+          <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify that your key parameter is correct.</body></html>
+  # A malformed steamid is rejected with HTTP 400, also with an HTML body.
+  - path: /ISteamUser/GetPlayerSummaries/v2/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamids: 'not-a-steamid'
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - 'text/html; charset=UTF-8'
+        body: |-
+          <html><head><title>Bad Request</title></head><body><h1>Bad Request</h1>Please verify that all required parameters are being sent.</body></html>
+  # A SteamID64 that does not resolve to an account is not an error: the call
+  # succeeds and the player is simply absent from the list, so a batch made up
+  # entirely of such IDs comes back with an empty players array.
+  - path: /ISteamUser/GetPlayerSummaries/v2/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamids: '76561197971489999'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: '{"response":{"players":[]}}'
+  # Steady state. Catch-all on key and steamids so any batch of IDs the program
+  # sends matches, including the second and later batches of a chunked walk.
+  # Two response bodies are defined and the server alternates between them, so
+  # a repeat poll always observes changed presence state. Every single response
+  # on its own still covers all of: several players in one response, a public
+  # profile and a private one, a player in a game and a player not in one.
+  #   ...072  public, in Team Fortress 2   <-> public, not in a game
+  #   ...073  public, not in a game        <-> public, in Counter-Strike 2
+  #                                             with gameserverip 0.0.0.0:0
+  #   ...074  private (communityvisibilitystate 1), reduced field set,
+  #           no lastlogoff, unchanged between snapshots
+  - path: /ISteamUser/GetPlayerSummaries/v2/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamids: '{steamids:.*}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: |-
+          {{ minify_json `
+          {
+            "response": {
+              "players": [
+                {
+                  "steamid": "76561197971489072",
+                  "communityvisibilitystate": 3,
+                  "profilestate": 1,
+                  "personaname": "example_player",
+                  "profileurl": "https://steamcommunity.com/id/example_player/",
+                  "avatar": "https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d.jpg",
+                  "avatarmedium": "https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d_medium.jpg",
+                  "avatarfull": "https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d_full.jpg",
+                  "avatarhash": "1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d",
+                  "lastlogoff": 1772000000,
+                  "personastate": 1,
+                  "primaryclanid": "103582791429600001",
+                  "timecreated": 1263407589,
+                  "personastateflags": 0,
+                  "loccountrycode": "US",
+                  "locstatecode": "WA",
+                  "loccityid": 3961,
+                  "gameid": "440",
+                  "gameextrainfo": "Team Fortress 2",
+                  "gameserverip": "203.0.113.71:27015",
+                  "realname": "Example Person",
+                  "commentpermission": 1
+                },
+                {
+                  "steamid": "76561197971489073",
+                  "communityvisibilitystate": 3,
+                  "profilestate": 1,
+                  "personaname": "example_player_two",
+                  "profileurl": "https://steamcommunity.com/id/example_player_two/",
+                  "avatar": "https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e.jpg",
+                  "avatarmedium": "https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e_medium.jpg",
+                  "avatarfull": "https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e_full.jpg",
+                  "avatarhash": "2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e",
+                  "lastlogoff": 1771900000,
+                  "personastate": 3,
+                  "timecreated": 1301500000,
+                  "personastateflags": 0,
+                  "loccountrycode": "CA"
+                },
+                {
+                  "steamid": "76561197971489074",
+                  "communityvisibilitystate": 1,
+                  "profilestate": 1,
+                  "personaname": "example_player_private",
+                  "profileurl": "https://steamcommunity.com/profiles/76561197971489074/",
+                  "avatar": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg",
+                  "avatarmedium": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg",
+                  "avatarfull": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg",
+                  "avatarhash": "3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f",
+                  "personastate": 0
+                }
+              ]
+            }
+          }
+          ` }}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: |-
+          {{ minify_json `
+          {
+            "response": {
+              "players": [
+                {
+                  "steamid": "76561197971489072",
+                  "communityvisibilitystate": 3,
+                  "profilestate": 1,
+                  "personaname": "example_player",
+                  "profileurl": "https://steamcommunity.com/id/example_player/",
+                  "avatar": "https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d.jpg",
+                  "avatarmedium": "https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d_medium.jpg",
+                  "avatarfull": "https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d_full.jpg",
+                  "avatarhash": "1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d",
+                  "lastlogoff": 1772003600,
+                  "personastate": 1,
+                  "primaryclanid": "103582791429600001",
+                  "timecreated": 1263407589,
+                  "personastateflags": 0,
+                  "loccountrycode": "US",
+                  "locstatecode": "WA",
+                  "loccityid": 3961,
+                  "realname": "Example Person",
+                  "commentpermission": 1
+                },
+                {
+                  "steamid": "76561197971489073",
+                  "communityvisibilitystate": 3,
+                  "profilestate": 1,
+                  "personaname": "example_player_two",
+                  "profileurl": "https://steamcommunity.com/id/example_player_two/",
+                  "avatar": "https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e.jpg",
+                  "avatarmedium": "https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e_medium.jpg",
+                  "avatarfull": "https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e_full.jpg",
+                  "avatarhash": "2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e",
+                  "lastlogoff": 1771900000,
+                  "personastate": 1,
+                  "timecreated": 1301500000,
+                  "personastateflags": 0,
+                  "loccountrycode": "CA",
+                  "gameid": "730",
+                  "gameextrainfo": "Counter-Strike 2",
+                  "gameserverip": "0.0.0.0:0"
+                },
+                {
+                  "steamid": "76561197971489074",
+                  "communityvisibilitystate": 1,
+                  "profilestate": 1,
+                  "personaname": "example_player_private",
+                  "profileurl": "https://steamcommunity.com/profiles/76561197971489074/",
+                  "avatar": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg",
+                  "avatarmedium": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg",
+                  "avatarfull": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg",
+                  "avatarhash": "3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f",
+                  "personastate": 0
+                }
+              ]
+            }
+          }
+          ` }}

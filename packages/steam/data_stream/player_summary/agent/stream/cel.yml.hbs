@@ -1,0 +1,98 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  steam_ids:
+{{#each steam_ids as |steam_id|}}
+    - "{{steam_id}}"
+{{/each}}
+redact:
+  fields:
+    - api_key
+program: |-
+  // GetPlayerSummaries accepts up to 100 SteamID64s per call and has no
+  // pagination of any kind, so every poll is a complete snapshot. The
+  // configured steam_ids list is walked one 100-ID batch per evaluation:
+  // state.batch_offset is the index of the first ID in the batch being
+  // requested, and is reset to 0 on the final batch so the next poll starts a
+  // fresh snapshot from the top of the list. For a handful of IDs this is a
+  // single request and a single evaluation.
+  int(state.?batch_offset.orValue(0)).as(offset,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/ISteamUser/GetPlayerSummaries/v2/?" + {
+          "key": [state.api_key],
+          // string() is deliberate: a SteamID64 that reached state as a number
+          // rather than a string fails here instead of being silently rounded
+          // to a different account.
+          "steamids": [front(tail(state.steam_ids, offset), 100).map(id, string(id)).join(",")],
+        }.format_query()
+      ).do_request().as(resp,
+        // A private profile is not an error. It arrives inside a normal 200
+        // with communityvisibilitystate 1 and most optional fields absent, so
+        // nothing below may assume any field other than steamid is present.
+        // The failure branch never decodes the body: an invalid key returns 403
+        // and a malformed steamid 400, both with an HTML body.
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            {
+              // A batch matching no accounts still has to publish something, or
+              // want_more is ignored and the remaining batches are never
+              // requested. The placeholder is dropped by a processor below.
+              "events": (size(body.?response.players.orValue([])) != 0) ?
+                dyn(body.response.players.map(p, {"message": p.encode_json()}))
+              :
+                dyn([{"retry": true}]),
+              "batch_offset": (offset + 100 < size(state.steam_ids)) ? (offset + 100) : 0,
+              "want_more": offset + 100 < size(state.steam_ids),
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /ISteamUser/GetPlayerSummaries/v2/: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "batch_offset": 0,
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

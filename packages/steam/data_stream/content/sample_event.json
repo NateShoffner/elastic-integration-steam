@@ -1,22 +1,22 @@
 {
     "@timestamp": "2026-03-14T09:20:11.000Z",
     "agent": {
-        "ephemeral_id": "46d6b6e3-744d-4b7a-a27f-d3143d7beb55",
-        "id": "6a627f3b-d022-42d2-bd97-b630635f224a",
-        "name": "elastic-agent-42561",
+        "ephemeral_id": "633adbe5-0434-460a-b4b0-cc3629887272",
+        "id": "0ba0dea4-c06f-45b6-8d97-0b068b244456",
+        "name": "elastic-agent-31156",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.content",
-        "namespace": "28084",
+        "namespace": "97932",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "6a627f3b-d022-42d2-bd97-b630635f224a",
+        "id": "0ba0dea4-c06f-45b6-8d97-0b068b244456",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -27,7 +27,7 @@
             "network"
         ],
         "dataset": "steam.content",
-        "ingested": "2026-10-31T09:55:53Z",
+        "ingested": "2026-10-31T10:11:11Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:20:11] Adding peer server 'desktop-1' (192.168.1.24:27040)",
@@ -39,16 +39,16 @@
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-42561",
+        "hostname": "elastic-agent-31156",
         "ip": [
-            "172.21.0.2",
+            "172.31.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-AC-15-00-02"
+            "02-42-AC-1F-00-02"
         ],
-        "name": "elastic-agent-42561",
+        "name": "elastic-agent-31156",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -65,7 +65,7 @@
         "file": {
             "device_id": "74",
             "fingerprint": "9a0e8733676ce124765b893475a761ac8cd5c302cb6c1379649d8ce8316dd09b",
-            "inode": "9288674232422440",
+            "inode": "9288674232422530",
             "path": "/tmp/service_logs/content_log.txt"
         },
         "offset": 1

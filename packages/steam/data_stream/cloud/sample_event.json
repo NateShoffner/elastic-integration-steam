@@ -1,22 +1,22 @@
 {
     "@timestamp": "2026-03-14T09:14:22.000Z",
     "agent": {
-        "ephemeral_id": "08e4416c-9698-479b-810f-5e3095081194",
-        "id": "5de0980d-2016-4c0e-9de2-7811c0417778",
-        "name": "elastic-agent-85842",
+        "ephemeral_id": "7946fe62-56cb-48ad-92f0-d087e2661d94",
+        "id": "1049ca04-afaf-4ec4-af94-3c04955b1b46",
+        "name": "elastic-agent-99394",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.cloud",
-        "namespace": "86755",
+        "namespace": "82734",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "5de0980d-2016-4c0e-9de2-7811c0417778",
+        "id": "1049ca04-afaf-4ec4-af94-3c04955b1b46",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -24,7 +24,7 @@
         "action": "cloud-init-cache-request-completed",
         "agent_id_status": "verified",
         "dataset": "steam.cloud",
-        "ingested": "2026-10-31T09:57:11Z",
+        "ingested": "2026-10-31T10:12:32Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:14:22] [U:1:11223344] [AppID 440] Init cache request complete",
@@ -33,16 +33,16 @@
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-85842",
+        "hostname": "elastic-agent-99394",
         "ip": [
-            "172.23.0.2",
+            "192.168.16.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-AC-17-00-02"
+            "02-42-C0-A8-10-02"
         ],
-        "name": "elastic-agent-85842",
+        "name": "elastic-agent-99394",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -59,7 +59,7 @@
         "file": {
             "device_id": "74",
             "fingerprint": "56ea323ff4bea31ca029ad99dbfc4f51e83051e04f3b411db21e61032489b548",
-            "inode": "385902193070628329",
+            "inode": "6473924465315981",
             "path": "/tmp/service_logs/cloud_log.txt"
         },
         "offset": 1
@@ -73,7 +73,7 @@
             "account_id": "11223344"
         },
         "player": {
-            "id": "76561197971489074"
+            "id": "76561197971489072"
         }
     },
     "tags": [

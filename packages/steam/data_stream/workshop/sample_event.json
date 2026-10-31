@@ -1,22 +1,22 @@
 {
     "@timestamp": "2026-03-14T09:12:06.000Z",
     "agent": {
-        "ephemeral_id": "deac57e3-0459-4533-9010-73367e6d1df9",
-        "id": "628e7672-cec9-400b-8747-b4f3e69265f6",
-        "name": "elastic-agent-83002",
+        "ephemeral_id": "e8c2e467-e26e-4adb-86e5-149ff1c875d8",
+        "id": "aed69669-fce1-45bb-abd5-37537e7d331d",
+        "name": "elastic-agent-27654",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.workshop",
-        "namespace": "43178",
+        "namespace": "68193",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "628e7672-cec9-400b-8747-b4f3e69265f6",
+        "id": "aed69669-fce1-45bb-abd5-37537e7d331d",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -24,7 +24,7 @@
         "action": "workshop-items-load-started",
         "agent_id_status": "verified",
         "dataset": "steam.workshop",
-        "ingested": "2026-10-31T09:59:57Z",
+        "ingested": "2026-10-31T10:15:21Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:12:06] Loading workshop items for 26 installed apps for user [U:1:11223344]:",
@@ -33,16 +33,16 @@
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-83002",
+        "hostname": "elastic-agent-27654",
         "ip": [
-            "172.27.0.2",
+            "192.168.96.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-AC-1B-00-02"
+            "02-42-C0-A8-60-02"
         ],
-        "name": "elastic-agent-83002",
+        "name": "elastic-agent-27654",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -59,7 +59,7 @@
         "file": {
             "device_id": "74",
             "fingerprint": "183d36e855fa667dc38c81728030a4df0bba5b7d7c97f33a95498d713669e2a1",
-            "inode": "15762598696767541",
+            "inode": "10977524092686477",
             "path": "/tmp/service_logs/workshop_log.txt"
         },
         "offset": 1
@@ -67,7 +67,7 @@
     "message": "Loading workshop items for 26 installed apps for user [U:1:11223344]:",
     "steam": {
         "player": {
-            "id": "76561197971489074"
+            "id": "76561197971489072"
         },
         "workshop": {
             "account_id": "11223344",

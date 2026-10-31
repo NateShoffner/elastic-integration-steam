@@ -1,22 +1,22 @@
 {
     "@timestamp": "2026-03-14T09:12:01.000Z",
     "agent": {
-        "ephemeral_id": "7b4ec1c6-81be-47cb-8517-c96143979ad0",
-        "id": "86f5b21a-9da4-461a-975d-32bfb4e53924",
-        "name": "elastic-agent-45083",
+        "ephemeral_id": "649b4e98-25e6-4366-bc60-f97d0f80bed1",
+        "id": "07936a40-0c28-458d-b962-1c070659888c",
+        "name": "elastic-agent-42380",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.connection",
-        "namespace": "32891",
+        "namespace": "48989",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "86f5b21a-9da4-461a-975d-32bfb4e53924",
+        "id": "07936a40-0c28-458d-b962-1c070659888c",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -27,7 +27,7 @@
             "network"
         ],
         "dataset": "steam.connection",
-        "ingested": "2026-10-31T09:58:31Z",
+        "ingested": "2026-10-31T10:13:50Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:12:01] GetCMListForConnect -- got 20 Netfilter CMs and 20 WebSocket CMs",
@@ -39,16 +39,16 @@
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-45083",
+        "hostname": "elastic-agent-42380",
         "ip": [
-            "172.25.0.2",
+            "192.168.48.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-AC-19-00-02"
+            "02-42-C0-A8-30-02"
         ],
-        "name": "elastic-agent-45083",
+        "name": "elastic-agent-42380",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -65,7 +65,7 @@
         "file": {
             "device_id": "74",
             "fingerprint": "f51a77fecedbf0910892fe360d92a3cd1e1cadb2d15df8f5c9e993510fdf88a6",
-            "inode": "12666373952950312",
+            "inode": "5066549581762704",
             "path": "/tmp/service_logs/connection_log.txt"
         },
         "offset": 1

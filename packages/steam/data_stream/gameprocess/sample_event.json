@@ -1,47 +1,54 @@
 {
-    "@timestamp": "2026-03-14T09:12:03.000Z",
+    "@timestamp": "2026-03-14T09:14:21.000Z",
     "agent": {
-        "ephemeral_id": "adc137d4-4f5e-4dec-9b2c-a0c1222d8bf8",
-        "id": "e5072c90-7bd6-43bd-a4bf-9b47ba24e270",
-        "name": "elastic-agent-89960",
+        "ephemeral_id": "c4deec23-5aee-4b15-a7e2-d50e98be1d1a",
+        "id": "14b53e85-0b17-4278-9e8b-459cfb148aed",
+        "name": "elastic-agent-72124",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.gameprocess",
-        "namespace": "62794",
+        "namespace": "50953",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "e5072c90-7bd6-43bd-a4bf-9b47ba24e270",
+        "id": "14b53e85-0b17-4278-9e8b-459cfb148aed",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
+        "action": "tracked-process-start",
         "agent_id_status": "verified",
+        "category": [
+            "process"
+        ],
         "dataset": "steam.gameprocess",
-        "ingested": "2026-10-31T09:43:51Z",
+        "ingested": "2026-10-31T09:54:29Z",
         "kind": "event",
         "module": "steam",
-        "original": "[2026-03-14 09:12:03] Client version: 1792618285",
-        "timezone": "+00:00"
+        "original": "[2026-03-14 09:14:21] AppID 440 adding PID 31400 as a tracked process \"\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe\"\"",
+        "timezone": "+00:00",
+        "type": [
+            "start"
+        ]
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-89960",
+        "hostname": "elastic-agent-72124",
         "ip": [
-            "192.168.96.2",
+            "172.19.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-C0-A8-60-02"
+            "02-42-AC-13-00-02"
         ],
-        "name": "elastic-agent-89960",
+        "name": "elastic-agent-72124",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -57,16 +64,26 @@
     "log": {
         "file": {
             "device_id": "74",
-            "fingerprint": "b5905abfbf9b337f136eac63db242614de2ae8ba55ae6b5c042d83ca4f2396c4",
-            "inode": "21110623254208205",
+            "fingerprint": "dbbf7f91c8676d594721ede12bca6e7d989458f4355d0f3f0ff28e6f36370152",
+            "inode": "21673573207691087",
             "path": "/tmp/service_logs/gameprocess_log.txt"
         },
         "offset": 1
     },
-    "message": "Client version: 1792618285",
+    "message": "AppID 440 adding PID 31400 as a tracked process \"\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe\"\"",
+    "process": {
+        "args": [
+            "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe"
+        ],
+        "args_count": 1,
+        "command_line": "\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe\"",
+        "executable": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe",
+        "name": "hl2.exe",
+        "pid": 31400
+    },
     "steam": {
-        "client": {
-            "version": "1792618285"
+        "app": {
+            "id": "440"
         }
     },
     "tags": [

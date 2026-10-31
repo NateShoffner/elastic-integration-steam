@@ -200,10 +200,15 @@ processors:
       tag: script_derive_steam_player_id
       description: Derives the SteamID64 in `steam.player.id` from the 32-bit Steam account ID.
       if: ctx.steam?.workshop?.account_id != null
-      params:
-        steamid64_base: 76561197960265728
       source: |-
-        long base = ((Number)params.steamid64_base).longValue();
+        // The base is a long literal here, deliberately NOT a script param.
+        // 76561197960265728 does not survive the round trip through Fleet's
+        // package installer: its shortest JSON form is 7.656119796026573e+16,
+        // which Elasticsearch then parses as the exact decimal
+        // 76561197960265730, making every derived SteamID64 two too high.
+        // Pipeline tests cannot catch this, because elastic-package installs
+        // the literal directly; only a Fleet install reproduces it.
+        long base = 76561197960265728L;
         long accountId = Long.parseLong(ctx.steam.workshop.account_id);
         ctx.steam.player = ['id': String.valueOf(base + accountId)];
 

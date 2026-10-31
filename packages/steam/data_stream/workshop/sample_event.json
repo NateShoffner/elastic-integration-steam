@@ -1,47 +1,48 @@
 {
     "@timestamp": "2026-03-14T09:12:06.000Z",
     "agent": {
-        "ephemeral_id": "9e41d71a-f16a-4ad6-80ae-64f0c0a1e987",
-        "id": "3457979e-ebe3-46c4-ae13-7c3b63a55f50",
-        "name": "elastic-agent-60483",
+        "ephemeral_id": "deac57e3-0459-4533-9010-73367e6d1df9",
+        "id": "628e7672-cec9-400b-8747-b4f3e69265f6",
+        "name": "elastic-agent-83002",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.workshop",
-        "namespace": "28693",
+        "namespace": "43178",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "3457979e-ebe3-46c4-ae13-7c3b63a55f50",
+        "id": "628e7672-cec9-400b-8747-b4f3e69265f6",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
+        "action": "workshop-items-load-started",
         "agent_id_status": "verified",
         "dataset": "steam.workshop",
-        "ingested": "2026-10-31T09:49:10Z",
+        "ingested": "2026-10-31T09:59:57Z",
         "kind": "event",
         "module": "steam",
-        "original": "[2026-03-14 09:12:06] Client version: 1792618285",
+        "original": "[2026-03-14 09:12:06] Loading workshop items for 26 installed apps for user [U:1:11223344]:",
         "timezone": "+00:00"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-60483",
+        "hostname": "elastic-agent-83002",
         "ip": [
-            "192.168.224.2",
+            "172.27.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-C0-A8-E0-02"
+            "02-42-AC-1B-00-02"
         ],
-        "name": "elastic-agent-60483",
+        "name": "elastic-agent-83002",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -57,16 +58,20 @@
     "log": {
         "file": {
             "device_id": "74",
-            "fingerprint": "e3db692646ae7e9d99db19fc3b5d43d250a9318b83a55cc29d87d6fdb3731b5c",
-            "inode": "76842668642916905",
+            "fingerprint": "183d36e855fa667dc38c81728030a4df0bba5b7d7c97f33a95498d713669e2a1",
+            "inode": "15762598696767541",
             "path": "/tmp/service_logs/workshop_log.txt"
         },
         "offset": 1
     },
-    "message": "Client version: 1792618285",
+    "message": "Loading workshop items for 26 installed apps for user [U:1:11223344]:",
     "steam": {
-        "client": {
-            "version": "1792618285"
+        "player": {
+            "id": "76561197971489074"
+        },
+        "workshop": {
+            "account_id": "11223344",
+            "app_count": 26
         }
     },
     "tags": [

@@ -7,15 +7,12 @@
 - name: log.file.device_id
   type: keyword
   description: >-
-    ID of the device containing the harvested file. Added by the agent as part of the file identity,
-    not an ECS field.
+    ID of the device containing the harvested file. Added by the agent as part of the file identity, not an ECS field.
 - name: log.file.fingerprint
   type: keyword
   description: >-
-    Hash of the first bytes of the harvested file. Added by the agent when the default fingerprint
-    file identity is in use, not an ECS field.
+    Hash of the first bytes of the harvested file. Added by the agent when the default fingerprint file identity is in use, not an ECS field.
 - name: log.file.inode
   type: keyword
   description: >-
-    Inode number of the harvested file. Added by the agent as part of the file identity, not an ECS
-    field.
+    Inode number of the harvested file. Added by the agent as part of the file identity, not an ECS field.

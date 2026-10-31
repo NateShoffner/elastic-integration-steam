@@ -1,47 +1,54 @@
 {
-    "@timestamp": "2026-03-14T09:12:02.000Z",
+    "@timestamp": "2026-03-14T09:20:11.000Z",
     "agent": {
-        "ephemeral_id": "131882bb-5351-401c-96ee-bbd6e09d1eae",
-        "id": "ae1c1be6-d742-4c65-be3f-3554c1e95b1f",
-        "name": "elastic-agent-57832",
+        "ephemeral_id": "46d6b6e3-744d-4b7a-a27f-d3143d7beb55",
+        "id": "6a627f3b-d022-42d2-bd97-b630635f224a",
+        "name": "elastic-agent-42561",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.content",
-        "namespace": "29897",
+        "namespace": "28084",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "ae1c1be6-d742-4c65-be3f-3554c1e95b1f",
+        "id": "6a627f3b-d022-42d2-bd97-b630635f224a",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
+        "action": "peer-server-added",
         "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
         "dataset": "steam.content",
-        "ingested": "2026-10-31T09:45:09Z",
+        "ingested": "2026-10-31T09:55:53Z",
         "kind": "event",
         "module": "steam",
-        "original": "[2026-03-14 09:12:02] Client version: 1792618285",
-        "timezone": "+00:00"
+        "original": "[2026-03-14 09:20:11] Adding peer server 'desktop-1' (192.168.1.24:27040)",
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-57832",
+        "hostname": "elastic-agent-42561",
         "ip": [
-            "192.168.128.2",
+            "172.21.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-C0-A8-80-02"
+            "02-42-AC-15-00-02"
         ],
-        "name": "elastic-agent-57832",
+        "name": "elastic-agent-42561",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -57,17 +64,25 @@
     "log": {
         "file": {
             "device_id": "74",
-            "fingerprint": "6a8cd12c7d92136f734db489f69df43eb2fa8f57cbe2b96276106ec5ea5a9000",
-            "inode": "63331869760854298",
+            "fingerprint": "9a0e8733676ce124765b893475a761ac8cd5c302cb6c1379649d8ce8316dd09b",
+            "inode": "9288674232422440",
             "path": "/tmp/service_logs/content_log.txt"
         },
         "offset": 1
     },
-    "message": "Client version: 1792618285",
-    "steam": {
-        "client": {
-            "version": "1792618285"
-        }
+    "message": "Adding peer server 'desktop-1' (192.168.1.24:27040)",
+    "related": {
+        "hosts": [
+            "desktop-1"
+        ],
+        "ip": [
+            "192.168.1.24"
+        ]
+    },
+    "server": {
+        "address": "desktop-1",
+        "ip": "192.168.1.24",
+        "port": 27040
     },
     "tags": [
         "preserve_original_event",

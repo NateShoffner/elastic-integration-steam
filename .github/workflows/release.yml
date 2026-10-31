@@ -1,0 +1,19 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+# A called workflow cannot request more than its caller grants.
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    # Pinned to @main because elastic-package-workflows has no tag yet; move
+    # this to @v1 once it cuts one.
+    uses: NateShoffner/elastic-package-workflows/.github/workflows/release.yml@main
+    with:
+      package: packages/steam

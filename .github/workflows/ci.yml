@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly, so the full-stack tests still catch upstream stack drift on a
+    # quiet repo.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      stack-tests:
+        description: Also run the tests that need a full stack (slow)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    # Pinned to @main because elastic-package-workflows has no tag yet; move
+    # this to @v1 once it cuts one.
+    uses: NateShoffner/elastic-package-workflows/.github/workflows/ci.yml@main
+    with:
+      package: packages/steam
+      stack-tests: ${{ github.event_name == 'schedule' || inputs.stack-tests == true }}

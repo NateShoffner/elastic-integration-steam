@@ -1,0 +1,5 @@
+# Keep LF line endings on every platform. Pipeline test fixtures and expected
+# output are compared byte for byte, and a CR would end up inside parsed fields.
+* text=auto eol=lf
+*.png binary
+*.zip binary

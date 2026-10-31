@@ -1,0 +1,76 @@
+format_version: "3.4.2"
+name: steam
+title: Steam
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+description: Collect game session, content, cloud sync, connection, and Workshop logs from the Steam client, and player activity from the Steam Web API, with Elastic Agent.
+type: integration
+categories:
+  - observability
+  - os_system
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/steam-logo.svg
+    title: Steam logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: steam_client
+    title: Steam Client Logs
+    description: Collect logs written by the Steam client on the machine it runs on.
+    data_streams:
+      - gameprocess
+      - content
+      - cloud
+      - connection
+      - workshop
+    inputs:
+      - type: filestream
+        title: Collect Steam client logs
+        description: Read the log files the Steam client writes under its install directory.
+  - name: steam_web_api
+    title: Steam Web API
+    description: Poll the Steam Web API for player presence and playtime.
+    data_streams:
+      - player_summary
+      - recently_played
+      - owned_game
+    inputs:
+      - type: cel
+        title: Collect player activity from the Steam Web API
+        description: Poll api.steampowered.com for the configured Steam accounts.
+        vars:
+          - name: url
+            type: text
+            title: Steam Web API URL
+            description: Base URL of the Steam Web API.
+            required: true
+            show_user: false
+            default: https://api.steampowered.com
+          - name: api_key
+            type: password
+            title: Steam Web API Key
+            description: >-
+              Steam Web API key, issued at https://steamcommunity.com/dev/apikey. A key is tied to a Steam
+              account and a domain, and is rate limited to 100,000 calls per day.
+            required: true
+            show_user: true
+            secret: true
+          - name: steam_ids
+            type: text
+            title: Steam IDs
+            description: >-
+              64-bit Steam IDs of the accounts to poll, one per entry. A profile's 64-bit ID can be read from
+              its profile URL, or resolved from a vanity name with `ISteamUser/ResolveVanityURL`. Profiles
+              must be public for playtime and recently played games to be returned.
+            multi: true
+            required: true
+            show_user: true
+owner:
+  github: NateShoffner
+  type: community

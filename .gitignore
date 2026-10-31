@@ -1,0 +1,12 @@
+# elastic-package build output (repo root only, not packages/*/_dev/build)
+/build/
+*.tar.gz
+
+# Raw Steam client logs and Web API responses pulled from live installs and
+# accounts. Never commit: contains real SteamIDs, persona names, friend lists,
+# local filesystem paths, and machine names.
+samples/private/
+
+# Local credentials and scratch config
+.env
+*.local.yml

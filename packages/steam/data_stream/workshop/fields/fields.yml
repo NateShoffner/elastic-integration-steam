@@ -1,0 +1,146 @@
+- name: steam.app.id
+  type: keyword
+  description: >-
+    Steam application ID of the game whose Steam Workshop activity this document describes, from the leading `[AppID <n>]` tag. Matches `steam.app.id` on the Steam Web API data streams, so client log events can be joined against them. This is a different ID space from the Workshop published file IDs in `steam.workshop.item.id`, which are never written here.
+- name: steam.client.version
+  type: keyword
+  description: >-
+    Build number the Steam client reports for itself in its `Client version:` log lines.
+- name: steam.player.id
+  type: keyword
+  description: >-
+    64-bit Steam ID (SteamID64) of the signed-in account, derived from the 32-bit account ID in the log with `SteamID64 = 76561197960265728 + accountID`. The Steam client logs the account ID rather than the SteamID64; it is converted here because `steam.player.id` is the field the Steam Web API data streams key on, which is what makes these documents correlatable with them. The `[U:1:0]` placeholder Steam writes when no user is signed in is not a real account and is never converted.
+- name: steam.workshop
+  type: group
+  fields:
+    - name: account_id
+      type: keyword
+      description: >-
+        32-bit Steam account ID exactly as the Steam client logs it, from the `[U:1:<accountid>]` tag at the end of a `Loading workshop items for <n> installed apps for user [U:1:<accountid>]:` line. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable and the Steam Web API accepts only the latter.
+    - name: app_count
+      type: long
+      description: >-
+        Number of installed applications the Steam client is about to load Workshop items for, from a `Loading workshop items for <n> installed apps` line. This counts applications, not Workshop items.
+    - name: installed_item_count
+      type: long
+      description: >-
+        Number of Workshop items already present on disk for the application, from the `(<n> installed, <n> needed)` suffix of a `Loaded workshop items in "<path>" ...` line. The directory the items were loaded from is mapped to ECS `file.directory`.
+    - name: needed_item_count
+      type: long
+      description: >-
+        Number of Workshop items the Steam client still has to fetch for the application, from the `(<n> installed, <n> needed)` suffix of a `Loaded workshop items in "<path>" ...` line.
+    - name: revision
+      type: long
+      description: >-
+        Workshop item revision the Steam client is currently at for the application, reported by both `Item info for ...: revision <n>` and `Item change feed: revision <n>` lines. This is Steam's monotonic revision counter for the application's Workshop subscription state, not a timestamp or an item count.
+    - name: manifest
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: >-
+            Content manifest ID a cached Workshop item now points at, from the `new manifest <id>` suffix of a `Detected workshop change : changed cached item <id>, new manifest <id>` line. This is a third ID space, distinct from both `steam.app.id` and `steam.workshop.item.id`: it identifies one specific build of one Workshop item.
+    - name: cursor
+      type: group
+      fields:
+        - name: current
+          type: long
+          description: >-
+            Change feed cursor the Steam server reported alongside a single-cursor result, from an `Item change feed returned <result> (revision <n>, cursor <n>)` line. Cursors are opaque sequence positions in the Workshop change feed.
+        - name: from
+          type: long
+          description: >-
+            Change feed cursor the Steam client polled from, the left-hand value of the `cursor <n> -> <n>` pair on an `Item change feed:` line.
+        - name: to
+          type: long
+          description: >-
+            Change feed cursor the Steam client advanced to, the right-hand value of the `cursor <n> -> <n>` pair on an `Item change feed:` line. It equals `steam.workshop.cursor.from` when the poll returned no changes.
+    - name: feed
+      type: group
+      fields:
+        - name: result
+          type: keyword
+          description: >-
+            Result the Steam server returned for a Workshop change feed poll, from an `Item change feed returned <result> (...)` line, for example `Ignored`. Only `Ignored` is observed anywhere in the sampled corpus, so no other wording is assumed and this value does not drive `event.outcome`.
+        - name: change_count
+          type: long
+          description: >-
+            Number of Workshop item changes the change feed poll returned, from the `<n> change(s)` token of an `Item change feed:` line. Zero is the common case and means the subscription set is unchanged.
+        - name: legacy_included
+          type: boolean
+          description: >-
+            Whether the Workshop change feed poll included the legacy feed, from the optional `, legacy included` suffix of an `Item change feed:` line. The suffix's absence genuinely means the legacy feed was not included, so this is recorded as `false` for those lines rather than left unset, but only for the `Item change feed:` shape — no other line reports on a feed.
+    - name: subscription
+      type: group
+      fields:
+        - name: item_count
+          type: long
+          description: >-
+            Number of Workshop items in the application's subscription list, from the `Number of items: <n>` token of a `Subscribed items did not change.` line.
+        - name: cache_update_time
+          type: date
+          description: >-
+            When the Steam client's cached copy of the application's subscription list was last updated, from the `(cache update time: <epoch>)` suffix of a `Subscribed items did not change.` line. Steam logs this as Unix epoch seconds.
+        - name: update_elapsed_seconds
+          type: long
+          unit: s
+          description: >-
+            How long ago the application's subscription list was last updated, in seconds, from the left-hand value of the `( <elapsed> < <threshold> )` pair on a `Skipping subscription list update. Last updated less than a day ago` line. Compared against `steam.workshop.subscription.update_interval_seconds` to decide whether to refresh. Note that this line is a distinct shape from `Skipping subscription list update (not needed).`, which carries no numbers.
+        - name: update_interval_seconds
+          type: long
+          unit: s
+          description: >-
+            Minimum interval the Steam client enforces between subscription list refreshes, in seconds, from the right-hand value of the `( <elapsed> < <threshold> )` pair on a `Skipping subscription list update. Last updated less than a day ago` line. Observed as `86400`, one day.
+    - name: item
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: >-
+            Steam Workshop published file ID of the item the line is about, as written by the `Detected workshop change`, `Get details for item`, `skipping item`, `Download item` and `Starting Workshop download job (requested item ...)` shapes. Published file IDs are a completely separate ID space from the Steam application IDs in `steam.app.id` and from the content manifest IDs in `steam.workshop.manifest.id`; the three are never interchangeable.
+        - name: count
+          type: long
+          description: >-
+            Number of Workshop items the item info report covers, from the `Item info for <n> item(s)` prefix.
+        - name: scope
+          type: keyword
+          description: >-
+            Scope of an item info report, from the parenthesised token of an `Item info for <n> item(s) (<scope>):` line, for example `full list`. A Steam-internal descriptor, kept exactly as logged.
+        - name: update_count
+          type: long
+          description: >-
+            Number of the reported Workshop items that have an update pending, from the `<n> update(s)` token of an `Item info for` line.
+        - name: private_count
+          type: long
+          description: >-
+            Number of the reported Workshop items that are private and therefore not retrievable, from the `<n> private` token of an `Item info for` line.
+        - name: update_time
+          type: date
+          description: >-
+            When the reported Workshop items were last updated, from the `update time <epoch>` suffix of an `Item info for` line. Steam logs this as Unix epoch seconds.
+        - name: result
+          type: keyword
+          description: >-
+            Result token the Steam client reported for an operation on a single Workshop item. Carries `Access Denied` from a `Get details for item <id> failed : <result>` or `skipping item <id> because item entry result = <result> (<code>)` line, `Failure` from an `Updating workshop item details failed with <result>` line, and `OK` from a `Download item <id> result : <result>` line. The three failure shapes set `event.outcome` to `failure` from the shape itself; the download shape sets `success` only for the observed `OK`, so no failure wording is assumed for it.
+        - name: result_code
+          type: keyword
+          description: >-
+            Numeric Steam result code that accompanies the result name on a `skipping item <id> because item entry result = <result> (<code>)` line, for example `15` beside `Access Denied`. This is an opaque Steam `EResult` code, so it is mapped as a keyword rather than a number.
+    - name: download_job
+      type: group
+      fields:
+        - name: flags
+          type: keyword
+          description: >-
+            Work the Steam client requested for a Workshop download job, from a `Starting Workshop download job (<flags>)` line. Steam writes these as a space-separated flag set with a trailing space and leaves unused slots empty, so `(downloading  )`, `( updating )` and `(downloading updating )` are all observed; the empty slots are discarded and the value is always stored as an array even when a single flag is set. Observed values are `downloading` and `updating`. The structurally different `(requested item <id> )` form is not a flag set and is parsed as its own shape into `steam.workshop.item.id` instead.
+        - name: result
+          type: keyword
+          description: >-
+            Result the Steam client reported for a finished Workshop download job, from a `Finished Workshop download job : <result>` line. Only `No Error` is observed anywhere in the sampled corpus, so `event.outcome` is set to `success` for that exact token and left unset for any other value rather than assuming failure wording that was never seen.
+    - name: update_job
+      type: group
+      fields:
+        - name: commit
+          type: keyword
+          description: >-
+            Whether the Steam client will commit the Workshop update it started while the application was still running, from the `commit : <value>` suffix of a `Workshop update job started while app is running, commit : <value>` line. Only `yes` is observed, and Steam writes it as a word rather than a boolean, so it is kept as a keyword exactly as logged.

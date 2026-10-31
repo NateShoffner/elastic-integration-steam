@@ -1,0 +1,106 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T09:12:10.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-item-details-lookup-failed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:12:10] [AppID 570] Get details for item 2814593102 failed : Access Denied",
+                "outcome": "failure",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "Get details for item 2814593102 failed : Access Denied",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "item": {
+                        "id": "2814593102",
+                        "result": "Access Denied"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:12:10.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-item-skipped",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:12:10] [AppID 570] skipping item 2814593102 because item entry result = Access Denied (15)",
+                "outcome": "failure",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "skipping item 2814593102 because item entry result = Access Denied (15)",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "item": {
+                        "id": "2814593102",
+                        "result": "Access Denied",
+                        "result_code": "15"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:12:11.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-item-details-update-failed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:12:11] [AppID 570] Updating workshop item details failed with Failure",
+                "outcome": "failure",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "Updating workshop item details failed with Failure",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "item": {
+                        "result": "Failure"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

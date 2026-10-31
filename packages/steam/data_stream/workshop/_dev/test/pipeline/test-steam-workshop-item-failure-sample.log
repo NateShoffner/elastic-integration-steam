@@ -1,0 +1,3 @@
+[2026-03-14 09:12:10] [AppID 570] Get details for item 2814593102 failed : Access Denied
+[2026-03-14 09:12:10] [AppID 570] skipping item 2814593102 because item entry result = Access Denied (15)
+[2026-03-14 09:12:11] [AppID 570] Updating workshop item details failed with Failure

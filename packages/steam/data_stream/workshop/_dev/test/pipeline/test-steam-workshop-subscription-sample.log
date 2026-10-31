@@ -1,0 +1,4 @@
+[2026-03-14 09:12:07] [AppID 440] Requesting updated subscription list
+[2026-03-14 09:12:07] [AppID 570] Skipping subscription list update. Last updated less than a day ago ( 3241 < 86400 ).
+[2026-03-14 09:12:08] [AppID 440] Subscribed items did not change. Number of items: 12 (cache update time: 1773479500)
+[2026-03-14 18:50:12] [AppID 440] Skipping subscription list update (not needed).

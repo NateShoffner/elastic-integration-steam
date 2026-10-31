@@ -1,19 +1,405 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for parsing Steam client workshop logs.
 processors:
-- set:
-    tag: set_sample_field
-    field: sample_field
-    value: "1"
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # Every line the Steam client writes is `[YYYY-MM-DD HH:MM:SS] <message>`, and
+  # in this log most messages carry a bracketed AppID tag before the message:
+  #   [AppID <n>] <message>   -> the common shape
+  #   <message>               -> no tag at all, used by `Client version:` and by
+  #                              `Loading workshop items for ... [U:1:<accountid>]:`,
+  #                              which carries an account tag at the END of the
+  #                              message instead of an AppID tag at the front. A
+  #                              pattern that assumed `[AppID` would drop both.
+  # The last pattern keeps an unexpected line without the bracketed timestamp
+  # prefix from failing the pipeline.
+  - grok:
+      field: event.original
+      tag: grok_log_line
+      description: Splits the leading local timestamp and the bracketed AppID tag from the log message.
+      patterns:
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[AppID %{NONNEGINT:steam.app.id}\]\s+%{GREEDYDATA:message}$'
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      if: ctx.event?.original != null
+
+  # Steam leaves a trailing space on some of these lines — `Detected workshop
+  # change : removing unknown item <id> ` is written that way in the raw log.
+  # Stripping it once here keeps every message pattern below strictly anchored
+  # with `$` instead of each one having to tolerate it, and `event.original`
+  # still holds the line exactly as Steam wrote it.
+  - trim:
+      field: message
+      tag: trim_message
+      ignore_missing: true
+
+  # Steam writes local time with no offset or timezone, so the agent's
+  # `add_locale` processor supplies `event.timezone`.
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      timezone: '{{{event.timezone}}}'
+      if: ctx._temp?.timestamp != null
+
+  # Each pattern captures the literal token that identifies the message shape
+  # into `_temp.shape`, which is the lookup key for the ECS categorization table
+  # further down.
+  #
+  # Three ID spaces appear in this log and are deliberately kept in separate
+  # fields, because they are not interchangeable:
+  #   AppID (`[AppID 570]`)                 -> `steam.app.id`, the Steam
+  #                                            application ID the Web API data
+  #                                            streams also key on.
+  #   published file ID (`item 2814593102`) -> `steam.workshop.item.id`. These
+  #                                            identify Workshop items, are far
+  #                                            larger than AppIDs and must never
+  #                                            land in `steam.app.id`.
+  #   content manifest ID
+  #     (`new manifest 4862689776909173546`)-> `steam.workshop.manifest.id`, a
+  #                                            third space again, identifying a
+  #                                            specific build of one item.
+  #
+  # `Detected workshop change :` is three distinct shapes, not one, so each gets
+  # its own pattern and its own action: an item was added to the subscription
+  # set, an unknown item is being removed from the local cache, or a cached item
+  # now points at a new content manifest.
+  #
+  # The two `Skipping subscription list update` lines are also distinct and kept
+  # apart: the `Last updated less than a day ago ( <elapsed> < <threshold> )`
+  # form reports a rate-limit decision and carries the elapsed/threshold pair
+  # (note the spaces inside the parens), while `(not needed).` reports that
+  # there was nothing to fetch and carries no numbers.
+  #
+  # The `requested item` form of `Starting Workshop download job` must be tried
+  # before the flag-set form, otherwise the generic `\(%{DATA}\)` would swallow
+  # it and store `requested item <id>` as a flag.
+  #
+  # The most frequent shapes come first so common lines stop matching early. The
+  # last pattern matches any other line so unrecognized shapes keep their raw
+  # message instead of failing the pipeline.
+  - grok:
+      field: message
+      tag: grok_message
+      description: Parses the known Steam workshop message shapes.
+      patterns:
+        - '^(?<_temp.shape>Loaded workshop items in) "%{DATA:file.directory}" \(%{NONNEGINT:steam.workshop.installed_item_count:long} installed, %{NONNEGINT:steam.workshop.needed_item_count:long} needed\)$'
+        - '^(?<_temp.shape>Skipping subscription list update\. Last updated less than a day ago) \( %{NONNEGINT:steam.workshop.subscription.update_elapsed_seconds:long} < %{NONNEGINT:steam.workshop.subscription.update_interval_seconds:long} \)\.$'
+        - '^(?<_temp.shape>Requesting updated subscription list)$'
+        - '^(?<_temp.shape>Item info for) %{NONNEGINT:steam.workshop.item.count:long} item\(s\) \(%{DATA:steam.workshop.item.scope}\): revision %{NONNEGINT:steam.workshop.revision:long}, %{NONNEGINT:steam.workshop.item.update_count:long} update\(s\), %{NONNEGINT:steam.workshop.item.private_count:long} private, update time %{NONNEGINT:_temp.item_update_time}$'
+        - '^(?<_temp.shape>Item change feed returned) %{WORD:steam.workshop.feed.result} \(revision %{NONNEGINT:steam.workshop.revision:long}, cursor %{NONNEGINT:steam.workshop.cursor.current:long}\)$'
+        - '^(?<_temp.shape>Subscribed items did not change)\. Number of items: %{NONNEGINT:steam.workshop.subscription.item_count:long} \(cache update time: %{NONNEGINT:_temp.cache_update_time}\)$'
+        - '^(?<_temp.shape>Item change feed): revision %{NONNEGINT:steam.workshop.revision:long}, %{NONNEGINT:steam.workshop.feed.change_count:long} change\(s\), cursor %{NONNEGINT:steam.workshop.cursor.from:long} -> %{NONNEGINT:steam.workshop.cursor.to:long}(?:, (?<_temp.legacy_included>legacy included))?$'
+        - '^(?<_temp.shape>Skipping subscription list update \(not needed\))\.$'
+        - '^(?<_temp.shape>Detected workshop change : added subscribed item) %{NONNEGINT:steam.workshop.item.id}$'
+        - '^(?<_temp.shape>Detected workshop change : removing unknown item) %{NONNEGINT:steam.workshop.item.id}$'
+        - '^(?<_temp.shape>Get details for item) %{NONNEGINT:steam.workshop.item.id} failed : %{GREEDYDATA:steam.workshop.item.result}$'
+        - '^(?<_temp.shape>skipping item) %{NONNEGINT:steam.workshop.item.id} because item entry result = %{DATA:steam.workshop.item.result} \(%{NONNEGINT:steam.workshop.item.result_code}\)$'
+        - '^(?<_temp.shape>Loading workshop items for) %{NONNEGINT:steam.workshop.app_count:long} installed apps for user \[U:1:%{NONNEGINT:steam.workshop.account_id}\]:$'
+        - '^(?<_temp.shape>Finished Workshop download job) : %{GREEDYDATA:steam.workshop.download_job.result}$'
+        - '^(?<_temp.shape>Workshop update job started while app is running), commit : %{WORD:steam.workshop.update_job.commit}$'
+        - '^(?<_temp.shape>Starting Workshop download job \(requested item) %{NONNEGINT:steam.workshop.item.id} \)$'
+        - '^(?<_temp.shape>Starting Workshop download job) \(%{DATA:steam.workshop.download_job.flags}\)$'
+        - '^Download item %{NONNEGINT:steam.workshop.item.id} (?<_temp.shape>result :) %{GREEDYDATA:steam.workshop.item.result}$'
+        - '^Download item %{NONNEGINT:steam.workshop.item.id} (?<_temp.shape>requested by app)$'
+        - '^(?<_temp.shape>Updating workshop item details failed with) %{GREEDYDATA:steam.workshop.item.result}$'
+        - '^(?<_temp.shape>Detected workshop change : changed cached item) %{NONNEGINT:steam.workshop.item.id}, new manifest %{NONNEGINT:steam.workshop.manifest.id}$'
+        - '^Client version: %{GREEDYDATA:steam.client.version}$'
+        - '^%{GREEDYDATA}$'
+      if: ctx.message != null
+
+  # `Starting Workshop download job (...)` is a space-separated flag set with a
+  # trailing space, and the slots can be empty: `(downloading  )` is the
+  # `downloading` flag followed by an empty second slot, `( updating )` is an
+  # empty first slot followed by `updating`, and `(downloading updating )` has
+  # both set. Trimming and then splitting on a run of whitespace discards every
+  # empty token, so the value is always an array of the flags that were actually
+  # set. The `remove` covers the degenerate all-slots-empty case, which would
+  # otherwise index a single empty keyword.
+  - trim:
+      field: steam.workshop.download_job.flags
+      tag: trim_download_job_flags
+      ignore_missing: true
+  - remove:
+      field: steam.workshop.download_job.flags
+      tag: remove_empty_download_job_flags
+      ignore_missing: true
+      if: ctx.steam?.workshop?.download_job?.flags == ''
+  - split:
+      field: steam.workshop.download_job.flags
+      tag: split_download_job_flags
+      separator: '\s+'
+      ignore_missing: true
+
+  # `update time` and `cache update time` are Unix epoch seconds, not counters.
+  - date:
+      field: _temp.item_update_time
+      tag: date_item_update_time
+      target_field: steam.workshop.item.update_time
+      formats:
+        - UNIX
+      if: ctx._temp?.item_update_time != null
+  - date:
+      field: _temp.cache_update_time
+      tag: date_subscription_cache_update_time
+      target_field: steam.workshop.subscription.cache_update_time
+      formats:
+        - UNIX
+      if: ctx._temp?.cache_update_time != null
+
+  # The `, legacy included` suffix on an `Item change feed:` line is optional,
+  # and its absence genuinely means the legacy feed was not included, so the
+  # flag is recorded either way — but only for that one shape, so no other line
+  # gets a flag asserted about a feed it never reported on.
+  - set:
+      field: steam.workshop.feed.legacy_included
+      tag: set_feed_legacy_included_true
+      value: true
+      if: ctx._temp?.legacy_included != null
+  - set:
+      field: steam.workshop.feed.legacy_included
+      tag: set_feed_legacy_included_false
+      value: false
+      if: ctx._temp?.shape == 'Item change feed' && ctx._temp?.legacy_included == null
+
+  # Steam writes account ID 0 (`[U:1:0]`) when no user is signed in. That is a
+  # placeholder rather than an account, so it is dropped instead of indexed and
+  # never used to derive a player ID.
+  - remove:
+      field: steam.workshop.account_id
+      tag: remove_placeholder_account_id
+      ignore_missing: true
+      if: ctx.steam?.workshop?.account_id == '0'
+
+  # The ID in the `[U:1:<accountid>]` tag is a 32-bit account ID. The Steam Web
+  # API data streams key on the SteamID64, so it is derived here with
+  # `SteamID64 = 76561197960265728 + accountID` and written to the shared
+  # `steam.player.id` field, the same way the `cloud` and `connection` data
+  # streams do, which lets these documents join to API data.
+  - script:
+      lang: painless
+      tag: script_derive_steam_player_id
+      description: Derives the SteamID64 in `steam.player.id` from the 32-bit Steam account ID.
+      if: ctx.steam?.workshop?.account_id != null
+      params:
+        steamid64_base: 76561197960265728
+      source: |-
+        long base = ((Number)params.steamid64_base).longValue();
+        long accountId = Long.parseLong(ctx.steam.workshop.account_id);
+        ctx.steam.player = ['id': String.valueOf(base + accountId)];
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+
+  # Workshop items are user-generated content packages, so the lines that report
+  # an item being added, removed, changed, downloaded or installed carry
+  # `event.category: [package]`.
+  #
+  # The subscription-list and change-feed polling lines (`Requesting updated
+  # subscription list`, both `Skipping subscription list update` forms,
+  # `Subscribed items did not change`, `Item info for`, `Item change feed` and
+  # `Item change feed returned`) and the `Loading workshop items for` header
+  # report the progress of a refresh pass rather than an operation on an object
+  # ECS models, so they are given an `event.action` only and deliberately left
+  # without a category or type instead of being forced into one that does not
+  # fit. This matches how the `cloud` data stream treats its sync-pass lines.
+  #
+  # `event.outcome: failure` is set for the three shapes that state a failure in
+  # the message itself: `Get details for item <id> failed`, `skipping item <id>
+  # because item entry result = <result> (<code>)` and `Updating workshop item
+  # details failed with <result>`. Their success counterparts (`Download item
+  # <id> result : OK` and `Finished Workshop download job : No Error`) were only
+  # ever observed with those success tokens, so their outcome is driven by the
+  # observed token below rather than asserted from the shape, and no failure
+  # wording is invented for them.
+  #
+  # `result :` and `requested by app` are the literal tokens that distinguish
+  # the two `Download item <id> ...` shapes, which are otherwise identical up to
+  # the item ID.
+  #
+  # Purely informational lines (`Client version:` and anything unrecognized)
+  # never set `_temp.shape`, so they are left without an action or a category on
+  # purpose.
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Maps the recognized workshop message shape to its ECS action and categorization.
+      if: ctx._temp?.shape != null
+      params:
+        'Loading workshop items for':
+          action: workshop-items-load-started
+        'Requesting updated subscription list':
+          action: workshop-subscription-list-requested
+        'Skipping subscription list update. Last updated less than a day ago':
+          action: workshop-subscription-list-update-rate-limited
+        'Skipping subscription list update (not needed)':
+          action: workshop-subscription-list-update-not-needed
+        'Subscribed items did not change':
+          action: workshop-subscribed-items-unchanged
+        'Item info for':
+          action: workshop-item-info-reported
+        'Item change feed':
+          action: workshop-item-change-feed-polled
+        'Item change feed returned':
+          action: workshop-item-change-feed-returned
+        'Loaded workshop items in':
+          action: workshop-items-loaded
+          category:
+            - package
+          type:
+            - info
+        'Detected workshop change : added subscribed item':
+          action: workshop-item-subscription-added
+          category:
+            - package
+          type:
+            - change
+        'Detected workshop change : removing unknown item':
+          action: workshop-item-removed
+          category:
+            - package
+          type:
+            - deletion
+        'Detected workshop change : changed cached item':
+          action: workshop-item-manifest-changed
+          category:
+            - package
+          type:
+            - change
+        'Workshop update job started while app is running':
+          action: workshop-update-job-started
+          category:
+            - package
+          type:
+            - start
+        'Starting Workshop download job':
+          action: workshop-download-job-started
+          category:
+            - package
+          type:
+            - start
+        'Starting Workshop download job (requested item':
+          action: workshop-download-job-item-requested
+          category:
+            - package
+          type:
+            - start
+        'requested by app':
+          action: workshop-item-download-requested
+          category:
+            - package
+          type:
+            - start
+        'result :':
+          action: workshop-item-downloaded
+          category:
+            - package
+          type:
+            - installation
+        'Finished Workshop download job':
+          action: workshop-download-job-finished
+          category:
+            - package
+          type:
+            - installation
+        'Get details for item':
+          action: workshop-item-details-lookup-failed
+          category:
+            - package
+          type:
+            - info
+          outcome: failure
+        'skipping item':
+          action: workshop-item-skipped
+          category:
+            - package
+          type:
+            - info
+          outcome: failure
+        'Updating workshop item details failed with':
+          action: workshop-item-details-update-failed
+          category:
+            - package
+          type:
+            - change
+          outcome: failure
+      source: |-
+        def mapping = params[ctx._temp.shape];
+        if (mapping == null) {
+          return;
+        }
+        ctx.event.action = mapping.action;
+        if (mapping.containsKey('category')) {
+          ctx.event.category = mapping.category;
+        }
+        if (mapping.containsKey('type')) {
+          ctx.event.type = mapping.type;
+        }
+        if (mapping.containsKey('outcome')) {
+          ctx.event.outcome = mapping.outcome;
+        }
+
+  # `OK` is the only item download result and `No Error` the only download job
+  # result observed anywhere in this corpus, so success is recognized from those
+  # exact tokens and any other value is left without an outcome rather than
+  # assumed to be a failure.
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_item_download_success
+      value: success
+      if: ctx._temp?.shape == 'result :' && ctx.steam?.workshop?.item?.result == 'OK'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_download_job_success
+      value: success
+      if: ctx.steam?.workshop?.download_job?.result == 'No Error'
+
+  - remove:
+      field:
+        - _temp
+      tag: remove_temp_fields
+      ignore_missing: true
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
 on_failure:
-- set:
-    field: error.message
-    value: >-
-      Processor '{{{ _ingest.on_failure_processor_type }}}'
-      with tag '{{{ _ingest.on_failure_processor_tag }}}'
-      in pipeline '{{{ _ingest.pipeline }}}'
-      failed with message '{{{ _ingest.on_failure_message }}}'
-- set:
-    field: event.kind
-    tag: set_pipeline_error_to_event_kind
-    value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

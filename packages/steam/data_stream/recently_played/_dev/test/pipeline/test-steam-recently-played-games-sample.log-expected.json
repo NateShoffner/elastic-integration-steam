@@ -7,7 +7,7 @@
             },
             "event": {
                 "kind": "metric",
-                "original": "{\"appid\":440,\"name\":\"Team Fortress 2\",\"playtime_2weeks\":126,\"playtime_forever\":58896,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"playtime_windows_forever\":41200,\"playtime_mac_forever\":0,\"playtime_linux_forever\":3150,\"playtime_deck_forever\":0,\"steamid\":\"76561197971489072\"}"
+                "original": "{\"appid\":440,\"name\":\"Team Fortress 2\",\"playtime_2weeks\":126,\"playtime_forever\":58896,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"steamid\":\"76561197971489072\"}"
             },
             "steam": {
                 "app": {
@@ -22,23 +22,11 @@
                     "id": "76561197971489072"
                 },
                 "playtime": {
-                    "deck": {
-                        "minutes": 0
-                    },
                     "forever": {
                         "minutes": 58896
                     },
-                    "linux": {
-                        "minutes": 3150
-                    },
-                    "mac": {
-                        "minutes": 0
-                    },
                     "two_weeks": {
                         "minutes": 126
-                    },
-                    "windows": {
-                        "minutes": 41200
                     }
                 }
             },
@@ -53,7 +41,7 @@
             },
             "event": {
                 "kind": "metric",
-                "original": "{\"appid\":570,\"name\":\"Dota 2\",\"playtime_2weeks\":342,\"playtime_forever\":12045,\"img_icon_url\":\"0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57\",\"playtime_windows_forever\":9800,\"playtime_mac_forever\":0,\"playtime_linux_forever\":420,\"playtime_deck_forever\":622,\"steamid\":\"76561197971489072\"}"
+                "original": "{\"appid\":570,\"name\":\"Dota 2\",\"playtime_2weeks\":342,\"playtime_forever\":12045,\"img_icon_url\":\"0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57\",\"steamid\":\"76561197971489072\"}"
             },
             "steam": {
                 "app": {
@@ -68,23 +56,11 @@
                     "id": "76561197971489072"
                 },
                 "playtime": {
-                    "deck": {
-                        "minutes": 622
-                    },
                     "forever": {
                         "minutes": 12045
                     },
-                    "linux": {
-                        "minutes": 420
-                    },
-                    "mac": {
-                        "minutes": 0
-                    },
                     "two_weeks": {
                         "minutes": 342
-                    },
-                    "windows": {
-                        "minutes": 9800
                     }
                 }
             },
@@ -99,7 +75,7 @@
             },
             "event": {
                 "kind": "metric",
-                "original": "{\"appid\":730,\"name\":\"Counter-Strike 2\",\"playtime_2weeks\":58,\"playtime_forever\":7310,\"img_icon_url\":\"9e2a461db0c85f37214ba6d9c08e7f351ad64b20\",\"playtime_windows_forever\":7310,\"playtime_mac_forever\":0,\"playtime_linux_forever\":0,\"playtime_deck_forever\":0,\"steamid\":\"76561197971489072\"}"
+                "original": "{\"appid\":730,\"name\":\"Counter-Strike 2\",\"playtime_2weeks\":58,\"playtime_forever\":7310,\"img_icon_url\":\"9e2a461db0c85f37214ba6d9c08e7f351ad64b20\",\"steamid\":\"76561197971489072\"}"
             },
             "steam": {
                 "app": {
@@ -114,23 +90,11 @@
                     "id": "76561197971489072"
                 },
                 "playtime": {
-                    "deck": {
-                        "minutes": 0
-                    },
                     "forever": {
                         "minutes": 7310
                     },
-                    "linux": {
-                        "minutes": 0
-                    },
-                    "mac": {
-                        "minutes": 0
-                    },
                     "two_weeks": {
                         "minutes": 58
-                    },
-                    "windows": {
-                        "minutes": 7310
                     }
                 }
             },

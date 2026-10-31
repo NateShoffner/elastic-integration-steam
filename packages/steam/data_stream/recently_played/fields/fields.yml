@@ -32,27 +32,3 @@
   metric_type: gauge
   description: >-
     Minutes the account has played this game in total, from `playtime_forever`. Counts only from early 2009, when Steam began tracking playtime, so it understates older games.
-- name: steam.playtime.windows.minutes
-  type: long
-  unit: m
-  metric_type: gauge
-  description: >-
-    Minutes the account has played this game on Windows, from `playtime_windows_forever`. Steam began per-platform tracking later than total tracking, so this and the other per-platform fields do not necessarily add up to `steam.playtime.forever.minutes`; none of these values may be derived from the others.
-- name: steam.playtime.mac.minutes
-  type: long
-  unit: m
-  metric_type: gauge
-  description: >-
-    Minutes the account has played this game on macOS, from `playtime_mac_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total.
-- name: steam.playtime.linux.minutes
-  type: long
-  unit: m
-  metric_type: gauge
-  description: >-
-    Minutes the account has played this game on Linux, from `playtime_linux_forever`. Playtime on a Steam Deck is reported separately in `steam.playtime.deck.minutes` rather than counted here, even though the Deck runs Linux.
-- name: steam.playtime.deck.minutes
-  type: long
-  unit: m
-  metric_type: gauge
-  description: >-
-    Minutes the account has played this game on a Steam Deck, from `playtime_deck_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total.

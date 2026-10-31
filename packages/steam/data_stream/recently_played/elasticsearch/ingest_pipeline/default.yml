@@ -107,12 +107,9 @@ processors:
 
   # Every `playtime_*` value the Steam Web API reports is in MINUTES, which is
   # why each one lands on a `*.minutes` field. `playtime_2weeks` is reported by
-  # this endpoint only; `GetOwnedGames` does not return it.
-  #
-  # The per-platform values are a partial breakdown, not a partition: Steam
-  # began per-platform tracking later than total tracking, so they cover a
-  # shorter history than `playtime_forever` and genuinely do not sum to it.
-  # None of these values is ever derived from any of the others.
+  # this endpoint only; `GetOwnedGames` does not return it. Unlike
+  # `GetOwnedGames`, this endpoint reports no per-platform playtime at all, so
+  # there is no Windows, macOS, Linux or Steam Deck breakdown to map here.
   - rename:
       field: json.playtime_2weeks
       tag: rename_playtime_two_weeks
@@ -122,26 +119,6 @@ processors:
       field: json.playtime_forever
       tag: rename_playtime_forever
       target_field: steam.playtime.forever.minutes
-      ignore_missing: true
-  - rename:
-      field: json.playtime_windows_forever
-      tag: rename_playtime_windows
-      target_field: steam.playtime.windows.minutes
-      ignore_missing: true
-  - rename:
-      field: json.playtime_mac_forever
-      tag: rename_playtime_mac
-      target_field: steam.playtime.mac.minutes
-      ignore_missing: true
-  - rename:
-      field: json.playtime_linux_forever
-      tag: rename_playtime_linux
-      target_field: steam.playtime.linux.minutes
-      ignore_missing: true
-  - rename:
-      field: json.playtime_deck_forever
-      tag: rename_playtime_deck
-      target_field: steam.playtime.deck.minutes
       ignore_missing: true
 
   # Playtime gauges read from a periodic snapshot, so `event.kind` is `metric`.

@@ -14,8 +14,11 @@ rules:
           Content-Type:
             - 'text/html; charset=UTF-8'
         body: |-
-          <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify that your key parameter is correct.</body></html>
-  # A malformed steamid is rejected with HTTP 400, also with an HTML body.
+          <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify your <pre>key=</pre> parameter.</body></html>
+  # A malformed steamid is rejected with HTTP 400, also with an HTML body. The
+  # body text is the one the live API returns. The system test configures this
+  # ID second in the list, so the walk must step past the 400 for the accounts
+  # after it to be requested at all.
   - path: /IPlayerService/GetRecentlyPlayedGames/v1/
     methods: ['GET']
     query_params:
@@ -28,17 +31,16 @@ rules:
           Content-Type:
             - 'text/html; charset=UTF-8'
         body: |-
-          <html><head><title>Bad Request</title></head><body><h1>Bad Request</h1>Please verify that all required parameters are being sent.</body></html>
+          <html><head><title>Bad Request</title></head><body><h1>Bad Request</h1>Missing required routing parameter</body></html>
   # ...072  public, several games played in the last two weeks. Two response
   # bodies are defined and the server alternates between them, so a repeat poll
   # observes changed playtime: Team Fortress 2 and Dota 2 both gain minutes,
   # and Counter-Strike 2 has fallen out of the rolling two week window
   # entirely, which drops total_count from 3 to 2.
   #
-  # The per-platform playtimes deliberately do not sum to playtime_forever on
-  # appids 440 and 570, which is how the real API behaves: Steam only began
-  # per-platform tracking later, so the platform fields cover a shorter history
-  # than playtime_forever does. Nothing may derive one from the others.
+  # Each game carries exactly the five fields the live API returns here:
+  # appid, name, playtime_2weeks, playtime_forever and img_icon_url. Unlike
+  # GetOwnedGames, this endpoint reports no per-platform playtime at all.
   - path: /IPlayerService/GetRecentlyPlayedGames/v1/
     methods: ['GET']
     query_params:
@@ -61,33 +63,21 @@ rules:
                   "name": "Team Fortress 2",
                   "playtime_2weeks": 126,
                   "playtime_forever": 58896,
-                  "img_icon_url": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
-                  "playtime_windows_forever": 41200,
-                  "playtime_mac_forever": 0,
-                  "playtime_linux_forever": 3150,
-                  "playtime_deck_forever": 0
+                  "img_icon_url": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4"
                 },
                 {
                   "appid": 570,
                   "name": "Dota 2",
                   "playtime_2weeks": 342,
                   "playtime_forever": 12045,
-                  "img_icon_url": "0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57",
-                  "playtime_windows_forever": 9800,
-                  "playtime_mac_forever": 0,
-                  "playtime_linux_forever": 420,
-                  "playtime_deck_forever": 622
+                  "img_icon_url": "0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57"
                 },
                 {
                   "appid": 730,
                   "name": "Counter-Strike 2",
                   "playtime_2weeks": 58,
                   "playtime_forever": 7310,
-                  "img_icon_url": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
-                  "playtime_windows_forever": 7310,
-                  "playtime_mac_forever": 0,
-                  "playtime_linux_forever": 0,
-                  "playtime_deck_forever": 0
+                  "img_icon_url": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20"
                 }
               ]
             }
@@ -108,42 +98,23 @@ rules:
                   "name": "Team Fortress 2",
                   "playtime_2weeks": 184,
                   "playtime_forever": 58954,
-                  "img_icon_url": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
-                  "playtime_windows_forever": 41258,
-                  "playtime_mac_forever": 0,
-                  "playtime_linux_forever": 3150,
-                  "playtime_deck_forever": 0
+                  "img_icon_url": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4"
                 },
                 {
                   "appid": 570,
                   "name": "Dota 2",
                   "playtime_2weeks": 361,
                   "playtime_forever": 12064,
-                  "img_icon_url": "0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57",
-                  "playtime_windows_forever": 9800,
-                  "playtime_mac_forever": 0,
-                  "playtime_linux_forever": 420,
-                  "playtime_deck_forever": 641
+                  "img_icon_url": "0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57"
                 }
               ]
             }
           }
           ` }}
   # ...073  public profile that has played nothing in the last two weeks. The
-  # call succeeds, total_count is 0 and games is an empty array, so no event
-  # may be emitted for this account and the walk must still carry on to the
-  # next configured ID.
-  #
-  # UNVERIFIED: this empty-array form is NOT observed behaviour. Nothing here
-  # was validated against the live API, and the research brief records only one
-  # empty shape for this endpoint - the {"response":{}} with no games key that
-  # ...074 below returns, which the brief gives for a private or unreadable
-  # profile. This rule is kept purely as defensive coverage, so that the
-  # program is exercised against an empty games array as well as an absent
-  # games key. Do not cite it as evidence that the API returns this form for a
-  # readable account with nothing recent; if the live API is ever consulted and
-  # it turns out to answer {"response":{}} here too, this rule can simply be
-  # changed to match without altering the asserted hit_count.
+  # call succeeds with total_count 0 and no games key at all, which is the form
+  # observed on the live API, so no event may be emitted for this account and
+  # the walk must still carry on to the next configured ID.
   - path: /IPlayerService/GetRecentlyPlayedGames/v1/
     methods: ['GET']
     query_params:
@@ -155,9 +126,10 @@ rules:
         headers:
           Content-Type:
             - 'application/json; charset=UTF-8'
-        body: '{"response":{"total_count":0,"games":[]}}'
-  # ...074  private profile. Also a plain HTTP 200, but the response object is
-  # empty: there is no games key at all, and no total_count either. Every
+        body: '{"response":{"total_count":0}}'
+  # ...074  private profile, or a public profile whose game details are
+  # private. Also a plain HTTP 200, but the response object is empty: there is
+  # no games key and no total_count either. Every
   # access in the program has to tolerate the key being absent rather than
   # merely empty.
   - path: /IPlayerService/GetRecentlyPlayedGames/v1/
@@ -172,12 +144,10 @@ rules:
           Content-Type:
             - 'application/json; charset=UTF-8'
         body: '{"response":{}}'
-  # ...075  public, a single game, played entirely on a Steam Deck. Present so
+  # ...075  public, a single game. Present so
   # that more than one configured account returns games: the SteamID64 each
   # event carries then has to track the account being walked rather than being
   # fixed, and the asserted hit_count changes if the walk ever stops advancing.
-  # playtime_windows_forever is 0 while playtime_forever is not, which is the
-  # other direction the per-platform fields diverge in.
   - path: /IPlayerService/GetRecentlyPlayedGames/v1/
     methods: ['GET']
     query_params:
@@ -200,11 +170,7 @@ rules:
                   "name": "Counter-Strike 2",
                   "playtime_2weeks": 913,
                   "playtime_forever": 21480,
-                  "img_icon_url": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
-                  "playtime_windows_forever": 0,
-                  "playtime_mac_forever": 0,
-                  "playtime_linux_forever": 0,
-                  "playtime_deck_forever": 20950
+                  "img_icon_url": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20"
                 }
               ]
             }

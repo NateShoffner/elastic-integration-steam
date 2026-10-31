@@ -1,19 +1,189 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for parsing Steam client game process logs.
 processors:
-- set:
-    tag: set_sample_field
-    field: sample_field
-    value: "1"
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # Every line the Steam client writes is `[YYYY-MM-DD HH:MM:SS] <message>`. The
+  # second pattern keeps an unexpected line without the bracketed prefix from
+  # failing the pipeline.
+  - grok:
+      field: event.original
+      tag: grok_log_line
+      description: Splits the leading local timestamp from the log message.
+      patterns:
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      if: ctx.event?.original != null
+
+  # Steam writes local time with no offset or timezone, so the agent's
+  # `add_locale` processor supplies `event.timezone`.
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      timezone: '{{{event.timezone}}}'
+      if: ctx._temp?.timestamp != null
+
+  # The tracked-process value is a Windows command line wrapped in an outer pair
+  # of quotes, and the executable inside it is itself quoted:
+  #   no arguments   -> as a tracked process ""<exe>""
+  #   with arguments -> as a tracked process ""<exe>" <args>"
+  # The greedy capture anchored on the final quote strips only the outer pair and
+  # leaves the command line, including its own quoting, intact.
+  # The last pattern matches any other line so unrecognized shapes keep their raw
+  # message instead of failing the pipeline.
+  - grok:
+      field: message
+      tag: grok_message
+      description: Parses the known Steam game process message shapes.
+      patterns:
+        - '^AppID %{NONNEGINT:steam.app.id} adding PID %{NONNEGINT:process.pid:long} as a tracked process "%{GREEDYDATA:process.command_line}"$'
+        - '^AppID %{NONNEGINT:steam.app.id} no longer tracking PID %{NONNEGINT:process.pid:long}, exit code %{INT:process.exit_code:long}$'
+        - '^Remove %{NONNEGINT:steam.app.id} from running list$'
+        - '^Client version: %{GREEDYDATA:steam.client.version}$'
+        - '^%{GREEDYDATA}$'
+      if: ctx.message != null
+
+  - script:
+      lang: painless
+      tag: script_split_command_line
+      description: >-
+        Tokenizes the tracked process command line into `process.args`, honouring
+        double-quoted segments so that quoted paths containing spaces stay in one
+        argument. The first token is the executable.
+      if: ctx.process?.command_line != null
+      source: |-
+        String cmd = ctx.process.command_line;
+        char quote = (char)'"';
+        char space = (char)' ';
+        ArrayList args = new ArrayList();
+        StringBuilder token = new StringBuilder();
+        boolean inQuotes = false;
+        boolean hasToken = false;
+        for (int i = 0; i < cmd.length(); i++) {
+          char c = cmd.charAt(i);
+          if (c == quote) {
+            inQuotes = !inQuotes;
+            hasToken = true;
+          } else if (!inQuotes && c == space) {
+            if (hasToken) {
+              args.add(token.toString());
+              token.setLength(0);
+              hasToken = false;
+            }
+          } else {
+            token.append(c);
+            hasToken = true;
+          }
+        }
+        if (hasToken) {
+          args.add(token.toString());
+        }
+        if (args.isEmpty()) {
+          return;
+        }
+        ctx.process.args = args;
+        ctx.process.args_count = args.size();
+        ctx.process.executable = args.get(0);
+
+  - grok:
+      field: process.executable
+      tag: grok_process_name
+      description: Extracts the file name of the executable from its path.
+      patterns:
+        - '^(?:.*[\\/])?%{DATA:process.name}$'
+      if: ctx.process?.executable != null
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+
+  - set:
+      field: event.action
+      tag: set_event_action_tracked_process_start
+      value: tracked-process-start
+      if: ctx.process?.command_line != null
+  - set:
+      field: event.action
+      tag: set_event_action_tracked_process_end
+      value: tracked-process-end
+      if: ctx.process?.exit_code != null
+  - set:
+      field: event.action
+      tag: set_event_action_game_removed_from_running_list
+      value: game-removed-from-running-list
+      if: ctx.steam?.app?.id != null && ctx.message != null && ctx.message.startsWith('Remove ')
+
+  - set:
+      field: event.category
+      tag: set_event_category_process
+      value:
+        - process
+      if: ctx.event?.action != null
+  - set:
+      field: event.type
+      tag: set_event_type_start
+      value:
+        - start
+      if: ctx.event?.action == 'tracked-process-start'
+  - set:
+      field: event.type
+      tag: set_event_type_end
+      value:
+        - end
+      if: ctx.event?.action == 'tracked-process-end'
+  - set:
+      field: event.type
+      tag: set_event_type_info
+      value:
+        - info
+      if: ctx.event?.action == 'game-removed-from-running-list'
+
+  - remove:
+      field:
+        - _temp
+      tag: remove_temp_fields
+      ignore_missing: true
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
 on_failure:
-- set:
-    field: error.message
-    value: >-
-      Processor '{{{ _ingest.on_failure_processor_type }}}'
-      with tag '{{{ _ingest.on_failure_processor_tag }}}'
-      in pipeline '{{{ _ingest.pipeline }}}'
-      failed with message '{{{ _ingest.on_failure_message }}}'
-- set:
-    field: event.kind
-    tag: set_pipeline_error_to_event_kind
-    value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

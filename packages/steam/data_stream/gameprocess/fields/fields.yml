@@ -1,0 +1,8 @@
+- name: steam.app.id
+  type: keyword
+  description: >-
+    Steam application ID of the game whose process this document describes. Matches `steam.app.id` on the Steam Web API data streams, so client log events can be joined against them.
+- name: steam.client.version
+  type: keyword
+  description: >-
+    Build number the Steam client reports for itself in its `Client version:` log lines.

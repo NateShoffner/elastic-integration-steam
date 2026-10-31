@@ -1,0 +1,4 @@
+[2026-03-14 09:14:21] AppID 440 adding PID 31400 as a tracked process ""C:\Program Files (x86)\Steam\steamapps\common\Team Fortress 2\hl2.exe""
+[2026-03-14 19:41:08] AppID 570 adding PID 18244 as a tracked process ""D:\SteamLibrary\steamapps\common\dota 2 beta\game\bin\win64\dota2.exe" -steam -console"
+[2026-03-14 19:41:12] AppID 570 adding PID 7132 as a tracked process ""D:\SteamLibrary\steamapps\common\dota 2 beta\UnityCrashHandler64.exe" --attach 18244 2831924989952"
+[2026-03-15 08:03:21] AppID 730 adding PID 25104 as a tracked process ""LauncherHelper.exe" -appFolder="C:\Users\user\AppData\Local\Example Studios\Launcher""

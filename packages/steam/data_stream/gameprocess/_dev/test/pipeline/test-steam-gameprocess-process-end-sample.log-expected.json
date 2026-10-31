@@ -1,0 +1,97 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T11:02:47.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "tracked-process-end",
+                "category": [
+                    "process"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 11:02:47] AppID 440 no longer tracking PID 31400, exit code 0",
+                "timezone": "+00:00",
+                "type": [
+                    "end"
+                ]
+            },
+            "message": "AppID 440 no longer tracking PID 31400, exit code 0",
+            "process": {
+                "exit_code": 0,
+                "pid": 31400
+            },
+            "steam": {
+                "app": {
+                    "id": "440"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T21:55:31.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "tracked-process-end",
+                "category": [
+                    "process"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 21:55:31] AppID 570 no longer tracking PID 18244, exit code -1073741819",
+                "timezone": "+00:00",
+                "type": [
+                    "end"
+                ]
+            },
+            "message": "AppID 570 no longer tracking PID 18244, exit code -1073741819",
+            "process": {
+                "exit_code": -1073741819,
+                "pid": 18244
+            },
+            "steam": {
+                "app": {
+                    "id": "570"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-15T09:17:45.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "tracked-process-end",
+                "category": [
+                    "process"
+                ],
+                "kind": "event",
+                "original": "[2026-03-15 09:17:45] AppID 730 no longer tracking PID 24880, exit code 1",
+                "timezone": "+00:00",
+                "type": [
+                    "end"
+                ]
+            },
+            "message": "AppID 730 no longer tracking PID 24880, exit code 1",
+            "process": {
+                "exit_code": 1,
+                "pid": 24880
+            },
+            "steam": {
+                "app": {
+                    "id": "730"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

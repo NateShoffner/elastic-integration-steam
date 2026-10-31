@@ -1,0 +1,158 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T09:14:21.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "tracked-process-start",
+                "category": [
+                    "process"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:14:21] AppID 440 adding PID 31400 as a tracked process \"\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe\"\"",
+                "timezone": "+00:00",
+                "type": [
+                    "start"
+                ]
+            },
+            "message": "AppID 440 adding PID 31400 as a tracked process \"\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe\"\"",
+            "process": {
+                "args": [
+                    "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe"
+                ],
+                "args_count": 1,
+                "command_line": "\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe\"",
+                "executable": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe",
+                "name": "hl2.exe",
+                "pid": 31400
+            },
+            "steam": {
+                "app": {
+                    "id": "440"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T19:41:08.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "tracked-process-start",
+                "category": [
+                    "process"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 19:41:08] AppID 570 adding PID 18244 as a tracked process \"\"D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\game\\bin\\win64\\dota2.exe\" -steam -console\"",
+                "timezone": "+00:00",
+                "type": [
+                    "start"
+                ]
+            },
+            "message": "AppID 570 adding PID 18244 as a tracked process \"\"D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\game\\bin\\win64\\dota2.exe\" -steam -console\"",
+            "process": {
+                "args": [
+                    "D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\game\\bin\\win64\\dota2.exe",
+                    "-steam",
+                    "-console"
+                ],
+                "args_count": 3,
+                "command_line": "\"D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\game\\bin\\win64\\dota2.exe\" -steam -console",
+                "executable": "D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\game\\bin\\win64\\dota2.exe",
+                "name": "dota2.exe",
+                "pid": 18244
+            },
+            "steam": {
+                "app": {
+                    "id": "570"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T19:41:12.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "tracked-process-start",
+                "category": [
+                    "process"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 19:41:12] AppID 570 adding PID 7132 as a tracked process \"\"D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\UnityCrashHandler64.exe\" --attach 18244 2831924989952\"",
+                "timezone": "+00:00",
+                "type": [
+                    "start"
+                ]
+            },
+            "message": "AppID 570 adding PID 7132 as a tracked process \"\"D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\UnityCrashHandler64.exe\" --attach 18244 2831924989952\"",
+            "process": {
+                "args": [
+                    "D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\UnityCrashHandler64.exe",
+                    "--attach",
+                    "18244",
+                    "2831924989952"
+                ],
+                "args_count": 4,
+                "command_line": "\"D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\UnityCrashHandler64.exe\" --attach 18244 2831924989952",
+                "executable": "D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\UnityCrashHandler64.exe",
+                "name": "UnityCrashHandler64.exe",
+                "pid": 7132
+            },
+            "steam": {
+                "app": {
+                    "id": "570"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-15T08:03:21.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "tracked-process-start",
+                "category": [
+                    "process"
+                ],
+                "kind": "event",
+                "original": "[2026-03-15 08:03:21] AppID 730 adding PID 25104 as a tracked process \"\"LauncherHelper.exe\" -appFolder=\"C:\\Users\\user\\AppData\\Local\\Example Studios\\Launcher\"\"",
+                "timezone": "+00:00",
+                "type": [
+                    "start"
+                ]
+            },
+            "message": "AppID 730 adding PID 25104 as a tracked process \"\"LauncherHelper.exe\" -appFolder=\"C:\\Users\\user\\AppData\\Local\\Example Studios\\Launcher\"\"",
+            "process": {
+                "args": [
+                    "LauncherHelper.exe",
+                    "-appFolder=C:\\Users\\user\\AppData\\Local\\Example Studios\\Launcher"
+                ],
+                "args_count": 2,
+                "command_line": "\"LauncherHelper.exe\" -appFolder=\"C:\\Users\\user\\AppData\\Local\\Example Studios\\Launcher\"",
+                "executable": "LauncherHelper.exe",
+                "name": "LauncherHelper.exe",
+                "pid": 25104
+            },
+            "steam": {
+                "app": {
+                    "id": "730"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

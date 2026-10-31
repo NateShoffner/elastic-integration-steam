@@ -1,0 +1,202 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T11:02:48.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-file-in-sync",
+                "category": [
+                    "file"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 11:02:48] [AppID 440] File is in sync Example Publisher/Example Game/SaveData/Slot1.savegame",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "File is in sync Example Publisher/Example Game/SaveData/Slot1.savegame",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "cloud": {
+                    "remote_file": {
+                        "name": "Slot1.savegame",
+                        "path": "Example Publisher/Example Game/SaveData/Slot1.savegame"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T11:02:48.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-file-match-enumerated",
+                "category": [
+                    "file"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 11:02:48] [AppID 440]         Found 2 files that match C:\\Program Files (x86)\\Steam\\steamapps\\common\\Example Game\\SaveData\\*.sav",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "Found 2 files that match C:\\Program Files (x86)\\Steam\\steamapps\\common\\Example Game\\SaveData\\*.sav",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "cloud": {
+                    "file_match": {
+                        "count": 2,
+                        "pattern": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Example Game\\SaveData\\*.sav"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T11:02:48.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-file-persisted",
+                "category": [
+                    "file"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 11:02:48] [AppID 440]     Persisting file C:\\Program Files (x86)\\Steam\\steamapps\\common\\Example Game\\SaveData\\Slot1.sav to the cloud",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "file": {
+                "directory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Example Game\\SaveData",
+                "extension": "sav",
+                "name": "Slot1.sav",
+                "path": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Example Game\\SaveData\\Slot1.sav"
+            },
+            "message": "Persisting file C:\\Program Files (x86)\\Steam\\steamapps\\common\\Example Game\\SaveData\\Slot1.sav to the cloud",
+            "steam": {
+                "app": {
+                    "id": "440"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T11:02:49.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-file-upload-started",
+                "category": [
+                    "file"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 11:02:49] [AppID 440] HTTP upload for file 'Slot1.savegame' beginning . . .",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "HTTP upload for file 'Slot1.savegame' beginning . . .",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "cloud": {
+                    "remote_file": {
+                        "name": "Slot1.savegame"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T19:41:09.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-local-file-removal-detected",
+                "category": [
+                    "file"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 19:41:09] [AppID 570]     File C:\\Users\\user\\AppData\\LocalLow\\Example Publisher\\Example Game\\Backup\\Save0_backup256\\notes.py was removed while the game was running. Deleting from cloud and remote machines",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "file": {
+                "directory": "C:\\Users\\user\\AppData\\LocalLow\\Example Publisher\\Example Game\\Backup\\Save0_backup256",
+                "extension": "py",
+                "name": "notes.py",
+                "path": "C:\\Users\\user\\AppData\\LocalLow\\Example Publisher\\Example Game\\Backup\\Save0_backup256\\notes.py"
+            },
+            "message": "File C:\\Users\\user\\AppData\\LocalLow\\Example Publisher\\Example Game\\Backup\\Save0_backup256\\notes.py was removed while the game was running. Deleting from cloud and remote machines",
+            "steam": {
+                "app": {
+                    "id": "570"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T19:41:10.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-file-deleted",
+                "category": [
+                    "file"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 19:41:10] [AppID 570] Delete OK for file Example Publisher/Example Game/Backup/Save0_backup256/notes.py",
+                "outcome": "success",
+                "timezone": "+00:00",
+                "type": [
+                    "deletion"
+                ]
+            },
+            "message": "Delete OK for file Example Publisher/Example Game/Backup/Save0_backup256/notes.py",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "cloud": {
+                    "remote_file": {
+                        "name": "notes.py",
+                        "path": "Example Publisher/Example Game/Backup/Save0_backup256/notes.py"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

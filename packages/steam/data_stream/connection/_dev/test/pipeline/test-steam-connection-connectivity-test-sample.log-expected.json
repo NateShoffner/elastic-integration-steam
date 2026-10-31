@@ -1,0 +1,128 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T09:12:04.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "connectivity-test-started",
+                "category": [
+                    "network"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:12:04] Connectivity test: Starting test, fetching 'http://test.steampowered.com/204'",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "Connectivity test: Starting test, fetching 'http://test.steampowered.com/204'",
+            "related": {
+                "hosts": [
+                    "test.steampowered.com"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "url": {
+                "domain": "test.steampowered.com",
+                "original": "http://test.steampowered.com/204",
+                "path": "/204",
+                "scheme": "http"
+            }
+        },
+        {
+            "@timestamp": "2026-03-14T09:12:04.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "connectivity-test-completed",
+                "category": [
+                    "network"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:12:04] Connectivity test (203.0.113.30:80 (203.0.113.30:80)): OK!",
+                "outcome": "success",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "Connectivity test (203.0.113.30:80 (203.0.113.30:80)): OK!",
+            "related": {
+                "ip": [
+                    "203.0.113.30"
+                ]
+            },
+            "server": {
+                "address": "203.0.113.30",
+                "as": {
+                    "number": 64502,
+                    "organization": {
+                        "name": "Documentation ASN"
+                    }
+                },
+                "geo": {
+                    "city_name": "Madrid",
+                    "continent_name": "Europe",
+                    "country_iso_code": "ES",
+                    "country_name": "Spain",
+                    "location": {
+                        "lat": 40.41639,
+                        "lon": -3.7025
+                    },
+                    "region_iso_code": "ES-M",
+                    "region_name": "Madrid"
+                },
+                "ip": "203.0.113.30",
+                "port": 80
+            },
+            "steam": {
+                "connection": {
+                    "connectivity_test": {
+                        "result": "OK!"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:12:04.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "connectivity-test-state-reported",
+                "category": [
+                    "network"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:12:04] Connectivity test: result=Connected (since 1786818.8s ago), prev=Failed, in progress=0",
+                "outcome": "success",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "Connectivity test: result=Connected (since 1786818.8s ago), prev=Failed, in progress=0",
+            "steam": {
+                "connection": {
+                    "connectivity_test": {
+                        "in_progress": 0,
+                        "previous_state": "Failed",
+                        "state": "Connected",
+                        "state_age_seconds": 1786818.8
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

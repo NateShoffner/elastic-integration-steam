@@ -1,0 +1,135 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T14:22:01.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-item-subscription-added",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:22:01] [AppID 570] Detected workshop change : added subscribed item 2814593102",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "Detected workshop change : added subscribed item 2814593102",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "item": {
+                        "id": "2814593102"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:22:01.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-item-removed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:22:01] [AppID 570] Detected workshop change : removing unknown item 1205028711 ",
+                "timezone": "+00:00",
+                "type": [
+                    "deletion"
+                ]
+            },
+            "message": "Detected workshop change : removing unknown item 1205028711",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "item": {
+                        "id": "1205028711"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:22:01.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-item-removed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:22:01] [AppID 570] Detected workshop change : removing unknown item 1205028711",
+                "timezone": "+00:00",
+                "type": [
+                    "deletion"
+                ]
+            },
+            "message": "Detected workshop change : removing unknown item 1205028711",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "item": {
+                        "id": "1205028711"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:22:01.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-item-manifest-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:22:01] [AppID 570] Detected workshop change : changed cached item 2538474631, new manifest 4862689776909173546",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "Detected workshop change : changed cached item 2538474631, new manifest 4862689776909173546",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "item": {
+                        "id": "2538474631"
+                    },
+                    "manifest": {
+                        "id": "4862689776909173546"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

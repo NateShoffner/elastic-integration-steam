@@ -1,0 +1,293 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T10:05:13.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-depots-added",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 10:05:13] AppID 440 config changed : added depots 441",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 440 config changed : added depots 441",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "content": {
+                    "depot": {
+                        "id": "441"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T10:05:13.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-depots-updated",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 10:05:13] AppID 440 config changed : updated depots 441",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 440 config changed : updated depots 441",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "content": {
+                    "depot": {
+                        "id": "441"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T10:05:14.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "update-state-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 10:05:14] AppID 440 update changed : Running Update,",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 440 update changed : Running Update,",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "content": {
+                    "update_state": [
+                        "Running Update"
+                    ]
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T10:05:14.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-update-state-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 10:05:14] AppID 440 App update changed : Running Update,",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 440 App update changed : Running Update,",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "content": {
+                    "app_update_state": [
+                        "Running Update"
+                    ]
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T10:06:03.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-state-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 10:06:03] AppID 440 state changed : Fully Installed,",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 440 state changed : Fully Installed,",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "content": {
+                    "app_state": [
+                        "Fully Installed"
+                    ]
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T10:06:03.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-update-state-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 10:06:03] AppID 440 App update changed : No Update,",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 440 App update changed : No Update,",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "content": {
+                    "app_update_state": [
+                        "No Update"
+                    ]
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:31:09.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-update-started",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:31:09] AppID 570 update started : Validating,",
+                "timezone": "+00:00",
+                "type": [
+                    "start"
+                ]
+            },
+            "message": "AppID 570 update started : Validating,",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "content": {
+                    "update_state": [
+                        "Validating"
+                    ]
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:33:27.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-state-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:33:27] AppID 570 state changed : Fully Installed,",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 570 state changed : Fully Installed,",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "content": {
+                    "app_state": [
+                        "Fully Installed"
+                    ]
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-15T08:10:02.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-state-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-15 08:10:02] AppID 730 state changed : Update Required,Update Queued,",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 730 state changed : Update Required,Update Queued,",
+            "steam": {
+                "app": {
+                    "id": "730"
+                },
+                "content": {
+                    "app_state": [
+                        "Update Required",
+                        "Update Queued"
+                    ]
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

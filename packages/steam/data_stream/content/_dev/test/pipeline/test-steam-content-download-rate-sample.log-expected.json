@@ -1,0 +1,62 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T10:05:22.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "download-rate-reported",
+                "category": [
+                    "network"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 10:05:22] Current download rate: 92.4 Mbps",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "Current download rate: 92.4 Mbps",
+            "steam": {
+                "content": {
+                    "download": {
+                        "rate_mbps": 92.4
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T10:05:38.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "download-rate-reported",
+                "category": [
+                    "network"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 10:05:38] Current download rate: 118.7 Mbps",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "Current download rate: 118.7 Mbps",
+            "steam": {
+                "content": {
+                    "download": {
+                        "rate_mbps": 118.7
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

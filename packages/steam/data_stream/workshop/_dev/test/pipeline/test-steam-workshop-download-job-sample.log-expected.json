@@ -1,0 +1,170 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T14:22:02.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-update-job-started",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:22:02] [AppID 570] Workshop update job started while app is running, commit : yes",
+                "timezone": "+00:00",
+                "type": [
+                    "start"
+                ]
+            },
+            "message": "Workshop update job started while app is running, commit : yes",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "update_job": {
+                        "commit": "yes"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:22:02.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-download-job-started",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:22:02] [AppID 570] Starting Workshop download job (downloading updating )",
+                "timezone": "+00:00",
+                "type": [
+                    "start"
+                ]
+            },
+            "message": "Starting Workshop download job (downloading updating )",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "download_job": {
+                        "flags": [
+                            "downloading",
+                            "updating"
+                        ]
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:22:03.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-item-download-requested",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:22:03] [AppID 570] Download item 2814593102 requested by app",
+                "timezone": "+00:00",
+                "type": [
+                    "start"
+                ]
+            },
+            "message": "Download item 2814593102 requested by app",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "item": {
+                        "id": "2814593102"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:22:03.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-item-downloaded",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:22:03] [AppID 570] Download item 2814593102 result : OK",
+                "outcome": "success",
+                "timezone": "+00:00",
+                "type": [
+                    "installation"
+                ]
+            },
+            "message": "Download item 2814593102 result : OK",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "item": {
+                        "id": "2814593102",
+                        "result": "OK"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:22:04.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "workshop-download-job-finished",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:22:04] [AppID 570] Finished Workshop download job : No Error",
+                "outcome": "success",
+                "timezone": "+00:00",
+                "type": [
+                    "installation"
+                ]
+            },
+            "message": "Finished Workshop download job : No Error",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "workshop": {
+                    "download_job": {
+                        "result": "No Error"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,322 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T09:14:22.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-init-cache-request-completed",
+                "kind": "event",
+                "original": "[2026-03-14 09:14:22] [U:1:11223344] [AppID 440] Init cache request complete",
+                "timezone": "+00:00"
+            },
+            "message": "Init cache request complete",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "cloud": {
+                    "account_id": "11223344"
+                },
+                "player": {
+                    "id": "76561197971489072"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:14:22.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-sync-started",
+                "kind": "event",
+                "original": "[2026-03-14 09:14:22] [AppID 440] Starting sync (init,eval,)",
+                "timezone": "+00:00"
+            },
+            "message": "Starting sync (init,eval,)",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "cloud": {
+                    "sync": {
+                        "flags": [
+                            "init",
+                            "eval"
+                        ]
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:14:22.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-local-state-checked",
+                "kind": "event",
+                "original": "[2026-03-14 09:14:22] [AppID 440] AutoCloud checking local state for user 11223344",
+                "timezone": "+00:00"
+            },
+            "message": "AutoCloud checking local state for user 11223344",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "cloud": {
+                    "account_id": "11223344"
+                },
+                "player": {
+                    "id": "76561197971489072"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:14:22.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-sync-eval-completed",
+                "kind": "event",
+                "original": "[2026-03-14 09:14:22] [AppID 440] Eval complete",
+                "timezone": "+00:00"
+            },
+            "message": "Eval complete",
+            "steam": {
+                "app": {
+                    "id": "440"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:14:23.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-sync-not-needed",
+                "kind": "event",
+                "original": "[2026-03-14 09:14:23] [AppID 440] Currently already synced to global change number '7', should be nothing to download",
+                "timezone": "+00:00"
+            },
+            "message": "Currently already synced to global change number '7', should be nothing to download",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "cloud": {
+                    "sync": {
+                        "global_change_number": 7
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:14:23.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-download-completed",
+                "kind": "event",
+                "original": "[2026-03-14 09:14:23] [AppID 440] Download complete in build list",
+                "outcome": "success",
+                "timezone": "+00:00"
+            },
+            "message": "Download complete in build list",
+            "steam": {
+                "app": {
+                    "id": "440"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:14:23.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-sync-completed",
+                "kind": "event",
+                "original": "[2026-03-14 09:14:23] [AppID 440] Successfully synced to ChangeNumber 7",
+                "outcome": "success",
+                "timezone": "+00:00"
+            },
+            "message": "Successfully synced to ChangeNumber 7",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "cloud": {
+                    "sync": {
+                        "change_number": 7
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T11:02:48.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-sync-started",
+                "kind": "event",
+                "original": "[2026-03-14 11:02:48] [AppID 440] Starting sync (up,)",
+                "timezone": "+00:00"
+            },
+            "message": "Starting sync (up,)",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "cloud": {
+                    "sync": {
+                        "flags": [
+                            "up"
+                        ]
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T11:02:49.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-sync-deferred",
+                "kind": "event",
+                "original": "[2026-03-14 11:02:49] [AppID 440] Need to sync from local change number '7' to global change number '9' (full), but not attempting now",
+                "timezone": "+00:00"
+            },
+            "message": "Need to sync from local change number '7' to global change number '9' (full), but not attempting now",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "cloud": {
+                    "sync": {
+                        "global_change_number": 9,
+                        "local_change_number": 7,
+                        "scope": "full"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T19:41:09.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-sync-started",
+                "kind": "event",
+                "original": "[2026-03-14 19:41:09] [AppID 570] Starting sync (eval,)",
+                "timezone": "+00:00"
+            },
+            "message": "Starting sync (eval,)",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "cloud": {
+                    "sync": {
+                        "flags": [
+                            "eval"
+                        ]
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T21:55:32.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-sync-started",
+                "kind": "event",
+                "original": "[2026-03-14 21:55:32] [AppID 570] Starting sync (down,)",
+                "timezone": "+00:00"
+            },
+            "message": "Starting sync (down,)",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "cloud": {
+                    "sync": {
+                        "flags": [
+                            "down"
+                        ]
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T21:55:33.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-sync-completed",
+                "kind": "event",
+                "original": "[2026-03-14 21:55:33] [AppID 570] Successfully synced to ChangeNumber 12",
+                "outcome": "success",
+                "timezone": "+00:00"
+            },
+            "message": "Successfully synced to ChangeNumber 12",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "cloud": {
+                    "sync": {
+                        "change_number": 12
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

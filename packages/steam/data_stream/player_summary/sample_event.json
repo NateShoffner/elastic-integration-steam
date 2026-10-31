@@ -1,0 +1,87 @@
+{
+    "@timestamp": "2026-10-31T11:07:26.400Z",
+    "agent": {
+        "ephemeral_id": "05d7fa41-d6e2-4887-a07c-f451aea4de7f",
+        "id": "ecee3242-62b5-4fdf-8bd8-9d02987d353c",
+        "name": "elastic-agent-40699",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "data_stream": {
+        "dataset": "steam.player_summary",
+        "namespace": "36301",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "ecee3242-62b5-4fdf-8bd8-9d02987d353c",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "steam.player_summary",
+        "ingested": "2026-10-31T11:07:30Z",
+        "kind": "metric",
+        "module": "steam",
+        "original": "{\"avatar\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg\",\"avatarfull\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg\",\"avatarhash\":\"3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f\",\"avatarmedium\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg\",\"communityvisibilitystate\":1,\"personaname\":\"example_player_private\",\"personastate\":0,\"profilestate\":1,\"profileurl\":\"https://steamcommunity.com/profiles/76561197971489074/\",\"steamid\":\"76561197971489074\"}"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-40699",
+        "ip": [
+            "172.18.0.5",
+            "192.168.128.2"
+        ],
+        "mac": [
+            "02-42-AC-12-00-05",
+            "02-42-C0-A8-80-02"
+        ],
+        "name": "elastic-agent-40699",
+        "os": {
+            "family": "",
+            "kernel": "6.18.33.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "steam": {
+        "player": {
+            "avatar": {
+                "full": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg",
+                "hash": "3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f",
+                "medium": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg",
+                "small": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg"
+            },
+            "id": "76561197971489074",
+            "in_game": false,
+            "persona_name": "example_player_private",
+            "persona_state": {
+                "code": 0,
+                "name": "Offline"
+            },
+            "profile_state": 1,
+            "profile_url": "https://steamcommunity.com/profiles/76561197971489074/",
+            "visibility": {
+                "code": 1,
+                "name": "Private"
+            }
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "steam-player-summary"
+    ],
+    "user": {
+        "id": "76561197971489074",
+        "name": "example_player_private"
+    }
+}

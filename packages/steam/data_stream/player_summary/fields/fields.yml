@@ -26,7 +26,7 @@
 - name: steam.player.visibility.name
   type: keyword
   description: >-
-    Human readable form of `steam.player.visibility.code`.
+    Human readable form of `steam.player.visibility.code`. Note `3` is reported as `Public` rather than its documented name `Friends of Friends`: Steam returns `3` for any profile readable by the requesting key and never returns `5`, so every public profile arrives as `3`. Use `steam.player.visibility.code` if you need the literal API value.
 - name: steam.player.persona_state.code
   type: long
   description: >-

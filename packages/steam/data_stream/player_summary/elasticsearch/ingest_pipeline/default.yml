@@ -289,12 +289,17 @@ processors:
       target_field: server.as.organization.name
       ignore_missing: true
 
-  # Both enums keep the raw code and gain a human readable name. The
-  # `communityvisibilitystate` names are the documented ones, but only `1` and
-  # `3` are ever observed in practice and `3` is what a profile readable by the
-  # configured key reports, so `3` covers public profiles and `5` should not be
-  # expected to appear. An unknown code leaves the name unset rather than
-  # inventing a label.
+  # Both enums keep the raw code and gain a human readable name. An unknown
+  # code leaves the name unset rather than inventing a label.
+  #
+  # `communityvisibilitystate: 3` is deliberately named `Public` rather than the
+  # documented `Friends of Friends`. Steam returns `3` for any profile readable
+  # by the requesting key, and `5` is never actually emitted, so in practice
+  # every public profile arrives as `3`. Using the documented name would leave
+  # `Public` matching nothing at all, which breaks the obvious dashboard filter
+  # on the overwhelmingly common case. The raw code is always kept in
+  # `steam.player.visibility.code` for anyone who needs the literal API value,
+  # and the caveat is recorded in that field's description.
   - script:
       lang: painless
       tag: set_player_enum_names
@@ -312,7 +317,7 @@ processors:
         visibility:
           '1': Private
           '2': Friends only
-          '3': Friends of Friends
+          '3': Public
           '4': Users Only
           '5': Public
       source: |-

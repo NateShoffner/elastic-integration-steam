@@ -72,7 +72,7 @@
                     "real_name": "Example Person",
                     "visibility": {
                         "code": 3,
-                        "name": "Friends of Friends"
+                        "name": "Public"
                     }
                 }
             },
@@ -119,7 +119,7 @@
                     "profile_url": "https://steamcommunity.com/id/example_player_two/",
                     "visibility": {
                         "code": 3,
-                        "name": "Friends of Friends"
+                        "name": "Public"
                     }
                 }
             },

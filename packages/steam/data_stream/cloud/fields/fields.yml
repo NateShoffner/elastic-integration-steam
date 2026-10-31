@@ -13,10 +13,6 @@
 - name: steam.cloud
   type: group
   fields:
-    - name: account_id
-      type: keyword
-      description: >-
-        32-bit Steam account ID exactly as the Steam client logs it, either in a leading `[U:1:<accountid>]` tag or in an `AutoCloud checking local state for user <accountid>` line. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable and the Steam Web API accepts only the latter.
     - name: sync.flags
       type: keyword
       description: >-
@@ -53,3 +49,7 @@
       type: keyword
       description: >-
         Local filesystem glob the Steam client expanded while collecting an application's save files for upload, for example `C:\Program Files (x86)\Steam\steamapps\common\Example Game\SaveData\*.sav`. This is a search pattern rather than a single file, which is why it is not mapped to `file.path`.
+- name: steam.player.account_id
+  type: keyword
+  description: >-
+    32-bit Steam account ID exactly as the Steam client logs it, either in a `[U:1:<accountid>]` tag or as a plain `for user <accountid>` value. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable, and the Steam Web API accepts only the SteamID64.

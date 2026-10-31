@@ -1,13 +1,3 @@
-- name: destination.address
-  external: ecs
-- name: destination.as.number
-  external: ecs
-- name: destination.as.organization.name
-  external: ecs
-- name: destination.ip
-  external: ecs
-- name: destination.port
-  external: ecs
 - name: ecs.version
   external: ecs
 - name: error.message
@@ -49,4 +39,22 @@
 - name: server.port
   external: ecs
 - name: tags
+  external: ecs
+- name: server.as.number
+  external: ecs
+- name: server.as.organization.name
+  external: ecs
+- name: server.geo.city_name
+  external: ecs
+- name: server.geo.continent_name
+  external: ecs
+- name: server.geo.country_iso_code
+  external: ecs
+- name: server.geo.country_name
+  external: ecs
+- name: server.geo.location
+  external: ecs
+- name: server.geo.region_iso_code
+  external: ecs
+- name: server.geo.region_name
   external: ecs

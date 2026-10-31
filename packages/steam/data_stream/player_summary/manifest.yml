@@ -40,6 +40,7 @@ streams:
         required: true
         show_user: false
         default:
+          - forwarded
           - steam-player-summary
       - name: processors
         type: yaml
@@ -53,7 +54,7 @@ streams:
         type: bool
         title: Enable request tracer
         description: >-
-          Log every request and response to `../../logs/cel/http-request-trace-*.ndjson` for troubleshooting. The API key is redacted, but traces are verbose and should not be left enabled.
+          Log every request and response to `../../logs/cel/http-request-trace-*.ndjson` for troubleshooting. The Steam Web API takes the key as a query parameter, so the traced request URLs contain the API key in cleartext. Enable only while diagnosing a problem, and delete the trace files afterwards.
         multi: false
         required: false
         show_user: false

@@ -13,10 +13,6 @@
       type: keyword
       description: >-
         Connection manager state the Steam client was in when it wrote the line, from the leading `[<state>, <n>, <n>]` prefix. Observed values are `Connecting`, `Connected`, `Logging On` and `Logged Off`; note that two of them contain a space. The two numbers that follow the state in the prefix are undocumented internal Steam counters and are deliberately not captured.
-    - name: account_id
-      type: keyword
-      description: >-
-        32-bit Steam account ID exactly as the Steam client logs it, either in a leading `[U:1:<accountid>]` prefix tag or in the `RecvMsgClientLogOnResponse() : [U:1:<accountid>]` payload. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable and the Steam Web API accepts only the latter.
     - name: qos_level
       type: keyword
       description: >-
@@ -105,3 +101,7 @@
       type: keyword
       description: >-
         Outcome token of the IP-stack reachability probe, exactly as logged. The only values observed anywhere in the sampled corpus are `TIMEOUT` and `FAILED, no addresses resolved`, both of which set `event.outcome` to `failure`; no success wording exists for this line family, so any other token leaves `event.outcome` unset rather than being assumed to be a success.
+- name: steam.player.account_id
+  type: keyword
+  description: >-
+    32-bit Steam account ID exactly as the Steam client logs it, either in a `[U:1:<accountid>]` tag or as a plain `for user <accountid>` value. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable, and the Steam Web API accepts only the SteamID64.

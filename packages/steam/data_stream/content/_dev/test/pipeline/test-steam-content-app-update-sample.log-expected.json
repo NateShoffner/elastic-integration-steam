@@ -129,6 +129,40 @@
             ]
         },
         {
+            "@timestamp": "2026-03-14T10:05:20.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-update-state-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 10:05:20] AppID 440 App update changed : Running Update,Downloading,Staging,",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 440 App update changed : Running Update,Downloading,Staging,",
+            "steam": {
+                "app": {
+                    "id": "440"
+                },
+                "content": {
+                    "app_update_state": [
+                        "Running Update",
+                        "Downloading",
+                        "Staging"
+                    ]
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
             "@timestamp": "2026-03-14T10:06:03.000Z",
             "ecs": {
                 "version": "9.3.0"
@@ -171,21 +205,125 @@
                     "package"
                 ],
                 "kind": "event",
-                "original": "[2026-03-14 10:06:03] AppID 440 App update changed : No Update,",
+                "original": "[2026-03-14 10:06:03] AppID 440 App update changed : None",
                 "timezone": "+00:00",
                 "type": [
                     "change"
                 ]
             },
-            "message": "AppID 440 App update changed : No Update,",
+            "message": "AppID 440 App update changed : None",
             "steam": {
                 "app": {
                     "id": "440"
                 },
                 "content": {
                     "app_update_state": [
-                        "No Update"
+                        "None"
                     ]
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:28:40.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-state-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:28:40] AppID 570 state changed : Update Required,Fully Installed,Update Queued, (Suspended)",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 570 state changed : Update Required,Fully Installed,Update Queued, (Suspended)",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "content": {
+                    "app_state": [
+                        "Update Required",
+                        "Fully Installed",
+                        "Update Queued"
+                    ],
+                    "state_reason": "(Suspended)"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:29:10.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-state-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:29:10] AppID 570 state changed : Update Required,Fully Installed, (Update delayed for 950400 secs)",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 570 state changed : Update Required,Fully Installed, (Update delayed for 950400 secs)",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "content": {
+                    "app_state": [
+                        "Update Required",
+                        "Fully Installed"
+                    ],
+                    "state_reason": "(Update delayed for 950400 secs)"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T14:29:40.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "app-state-changed",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 14:29:40] AppID 570 state changed : Update Required,Fully Installed,Update Started, (Suspended) (Update delayed for 1067061 secs)",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "AppID 570 state changed : Update Required,Fully Installed,Update Started, (Suspended) (Update delayed for 1067061 secs)",
+            "steam": {
+                "app": {
+                    "id": "570"
+                },
+                "content": {
+                    "app_state": [
+                        "Update Required",
+                        "Fully Installed",
+                        "Update Started"
+                    ],
+                    "state_reason": "(Suspended) (Update delayed for 1067061 secs)"
                 }
             },
             "tags": [
@@ -235,20 +373,21 @@
                     "package"
                 ],
                 "kind": "event",
-                "original": "[2026-03-14 14:33:27] AppID 570 state changed : Fully Installed,",
+                "original": "[2026-03-14 14:33:27] AppID 570 state changed : Fully Installed,App Running,",
                 "timezone": "+00:00",
                 "type": [
                     "change"
                 ]
             },
-            "message": "AppID 570 state changed : Fully Installed,",
+            "message": "AppID 570 state changed : Fully Installed,App Running,",
             "steam": {
                 "app": {
                     "id": "570"
                 },
                 "content": {
                     "app_state": [
-                        "Fully Installed"
+                        "Fully Installed",
+                        "App Running"
                     ]
                 }
             },

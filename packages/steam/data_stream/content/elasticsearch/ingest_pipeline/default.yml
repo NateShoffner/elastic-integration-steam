@@ -41,7 +41,20 @@ processors:
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       timezone: '{{{event.timezone}}}'
-      if: ctx._temp?.timestamp != null
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone != null
+
+  # Steam writes local time with no offset, so the agent's `add_locale` normally
+  # supplies `event.timezone`. If it is missing the mustache above would render
+  # empty and fail the document into `on_failure`, turning every line into a
+  # pipeline error. Falling back to UTC degrades the timestamp instead.
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp_no_timezone
+      target_field: '@timestamp'
+      description: Falls back to UTC when the agent did not supply `event.timezone`.
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone == null
 
   # Each pattern captures the literal token that identifies the message shape
   # into `_temp.shape`, which is the lookup key for the ECS categorization table
@@ -72,12 +85,20 @@ processors:
         - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>config changed : added|config changed : updated) depots %{NONNEGINT:steam.content.depot.id}$'
         - '^(?<_temp.shape>Created download interface) of type ''%{DATA:steam.content.download.interface.type}'' \(%{NONNEGINT:steam.content.download.interface.handle}\) to host %{HOSTNAME:server.address} \(%{HOSTNAME:_temp.resolved_host}\)$'
         - '^(?<network.protocol>HTTPS?) \(%{DATA:steam.content.download.interface.type},%{NONNEGINT:steam.content.download.interface.handle}\) - %{HOSTNAME:server.address} \(%{IP:_temp.remote_ip}:%{NONNEGINT:_temp.remote_port:long} / %{IP:_temp.remote_ip_repeat}:%{NONNEGINT:_temp.remote_port_repeat:long}, host: %{HOSTNAME:_temp.http_host}\): %{GREEDYDATA:steam.content.cdn.operation}$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>App update changed) : %{DATA:steam.content.app_update_state}, (?<steam.content.state_reason>\(.*\))$'
         - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>App update changed) : %{DATA:steam.content.app_update_state},$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>App update changed) : %{DATA:steam.content.app_update_state}$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>update changed) : %{DATA:steam.content.update_state}, (?<steam.content.state_reason>\(.*\))$'
         - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>update changed) : %{DATA:steam.content.update_state},$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>update changed) : %{DATA:steam.content.update_state}$'
         - '^(?<_temp.shape>Current download rate): %{NUMBER:steam.content.download.rate_mbps:double} Mbps$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>state changed) : %{DATA:steam.content.app_state}, (?<steam.content.state_reason>\(.*\))$'
         - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>state changed) : %{DATA:steam.content.app_state},$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>state changed) : %{DATA:steam.content.app_state}$'
         - '^(?<_temp.shape>Validation: missing file) "%{DATA:file.path}"$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>update started) : %{DATA:steam.content.update_state}, (?<steam.content.state_reason>\(.*\))$'
         - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>update started) : %{DATA:steam.content.update_state},$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>update started) : %{DATA:steam.content.update_state}$'
         - '^Loaded %{NONNEGINT:steam.content.app_count:long} (?<_temp.shape>apps from install folder) "%{DATA:steam.content.install_folder}"\.$'
         - '^(?<_temp.shape>Loaded Steam library folders configuration): %{GREEDYDATA:file.path}$'
         - '^(?<_temp.shape>Triggered async write of Steam library folders configuration) \(%{NONNEGINT:steam.content.library_count:long} libraries\)\.$'
@@ -93,6 +114,13 @@ processors:
 
   # The trailing comma on a Steam state value is a list separator, not
   # punctuation: the value is a flag set and can carry more than one state.
+  # Steam reports these states as a comma-separated flag SET with a trailing
+  # comma, and multi-flag values are the norm rather than the exception
+  # (`Fully Installed,App Running,` alone accounts for hundreds of lines in a
+  # real install). A trailing parenthetical reason may follow the comma, and
+  # there can be two of them, so it is captured whole into
+  # `steam.content.state_reason` before the split rather than becoming a
+  # bogus flag. Some values carry no trailing comma at all (`None`).
   - split:
       field: steam.content.app_state
       tag: split_app_state
@@ -161,25 +189,6 @@ processors:
       copy_from: _temp.remote_port
       if: ctx._temp?.remote_ip != null && ctx._temp.remote_ip != '0.0.0.0' && ctx._temp.remote_port != null
 
-  # The remote endpoint is both the server and the destination of the request.
-  # The `network.protocol` guard limits this to download interface lines: a peer
-  # server line names a server that is not the destination of any request.
-  - set:
-      field: destination.address
-      tag: set_destination_address
-      copy_from: server.address
-      if: ctx.network?.protocol != null && ctx.server?.address != null
-  - set:
-      field: destination.ip
-      tag: set_destination_ip
-      copy_from: server.ip
-      if: ctx.network?.protocol != null && ctx.server?.ip != null
-  - set:
-      field: destination.port
-      tag: set_destination_port
-      copy_from: server.port
-      if: ctx.network?.protocol != null && ctx.server?.port != null
-
   # Steam prints `0 (Invalid)` when no usable HTTP response arrived. Zero is a
   # sentinel rather than a status, so it is not indexed as a real status code;
   # the `(Invalid)` token drives `event.outcome` instead.
@@ -190,30 +199,30 @@ processors:
       if: ctx._temp?.http_status != null && ctx._temp.http_status != 0
 
   - geoip:
-      field: destination.ip
-      target_field: destination.geo
-      tag: geoip_destination_geo
+      field: server.ip
+      target_field: server.geo
+      tag: geoip_server_geo
       ignore_missing: true
-      if: ctx.destination?.ip != null && ctx.destination.geo == null
+      if: ctx.server?.ip != null && ctx.server.geo == null
   - geoip:
       database_file: GeoLite2-ASN.mmdb
-      field: destination.ip
-      target_field: destination.as
+      field: server.ip
+      target_field: server.as
       properties:
         - asn
         - organization_name
-      tag: geoip_destination_asn
+      tag: geoip_server_asn
       ignore_missing: true
-      if: ctx.destination?.ip != null && ctx.destination.as == null
+      if: ctx.server?.ip != null && ctx.server.as == null
   - rename:
-      field: destination.as.asn
-      tag: rename_destination_as_number
-      target_field: destination.as.number
+      field: server.as.asn
+      tag: rename_server_as_number
+      target_field: server.as.number
       ignore_missing: true
   - rename:
-      field: destination.as.organization_name
-      tag: rename_destination_as_organization_name
-      target_field: destination.as.organization.name
+      field: server.as.organization_name
+      tag: rename_server_as_organization_name
+      target_field: server.as.organization.name
       ignore_missing: true
 
   - set:
@@ -374,8 +383,12 @@ processors:
           return;
         }
         ctx.event.action = mapping.action;
-        ctx.event.category = mapping.category;
-        ctx.event.type = mapping.type;
+        if (mapping.containsKey('category')) {
+          ctx.event.category = new ArrayList(mapping.category);
+        }
+        if (mapping.containsKey('type')) {
+          ctx.event.type = new ArrayList(mapping.type);
+        }
         if (mapping.containsKey('outcome')) {
           ctx.event.outcome = mapping.outcome;
         }

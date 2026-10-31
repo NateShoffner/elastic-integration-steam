@@ -250,6 +250,12 @@ processors:
       description: Splits the `<ip>:<port>` game server endpoint reported by `gameserverip`.
       patterns:
         - '^%{IP:_temp.game_server_ip}:%{NONNEGINT:_temp.game_server_port:long}$'
+        # Nothing in this package was validated against the live API, and only
+        # `<ipv4>:<port>` and the `0.0.0.0:0` sentinel were ever observed. The
+        # fallback keeps an unexpected form (an IPv6 literal, a bare host) from
+        # aborting the pipeline, which would otherwise skip the `_temp` cleanup
+        # and index the whole raw `json.*` object into a TSDB index.
+        - '^%{GREEDYDATA}$'
       if: ctx.json?.gameserverip != null
   - set:
       field: server.ip

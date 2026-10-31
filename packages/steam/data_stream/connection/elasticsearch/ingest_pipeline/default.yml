@@ -42,7 +42,7 @@ processors:
       tag: grok_log_line
       description: Splits the leading local timestamp and the optional connection state prefix from the log message.
       patterns:
-        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[%{DATA:steam.connection.state}, %{NONNEGINT}, %{NONNEGINT}\] \[U:1:%{NONNEGINT:steam.connection.account_id}\] %{GREEDYDATA:message}$'
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[%{DATA:steam.connection.state}, %{NONNEGINT}, %{NONNEGINT}\] \[U:1:%{NONNEGINT:steam.player.account_id}\] %{GREEDYDATA:message}$'
         - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] %{GREEDYDATA:message}$'
         - '^%{GREEDYDATA:message}$'
       if: ctx.event?.original != null
@@ -56,7 +56,20 @@ processors:
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       timezone: '{{{event.timezone}}}'
-      if: ctx._temp?.timestamp != null
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone != null
+
+  # Steam writes local time with no offset, so the agent's `add_locale` normally
+  # supplies `event.timezone`. If it is missing the mustache above would render
+  # empty and fail the document into `on_failure`, turning every line into a
+  # pipeline error. Falling back to UTC degrades the timestamp instead.
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp_no_timezone
+      target_field: '@timestamp'
+      description: Falls back to UTC when the agent did not supply `event.timezone`.
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone == null
 
   # This log carries 40+ distinct message shapes, most of them internal debug
   # chatter, so only the high-value ones are parsed here: connection manager
@@ -119,7 +132,7 @@ processors:
         - '^(?<_temp.shape>ConnectionCompleted\(\)) \(%{IP:server.ip}:%{NONNEGINT:server.port:long}, %{WORD:network.protocol}\) local address \(%{IP:_temp.local_ip}:%{NONNEGINT:_temp.local_port:long}\)$'
         - '^(?<_temp.shape>ConnectionDisconnected)\(''%{DATA:steam.connection.disconnect.reason}''\) : ''%{DATA:steam.connection.disconnect.result}'' \(%{IP:server.ip}:%{NONNEGINT:server.port:long}, %{WORD:network.protocol}\)$'
         - '^(?<_temp.shape>Connectivity test: result)=%{WORD:steam.connection.connectivity_test.state} \(since %{NUMBER:steam.connection.connectivity_test.state_age_seconds:double}s ago\), prev=%{WORD:steam.connection.connectivity_test.previous_state}, in progress=%{NONNEGINT:steam.connection.connectivity_test.in_progress:long}$'
-        - '^(?<_temp.shape>RecvMsgClientLogOnResponse\(\)) : \[U:1:%{NONNEGINT:steam.connection.account_id}\] ''%{DATA:steam.connection.logon.result}''$'
+        - '^(?<_temp.shape>RecvMsgClientLogOnResponse\(\)) : \[U:1:%{NONNEGINT:steam.player.account_id}\] ''%{DATA:steam.connection.logon.result}''$'
         - '^Client version: %{GREEDYDATA:steam.client.version}$'
         - '^%{GREEDYDATA}$'
       if: ctx.message != null
@@ -216,10 +229,10 @@ processors:
   # placeholder rather than an account, so it is dropped instead of indexed and
   # never used to derive a player ID.
   - remove:
-      field: steam.connection.account_id
+      field: steam.player.account_id
       tag: remove_placeholder_account_id
       ignore_missing: true
-      if: ctx.steam?.connection?.account_id == '0'
+      if: ctx.steam?.player?.account_id == '0'
 
   # The IDs in this log are 32-bit account IDs, both in the `[U:1:<accountid>]`
   # state prefix and in the `RecvMsgClientLogOnResponse()` payload. The Steam
@@ -231,7 +244,7 @@ processors:
       lang: painless
       tag: script_derive_steam_player_id
       description: Derives the SteamID64 in `steam.player.id` from the 32-bit Steam account ID.
-      if: ctx.steam?.connection?.account_id != null
+      if: ctx.steam?.player?.account_id != null
       source: |-
         // The base is a long literal here, deliberately NOT a script param.
         // 76561197960265728 does not survive the round trip through Fleet's
@@ -241,8 +254,8 @@ processors:
         // Pipeline tests cannot catch this, because elastic-package installs
         // the literal directly; only a Fleet install reproduces it.
         long base = 76561197960265728L;
-        long accountId = Long.parseLong(ctx.steam.connection.account_id);
-        ctx.steam.player = ['id': String.valueOf(base + accountId)];
+        long accountId = Long.parseLong(ctx.steam.player.account_id);
+        ctx.steam.player.id = String.valueOf(base + accountId);
 
   - uri_parts:
       field: url.original
@@ -410,10 +423,10 @@ processors:
         }
         ctx.event.action = mapping.action;
         if (mapping.containsKey('category')) {
-          ctx.event.category = mapping.category;
+          ctx.event.category = new ArrayList(mapping.category);
         }
         if (mapping.containsKey('type')) {
-          ctx.event.type = mapping.type;
+          ctx.event.type = new ArrayList(mapping.type);
         }
         if (mapping.containsKey('outcome')) {
           ctx.event.outcome = mapping.outcome;

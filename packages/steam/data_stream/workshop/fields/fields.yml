@@ -13,10 +13,6 @@
 - name: steam.workshop
   type: group
   fields:
-    - name: account_id
-      type: keyword
-      description: >-
-        32-bit Steam account ID exactly as the Steam client logs it, from the `[U:1:<accountid>]` tag at the end of a `Loading workshop items for <n> installed apps for user [U:1:<accountid>]:` line. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable and the Steam Web API accepts only the latter.
     - name: app_count
       type: long
       description: >-
@@ -144,3 +140,7 @@
           type: keyword
           description: >-
             Whether the Steam client will commit the Workshop update it started while the application was still running, from the `commit : <value>` suffix of a `Workshop update job started while app is running, commit : <value>` line. Only `yes` is observed, and Steam writes it as a word rather than a boolean, so it is kept as a keyword exactly as logged.
+- name: steam.player.account_id
+  type: keyword
+  description: >-
+    32-bit Steam account ID exactly as the Steam client logs it, either in a `[U:1:<accountid>]` tag or as a plain `for user <accountid>` value. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable, and the Steam Web API accepts only the SteamID64.

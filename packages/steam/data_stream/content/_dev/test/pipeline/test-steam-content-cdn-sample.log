@@ -2,7 +2,7 @@
 [2026-03-14 10:05:15] HTTP (CDN,1) - edge.steam-dns.example.net (203.0.113.44:80 / 203.0.113.44:80, host: edge.steam-dns.example.net): AuthenticateDepotID (441) - Success!
 [2026-03-14 10:05:16] HTTPS (CDN,64) - edge.steam-dns.example.net (203.0.113.44:443 / 203.0.113.44:443, host: edge.steam-dns.example.net): Negotiated HTTP/2
 [2026-03-14 10:05:17] HTTPS (CDN,64) - edge.steam-dns.example.net (203.0.113.44:443 / 203.0.113.44:443, host: edge.steam-dns.example.net): edge.steam-dns.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440 - manifest request received 200 (OK) HTTP response
-[2026-03-14 10:05:31] HTTPS (SteamCache,284) - cache16-fra2.steamcontent.com (203.0.113.60:443 / 203.0.113.60:443, host: cache16-fra2.steamcontent.com): edge.steam-dns.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440 - received 200 (OK) HTTP response
+[2026-03-14 10:05:31] HTTPS (SteamCache,284) - cache16.example.net (203.0.113.60:443 / 203.0.113.60:443, host: cache16.example.net): edge.steam-dns.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440 - received 200 (OK) HTTP response
 [2026-03-14 10:06:01] HTTPS (CDN,64) - edge.steam-dns.example.net (203.0.113.44:443 / 203.0.113.44:443, host: edge.steam-dns.example.net): Connection has been idle for '61' seconds, closing
 [2026-03-14 10:06:02] HTTPS (CDN,1) - edge.steam-dns.example.net (203.0.113.44:443 / 203.0.113.44:443, host: edge.steam-dns.example.net): Closing connection
 [2026-03-14 14:31:20] HTTPS (CDN,64) - edge.steam-dns.example.net (203.0.113.44:443 / 203.0.113.44:443, host: edge.steam-dns.example.net): edge.steam-dns.example.net/depot/571/manifest/1110042708278992601/5/14827557387867260875 - received 0 (Invalid) HTTP response

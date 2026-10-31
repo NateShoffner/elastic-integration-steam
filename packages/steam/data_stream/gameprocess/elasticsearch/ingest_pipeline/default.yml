@@ -41,7 +41,20 @@ processors:
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       timezone: '{{{event.timezone}}}'
-      if: ctx._temp?.timestamp != null
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone != null
+
+  # Steam writes local time with no offset, so the agent's `add_locale` normally
+  # supplies `event.timezone`. If it is missing the mustache above would render
+  # empty and fail the document into `on_failure`, turning every line into a
+  # pipeline error. Falling back to UTC degrades the timestamp instead.
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp_no_timezone
+      target_field: '@timestamp'
+      description: Falls back to UTC when the agent did not supply `event.timezone`.
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone == null
 
   # The tracked-process value is a Windows command line wrapped in an outer pair
   # of quotes, and the executable inside it is itself quoted:

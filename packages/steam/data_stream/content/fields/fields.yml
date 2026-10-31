@@ -74,3 +74,7 @@
       type: double
       description: >-
         Current content download rate reported by the Steam client, in megabits per second (Mbps) exactly as logged. This is a bit rate, not a byte count, and it is not converted to bytes or to `network.bytes`.
+- name: steam.content.state_reason
+  type: keyword
+  description: >-
+    Parenthetical reason Steam appends after an app or update state list, captured verbatim including the parentheses. Observed values are `(Suspended)`, `(Update delayed for <n> secs)`, `(Not enough disk space)` and `(No connection)`, and two can appear on one line.

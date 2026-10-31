@@ -29,10 +29,10 @@
             },
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "state": "Connecting"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },
@@ -70,7 +70,6 @@
             },
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "ping": {
                         "latency_ms": 18.4,
                         "load": 0.2
@@ -78,6 +77,7 @@
                     "state": "Connecting"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },
@@ -115,13 +115,13 @@
             },
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "ping": {
                         "failure_reason": "timeout/neterror - Invalid"
                     },
                     "state": "Connecting"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },
@@ -158,13 +158,13 @@
             },
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "ping": {
                         "age_seconds": 111370
                     },
                     "state": "Connecting"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },
@@ -201,10 +201,10 @@
             },
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "state": "Connecting"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },
@@ -242,7 +242,6 @@
             },
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "ping": {
                         "latency_ms": 21.1,
                         "load": 0.3
@@ -250,6 +249,7 @@
                     "state": "Connecting"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },

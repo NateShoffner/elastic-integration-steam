@@ -42,8 +42,8 @@ processors:
       description: Splits the leading local timestamp and the bracketed AppID and account tags from the log message.
       patterns:
         - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[AppID %{NONNEGINT:steam.app.id}\]\s+%{GREEDYDATA:message}$'
-        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[U:1:%{NONNEGINT:steam.cloud.account_id}\] \[AppID %{NONNEGINT:steam.app.id}\]\s+%{GREEDYDATA:message}$'
-        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[U:1:%{NONNEGINT:steam.cloud.account_id}\]\s+%{GREEDYDATA:message}$'
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[U:1:%{NONNEGINT:steam.player.account_id}\] \[AppID %{NONNEGINT:steam.app.id}\]\s+%{GREEDYDATA:message}$'
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[U:1:%{NONNEGINT:steam.player.account_id}\]\s+%{GREEDYDATA:message}$'
         - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] %{GREEDYDATA:message}$'
         - '^%{GREEDYDATA:message}$'
       if: ctx.event?.original != null
@@ -57,7 +57,20 @@ processors:
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       timezone: '{{{event.timezone}}}'
-      if: ctx._temp?.timestamp != null
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone != null
+
+  # Steam writes local time with no offset, so the agent's `add_locale` normally
+  # supplies `event.timezone`. If it is missing the mustache above would render
+  # empty and fail the document into `on_failure`, turning every line into a
+  # pipeline error. Falling back to UTC degrades the timestamp instead.
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp_no_timezone
+      target_field: '@timestamp'
+      description: Falls back to UTC when the agent did not supply `event.timezone`.
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone == null
 
   # Each pattern captures the literal token that identifies the message shape
   # into `_temp.shape`, which is the lookup key for the ECS categorization table
@@ -86,7 +99,7 @@ processors:
       description: Parses the known Steam cloud message shapes.
       patterns:
         - '^(?<_temp.shape>YldWriteCacheDirectoryToFile - saved to) ''%{DATA:file.path}''$'
-        - '^(?<_temp.shape>AutoCloud checking local state for user) %{NONNEGINT:steam.cloud.account_id}$'
+        - '^(?<_temp.shape>AutoCloud checking local state for user) %{NONNEGINT:steam.player.account_id}$'
         - '^(?<_temp.shape>Currently already synced to global change number) ''%{NONNEGINT:steam.cloud.sync.global_change_number:long}'', should be nothing to download$'
         - '^(?<_temp.shape>HTTP upload for file) ''%{DATA:steam.cloud.remote_file.name}'' beginning \. \. \.$'
         - '^(?<_temp.shape>Eval complete)$'
@@ -119,10 +132,10 @@ processors:
   # placeholder rather than an account, so it is dropped instead of indexed and
   # never used to derive a player ID.
   - remove:
-      field: steam.cloud.account_id
+      field: steam.player.account_id
       tag: remove_placeholder_account_id
       ignore_missing: true
-      if: ctx.steam?.cloud?.account_id == '0'
+      if: ctx.steam?.player?.account_id == '0'
 
   # The IDs in this log are 32-bit account IDs, both in the `[U:1:<accountid>]`
   # tag and in `AutoCloud checking local state for user <accountid>`. The Steam
@@ -133,7 +146,7 @@ processors:
       lang: painless
       tag: script_derive_steam_player_id
       description: Derives the SteamID64 in `steam.player.id` from the 32-bit Steam account ID.
-      if: ctx.steam?.cloud?.account_id != null
+      if: ctx.steam?.player?.account_id != null
       source: |-
         // The base is a long literal here, deliberately NOT a script param.
         // 76561197960265728 does not survive the round trip through Fleet's
@@ -143,8 +156,8 @@ processors:
         // Pipeline tests cannot catch this, because elastic-package installs
         // the literal directly; only a Fleet install reproduces it.
         long base = 76561197960265728L;
-        long accountId = Long.parseLong(ctx.steam.cloud.account_id);
-        ctx.steam.player = ['id': String.valueOf(base + accountId)];
+        long accountId = Long.parseLong(ctx.steam.player.account_id);
+        ctx.steam.player.id = String.valueOf(base + accountId);
 
   - grok:
       field: steam.cloud.remote_file.path
@@ -272,10 +285,10 @@ processors:
         }
         ctx.event.action = mapping.action;
         if (mapping.containsKey('category')) {
-          ctx.event.category = mapping.category;
+          ctx.event.category = new ArrayList(mapping.category);
         }
         if (mapping.containsKey('type')) {
-          ctx.event.type = mapping.type;
+          ctx.event.type = new ArrayList(mapping.type);
         }
         if (mapping.containsKey('outcome')) {
           ctx.event.outcome = mapping.outcome;

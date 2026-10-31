@@ -20,7 +20,7 @@ The integration ships two policy templates, so a deployment only sees the config
 - **Steam Client Logs** uses the `filestream` input to tail the plain-text logs under the Steam installation directory. Elastic Agent must run on the machine where Steam is installed.
 - **Steam Web API** uses the `cel` input to poll `api.steampowered.com` for a configured list of Steam accounts. It can run from anywhere with outbound HTTPS and does not require Steam to be installed.
 
-Both paths populate the same two join keys, `steam.app.id` and `steam.player.id`, so events from a machine can be correlated with account-level data for the same player and game. The client logs only ever record a 32-bit account ID, so the integration derives the SteamID64 from it (`76561197960265728 + accountID`) and keeps the raw account ID in a separate field.
+The two paths share two join keys, `steam.app.id` and `steam.player.id`, but neither key is present on every data stream, because the client logs only carry what each line happens to record. `steam.app.id` appears on `gameprocess`, `content`, `cloud` and `workshop` and on all three Web API data streams; `connection` has no application context at all. `steam.player.id` appears on all three Web API data streams and on the `cloud`, `connection` and `workshop` lines that carry an account tag. Those client logs record only a 32-bit account ID, so the integration derives the SteamID64 from it (`76561197960265728 + accountID`) and keeps the raw account ID in a separate field.
 
 ## What data does this integration collect?
 
@@ -50,7 +50,7 @@ The three Web API data streams are time series (TSDB) data streams, dimensioned 
 - Watch download and update activity, including CDN endpoints used, achieved download rates, failed manifest requests, and file-validation problems.
 - Confirm Steam Cloud saves are syncing, and spot accounts or titles where sync is repeatedly deferred.
 - Follow Workshop content: which items are added, removed or updated, and which item detail lookups are being denied.
-- Build presence dashboards across a group of accounts, showing who is online and what they are playing.
+- Query presence across a group of accounts, showing who is online and what they are playing. This release ships no Kibana dashboards; the data streams are designed to be charted directly in Discover or Lens.
 
 ## What do I need to use this integration?
 
@@ -152,7 +152,14 @@ To confirm data is flowing:
 
 ## Performance and scaling
 
-The client-log data streams are ordinary file tailing and scale with how busy Steam is. Two of the five are much noisier than the rest: `connection` is dominated by a single repeated client-update check that accounts for roughly a fifth of its volume, and `content` by LAN peer-server discovery. Both parse to a distinct `event.action`, so they can be dropped with a `drop_event` processor via the data stream's Processors option if the volume is not wanted.
+The client-log data streams are ordinary file tailing and scale with how busy Steam is. Two of the five are much noisier than the rest: `connection` is dominated by a single repeated client-update check that accounts for roughly a fifth of its volume, and `content` by LAN peer-server discovery. Both can be dropped with a `drop_event` processor via the data stream's Processors option. That option runs in the agent, before the ingest pipeline parses the line, so match on the raw `message` rather than on `event.action`:
+
+```yaml
+- drop_event:
+    when:
+      regexp:
+        message: 'CClientJobGetClientUpdateHosts|(Adding|Removing) peer server'
+```
 
 The Web API data streams consume API quota, which is limited to 100,000 calls per key per day. The call cost differs sharply by data stream, because only one of the three endpoints batches:
 

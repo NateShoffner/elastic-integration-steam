@@ -43,29 +43,6 @@
         },
         {
             "@timestamp": "2026-03-14T10:05:15.000Z",
-            "destination": {
-                "address": "edge.steam-dns.example.net",
-                "as": {
-                    "number": 64502,
-                    "organization": {
-                        "name": "Documentation ASN"
-                    }
-                },
-                "geo": {
-                    "city_name": "Madrid",
-                    "continent_name": "Europe",
-                    "country_iso_code": "ES",
-                    "country_name": "Spain",
-                    "location": {
-                        "lat": 40.41639,
-                        "lon": -3.7025
-                    },
-                    "region_iso_code": "ES-M",
-                    "region_name": "Madrid"
-                },
-                "ip": "203.0.113.44",
-                "port": 80
-            },
             "ecs": {
                 "version": "9.3.0"
             },
@@ -97,6 +74,24 @@
             },
             "server": {
                 "address": "edge.steam-dns.example.net",
+                "as": {
+                    "number": 64502,
+                    "organization": {
+                        "name": "Documentation ASN"
+                    }
+                },
+                "geo": {
+                    "city_name": "Madrid",
+                    "continent_name": "Europe",
+                    "country_iso_code": "ES",
+                    "country_name": "Spain",
+                    "location": {
+                        "lat": 40.41639,
+                        "lon": -3.7025
+                    },
+                    "region_iso_code": "ES-M",
+                    "region_name": "Madrid"
+                },
                 "ip": "203.0.113.44",
                 "port": 80
             },
@@ -122,29 +117,6 @@
         },
         {
             "@timestamp": "2026-03-14T10:05:16.000Z",
-            "destination": {
-                "address": "edge.steam-dns.example.net",
-                "as": {
-                    "number": 64502,
-                    "organization": {
-                        "name": "Documentation ASN"
-                    }
-                },
-                "geo": {
-                    "city_name": "Madrid",
-                    "continent_name": "Europe",
-                    "country_iso_code": "ES",
-                    "country_name": "Spain",
-                    "location": {
-                        "lat": 40.41639,
-                        "lon": -3.7025
-                    },
-                    "region_iso_code": "ES-M",
-                    "region_name": "Madrid"
-                },
-                "ip": "203.0.113.44",
-                "port": 443
-            },
             "ecs": {
                 "version": "9.3.0"
             },
@@ -177,6 +149,24 @@
             },
             "server": {
                 "address": "edge.steam-dns.example.net",
+                "as": {
+                    "number": 64502,
+                    "organization": {
+                        "name": "Documentation ASN"
+                    }
+                },
+                "geo": {
+                    "city_name": "Madrid",
+                    "continent_name": "Europe",
+                    "country_iso_code": "ES",
+                    "country_name": "Spain",
+                    "location": {
+                        "lat": 40.41639,
+                        "lon": -3.7025
+                    },
+                    "region_iso_code": "ES-M",
+                    "region_name": "Madrid"
+                },
                 "ip": "203.0.113.44",
                 "port": 443
             },
@@ -199,29 +189,6 @@
         },
         {
             "@timestamp": "2026-03-14T10:05:17.000Z",
-            "destination": {
-                "address": "edge.steam-dns.example.net",
-                "as": {
-                    "number": 64502,
-                    "organization": {
-                        "name": "Documentation ASN"
-                    }
-                },
-                "geo": {
-                    "city_name": "Madrid",
-                    "continent_name": "Europe",
-                    "country_iso_code": "ES",
-                    "country_name": "Spain",
-                    "location": {
-                        "lat": 40.41639,
-                        "lon": -3.7025
-                    },
-                    "region_iso_code": "ES-M",
-                    "region_name": "Madrid"
-                },
-                "ip": "203.0.113.44",
-                "port": 443
-            },
             "ecs": {
                 "version": "9.3.0"
             },
@@ -258,6 +225,24 @@
             },
             "server": {
                 "address": "edge.steam-dns.example.net",
+                "as": {
+                    "number": 64502,
+                    "organization": {
+                        "name": "Documentation ASN"
+                    }
+                },
+                "geo": {
+                    "city_name": "Madrid",
+                    "continent_name": "Europe",
+                    "country_iso_code": "ES",
+                    "country_name": "Spain",
+                    "location": {
+                        "lat": 40.41639,
+                        "lon": -3.7025
+                    },
+                    "region_iso_code": "ES-M",
+                    "region_name": "Madrid"
+                },
                 "ip": "203.0.113.44",
                 "port": 443
             },
@@ -289,8 +274,43 @@
         },
         {
             "@timestamp": "2026-03-14T10:05:31.000Z",
-            "destination": {
-                "address": "cache16-fra2.steamcontent.com",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cdn-response-received",
+                "category": [
+                    "network"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 10:05:31] HTTPS (SteamCache,284) - cache16.example.net (203.0.113.60:443 / 203.0.113.60:443, host: cache16.example.net): edge.steam-dns.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440 - received 200 (OK) HTTP response",
+                "outcome": "success",
+                "timezone": "+00:00",
+                "type": [
+                    "connection",
+                    "access"
+                ]
+            },
+            "http": {
+                "response": {
+                    "status_code": 200
+                }
+            },
+            "message": "HTTPS (SteamCache,284) - cache16.example.net (203.0.113.60:443 / 203.0.113.60:443, host: cache16.example.net): edge.steam-dns.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440 - received 200 (OK) HTTP response",
+            "network": {
+                "protocol": "https"
+            },
+            "related": {
+                "hosts": [
+                    "cache16.example.net",
+                    "edge.steam-dns.example.net"
+                ],
+                "ip": [
+                    "203.0.113.60"
+                ]
+            },
+            "server": {
+                "address": "cache16.example.net",
                 "as": {
                     "number": 64502,
                     "organization": {
@@ -309,46 +329,6 @@
                     "region_iso_code": "ES-M",
                     "region_name": "Madrid"
                 },
-                "ip": "203.0.113.60",
-                "port": 443
-            },
-            "ecs": {
-                "version": "9.3.0"
-            },
-            "event": {
-                "action": "cdn-response-received",
-                "category": [
-                    "network"
-                ],
-                "kind": "event",
-                "original": "[2026-03-14 10:05:31] HTTPS (SteamCache,284) - cache16-fra2.steamcontent.com (203.0.113.60:443 / 203.0.113.60:443, host: cache16-fra2.steamcontent.com): edge.steam-dns.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440 - received 200 (OK) HTTP response",
-                "outcome": "success",
-                "timezone": "+00:00",
-                "type": [
-                    "connection",
-                    "access"
-                ]
-            },
-            "http": {
-                "response": {
-                    "status_code": 200
-                }
-            },
-            "message": "HTTPS (SteamCache,284) - cache16-fra2.steamcontent.com (203.0.113.60:443 / 203.0.113.60:443, host: cache16-fra2.steamcontent.com): edge.steam-dns.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440 - received 200 (OK) HTTP response",
-            "network": {
-                "protocol": "https"
-            },
-            "related": {
-                "hosts": [
-                    "cache16-fra2.steamcontent.com",
-                    "edge.steam-dns.example.net"
-                ],
-                "ip": [
-                    "203.0.113.60"
-                ]
-            },
-            "server": {
-                "address": "cache16-fra2.steamcontent.com",
                 "ip": "203.0.113.60",
                 "port": 443
             },
@@ -380,29 +360,6 @@
         },
         {
             "@timestamp": "2026-03-14T10:06:01.000Z",
-            "destination": {
-                "address": "edge.steam-dns.example.net",
-                "as": {
-                    "number": 64502,
-                    "organization": {
-                        "name": "Documentation ASN"
-                    }
-                },
-                "geo": {
-                    "city_name": "Madrid",
-                    "continent_name": "Europe",
-                    "country_iso_code": "ES",
-                    "country_name": "Spain",
-                    "location": {
-                        "lat": 40.41639,
-                        "lon": -3.7025
-                    },
-                    "region_iso_code": "ES-M",
-                    "region_name": "Madrid"
-                },
-                "ip": "203.0.113.44",
-                "port": 443
-            },
             "ecs": {
                 "version": "9.3.0"
             },
@@ -433,6 +390,24 @@
             },
             "server": {
                 "address": "edge.steam-dns.example.net",
+                "as": {
+                    "number": 64502,
+                    "organization": {
+                        "name": "Documentation ASN"
+                    }
+                },
+                "geo": {
+                    "city_name": "Madrid",
+                    "continent_name": "Europe",
+                    "country_iso_code": "ES",
+                    "country_name": "Spain",
+                    "location": {
+                        "lat": 40.41639,
+                        "lon": -3.7025
+                    },
+                    "region_iso_code": "ES-M",
+                    "region_name": "Madrid"
+                },
                 "ip": "203.0.113.44",
                 "port": 443
             },
@@ -458,29 +433,6 @@
         },
         {
             "@timestamp": "2026-03-14T10:06:02.000Z",
-            "destination": {
-                "address": "edge.steam-dns.example.net",
-                "as": {
-                    "number": 64502,
-                    "organization": {
-                        "name": "Documentation ASN"
-                    }
-                },
-                "geo": {
-                    "city_name": "Madrid",
-                    "continent_name": "Europe",
-                    "country_iso_code": "ES",
-                    "country_name": "Spain",
-                    "location": {
-                        "lat": 40.41639,
-                        "lon": -3.7025
-                    },
-                    "region_iso_code": "ES-M",
-                    "region_name": "Madrid"
-                },
-                "ip": "203.0.113.44",
-                "port": 443
-            },
             "ecs": {
                 "version": "9.3.0"
             },
@@ -511,6 +463,24 @@
             },
             "server": {
                 "address": "edge.steam-dns.example.net",
+                "as": {
+                    "number": 64502,
+                    "organization": {
+                        "name": "Documentation ASN"
+                    }
+                },
+                "geo": {
+                    "city_name": "Madrid",
+                    "continent_name": "Europe",
+                    "country_iso_code": "ES",
+                    "country_name": "Spain",
+                    "location": {
+                        "lat": 40.41639,
+                        "lon": -3.7025
+                    },
+                    "region_iso_code": "ES-M",
+                    "region_name": "Madrid"
+                },
                 "ip": "203.0.113.44",
                 "port": 443
             },
@@ -533,29 +503,6 @@
         },
         {
             "@timestamp": "2026-03-14T14:31:20.000Z",
-            "destination": {
-                "address": "edge.steam-dns.example.net",
-                "as": {
-                    "number": 64502,
-                    "organization": {
-                        "name": "Documentation ASN"
-                    }
-                },
-                "geo": {
-                    "city_name": "Madrid",
-                    "continent_name": "Europe",
-                    "country_iso_code": "ES",
-                    "country_name": "Spain",
-                    "location": {
-                        "lat": 40.41639,
-                        "lon": -3.7025
-                    },
-                    "region_iso_code": "ES-M",
-                    "region_name": "Madrid"
-                },
-                "ip": "203.0.113.44",
-                "port": 443
-            },
             "ecs": {
                 "version": "9.3.0"
             },
@@ -587,6 +534,24 @@
             },
             "server": {
                 "address": "edge.steam-dns.example.net",
+                "as": {
+                    "number": 64502,
+                    "organization": {
+                        "name": "Documentation ASN"
+                    }
+                },
+                "geo": {
+                    "city_name": "Madrid",
+                    "continent_name": "Europe",
+                    "country_iso_code": "ES",
+                    "country_name": "Spain",
+                    "location": {
+                        "lat": 40.41639,
+                        "lon": -3.7025
+                    },
+                    "region_iso_code": "ES-M",
+                    "region_name": "Madrid"
+                },
                 "ip": "203.0.113.44",
                 "port": 443
             },
@@ -618,9 +583,6 @@
         },
         {
             "@timestamp": "2026-03-14T14:31:22.000Z",
-            "destination": {
-                "address": "edge.steam-dns.example.net"
-            },
             "ecs": {
                 "version": "9.3.0"
             },

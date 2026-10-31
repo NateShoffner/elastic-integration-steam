@@ -21,7 +21,7 @@ The integration ships two policy templates, so a deployment only sees the config
 - **Steam Client Logs** uses the `filestream` input to tail the plain-text logs under the Steam installation directory. Elastic Agent must run on the machine where Steam is installed.
 - **Steam Web API** uses the `cel` input to poll `api.steampowered.com` for a configured list of Steam accounts. It can run from anywhere with outbound HTTPS and does not require Steam to be installed.
 
-Both paths populate the same two join keys, `steam.app.id` and `steam.player.id`, so events from a machine can be correlated with account-level data for the same player and game. The client logs only ever record a 32-bit account ID, so the integration derives the SteamID64 from it (`76561197960265728 + accountID`) and keeps the raw account ID in a separate field.
+The two paths share two join keys, `steam.app.id` and `steam.player.id`, but neither key is present on every data stream, because the client logs only carry what each line happens to record. `steam.app.id` appears on `gameprocess`, `content`, `cloud` and `workshop` and on all three Web API data streams; `connection` has no application context at all. `steam.player.id` appears on all three Web API data streams and on the `cloud`, `connection` and `workshop` lines that carry an account tag. Those client logs record only a 32-bit account ID, so the integration derives the SteamID64 from it (`76561197960265728 + accountID`) and keeps the raw account ID in a separate field.
 
 ## What data does this integration collect?
 
@@ -51,7 +51,7 @@ The three Web API data streams are time series (TSDB) data streams, dimensioned 
 - Watch download and update activity, including CDN endpoints used, achieved download rates, failed manifest requests, and file-validation problems.
 - Confirm Steam Cloud saves are syncing, and spot accounts or titles where sync is repeatedly deferred.
 - Follow Workshop content: which items are added, removed or updated, and which item detail lookups are being denied.
-- Build presence dashboards across a group of accounts, showing who is online and what they are playing.
+- Query presence across a group of accounts, showing who is online and what they are playing. This release ships no Kibana dashboards; the data streams are designed to be charted directly in Discover or Lens.
 
 ## What do I need to use this integration?
 
@@ -153,7 +153,14 @@ To confirm data is flowing:
 
 ## Performance and scaling
 
-The client-log data streams are ordinary file tailing and scale with how busy Steam is. Two of the five are much noisier than the rest: `connection` is dominated by a single repeated client-update check that accounts for roughly a fifth of its volume, and `content` by LAN peer-server discovery. Both parse to a distinct `event.action`, so they can be dropped with a `drop_event` processor via the data stream's Processors option if the volume is not wanted.
+The client-log data streams are ordinary file tailing and scale with how busy Steam is. Two of the five are much noisier than the rest: `connection` is dominated by a single repeated client-update check that accounts for roughly a fifth of its volume, and `content` by LAN peer-server discovery. Both can be dropped with a `drop_event` processor via the data stream's Processors option. That option runs in the agent, before the ingest pipeline parses the line, so match on the raw `message` rather than on `event.action`:
+
+```yaml
+- drop_event:
+    when:
+      regexp:
+        message: 'CClientJobGetClientUpdateHosts|(Adding|Removing) peer server'
+```
 
 The Web API data streams consume API quota, which is limited to 100,000 calls per key per day. The call cost differs sharply by data stream, because only one of the three endpoints batches:
 
@@ -388,12 +395,6 @@ The `content` data stream provides events from the Steam client's `content_log.t
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
-| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |  |
-| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |  |
-| destination.as.organization.name | Organization name. | keyword |  |
-| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |  |
-| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |  |
-| destination.port | Port of the destination. | long |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error.message | Error message. | match_only_text |  |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |  |
@@ -420,6 +421,16 @@ The `content` data stream provides events from the Steam client's `content_log.t
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |  |
 | related.ip | All of the IPs seen on your event. | ip |  |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |  |
+| server.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |  |
+| server.as.organization.name | Organization name. | keyword |  |
+| server.as.organization.name.text | Multi-field of `server.as.organization.name`. | match_only_text |  |
+| server.geo.city_name | City name. | keyword |  |
+| server.geo.continent_name | Name of the continent. | keyword |  |
+| server.geo.country_iso_code | Country ISO code. | keyword |  |
+| server.geo.country_name | Country name. | keyword |  |
+| server.geo.location | Longitude and latitude. | geo_point |  |
+| server.geo.region_iso_code | Region ISO code. | keyword |  |
+| server.geo.region_name | Region name. | keyword |  |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |  |
 | server.port | Port of the server. | long |  |
 | steam.app.id | Steam application ID of the game whose content this document describes. Matches `steam.app.id` on the Steam Web API data streams, so client log events can be joined against them. | keyword |  |
@@ -439,6 +450,7 @@ The `content` data stream provides events from the Steam client's `content_log.t
 | steam.content.library_count | Number of Steam library folders in the library folders configuration Steam wrote, from a `Triggered async write of Steam library folders configuration (\<n\> libraries).` line. | long |  |
 | steam.content.manifest.id | Steam depot manifest ID the event refers to. A manifest pins the exact file set of one revision of the depot in `steam.content.depot.id`. | keyword |  |
 | steam.content.request.target | Depot manifest request target as logged, for example `edge.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440`. The leading portion may be a chained or proxied form carrying more than one host, so its first host is not necessarily the host in `server.address`. | keyword |  |
+| steam.content.state_reason | Parenthetical reason Steam appends after an app or update state list, captured verbatim including the parentheses. Observed values are `(Suspended)`, `(Update delayed for \<n\> secs)`, `(Not enough disk space)` and `(No connection)`, and two can appear on one line. | keyword |  |
 | steam.content.update_state | Update state flags reported by an `AppID \<id\> update changed : \<state\>,` or `AppID \<id\> update started : \<state\>,` line. Steam writes the flags as a comma-separated list, so the value is stored as an array even when a single state is reported. | keyword |  |
 | tags | List of keywords used to tag each event. | keyword |  |
 
@@ -580,7 +592,6 @@ The `cloud` data stream provides events from the Steam client's `cloud_log.txt` 
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | steam.app.id | Steam application ID of the game whose Steam Cloud save data this document describes. Matches `steam.app.id` on the Steam Web API data streams, so client log events can be joined against them. | keyword |
 | steam.client.version | Build number the Steam client reports for itself in its `Client version:` log lines. | keyword |
-| steam.cloud.account_id | 32-bit Steam account ID exactly as the Steam client logs it, either in a leading `[U:1:\<accountid\>]` tag or in an `AutoCloud checking local state for user \<accountid\>` line. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable and the Steam Web API accepts only the latter. | keyword |
 | steam.cloud.file_match.count | Number of local files that matched the glob in `steam.cloud.file_match.pattern`, from a `Found \<n\> files that match \<glob\>` line. | long |
 | steam.cloud.file_match.pattern | Local filesystem glob the Steam client expanded while collecting an application's save files for upload, for example `C:\Program Files (x86)\Steam\steamapps\common\Example Game\SaveData\\*.sav`. This is a search pattern rather than a single file, which is why it is not mapped to `file.path`. | keyword |
 | steam.cloud.remote_file.name | File name within the application's Steam Cloud remote storage, either the last segment of `steam.cloud.remote_file.path` or the name logged directly by an `HTTP upload for file '\<name\>' beginning` line. User content, as with `steam.cloud.remote_file.path`. | keyword |
@@ -590,6 +601,7 @@ The `cloud` data stream provides events from the Steam client's `cloud_log.txt` 
 | steam.cloud.sync.global_change_number | Steam Cloud change number currently held by the Steam servers for the application. Compared against `steam.cloud.sync.local_change_number` to decide whether a download is needed. | long |
 | steam.cloud.sync.local_change_number | Steam Cloud change number currently held by this machine for the application, from a `Need to sync from local change number \<n\>` line. | long |
 | steam.cloud.sync.scope | Scope of a sync the Steam client decided was needed but deferred, from the parenthesised token in a `Need to sync from local change number ... (\<scope\>), but not attempting now` line, for example `full`. | keyword |
+| steam.player.account_id | 32-bit Steam account ID exactly as the Steam client logs it, either in a `[U:1:\<accountid\>]` tag or as a plain `for user \<accountid\>` value. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable, and the Steam Web API accepts only the SteamID64. | keyword |
 | steam.player.id | 64-bit Steam ID (SteamID64) of the signed-in account, derived from the 32-bit account ID in the log with `SteamID64 = 76561197960265728 + accountID`. The Steam client logs the account ID rather than the SteamID64; it is converted here because `steam.player.id` is the field the Steam Web API data streams key on, which is what makes these documents correlatable with them. The `[U:1:0]` placeholder Steam writes when no user is signed in is not a real account and is never converted. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 
@@ -729,10 +741,16 @@ This log contains a large amount of internal client diagnostic output. The integ
 | server.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |  |
 | server.as.organization.name | Organization name. | keyword |  |
 | server.as.organization.name.text | Multi-field of `server.as.organization.name`. | match_only_text |  |
+| server.geo.city_name | City name. | keyword |  |
+| server.geo.continent_name | Name of the continent. | keyword |  |
+| server.geo.country_iso_code | Country ISO code. | keyword |  |
+| server.geo.country_name | Country name. | keyword |  |
+| server.geo.location | Longitude and latitude. | geo_point |  |
+| server.geo.region_iso_code | Region ISO code. | keyword |  |
+| server.geo.region_name | Region name. | keyword |  |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |  |
 | server.port | Port of the server. | long |  |
 | steam.client.version | Build number the Steam client reports for itself in its `Client version:` log lines. | keyword |  |
-| steam.connection.account_id | 32-bit Steam account ID exactly as the Steam client logs it, either in a leading `[U:1:\<accountid\>]` prefix tag or in the `RecvMsgClientLogOnResponse() : [U:1:\<accountid\>]` payload. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable and the Steam Web API accepts only the latter. | keyword |  |
 | steam.connection.cm_list.count | Number of connection managers the Steam directory returned for the datacenter in `steam.connection.cm_list.datacenter`. | long |  |
 | steam.connection.cm_list.datacenter | Steam datacenter code whose connection manager count is reported on a `GetCMListForConnect -- DC '\<dc\>' count: \<n\>` line, for example `lhr1`. These are Valve's own short datacenter identifiers. | keyword |  |
 | steam.connection.cm_list.netfilter_count | Number of Netfilter connection managers the Steam directory returned, from a `GetCMListForConnect -- got \<n\> Netfilter CMs and \<n\> WebSocket CMs` line. | long |  |
@@ -755,6 +773,7 @@ This log contains a large amount of internal client diagnostic output. The integ
 | steam.connection.reconnect.attempt | Sequence number of the automatic reconnect attempt the Steam client scheduled, from the `(attempt \<n\>)` suffix of a `StartAutoReconnect()` line. | long |  |
 | steam.connection.reconnect.delay_seconds | How long the Steam client will wait before the scheduled automatic reconnect, in seconds, from a `StartAutoReconnect() will start in \<n\> seconds` line. The reconnect has not been attempted yet when this line is written. | double | s |
 | steam.connection.state | Connection manager state the Steam client was in when it wrote the line, from the leading `[\<state\>, \<n\>, \<n\>]` prefix. Observed values are `Connecting`, `Connected`, `Logging On` and `Logged Off`; note that two of them contain a space. The two numbers that follow the state in the prefix are undocumented internal Steam counters and are deliberately not captured. | keyword |  |
+| steam.player.account_id | 32-bit Steam account ID exactly as the Steam client logs it, either in a `[U:1:\<accountid\>]` tag or as a plain `for user \<accountid\>` value. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable, and the Steam Web API accepts only the SteamID64. | keyword |  |
 | steam.player.id | 64-bit Steam ID (SteamID64) of the signed-in account, derived from the 32-bit account ID in the log with `SteamID64 = 76561197960265728 + accountID`. The Steam client logs the account ID rather than the SteamID64; it is converted here because `steam.player.id` is the field the Steam Web API data streams key on, which is what makes these documents correlatable with them. The `[U:1:0]` placeholder Steam writes when no user is signed in is not a real account and is never converted. | keyword |  |
 | tags | List of keywords used to tag each event. | keyword |  |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |  |
@@ -892,8 +911,8 @@ The `workshop` data stream provides events from the Steam client's `workshop_log
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |  |
 | steam.app.id | Steam application ID of the game whose Steam Workshop activity this document describes, from the leading `[AppID \<n\>]` tag. Matches `steam.app.id` on the Steam Web API data streams, so client log events can be joined against them. This is a different ID space from the Workshop published file IDs in `steam.workshop.item.id`, which are never written here. | keyword |  |
 | steam.client.version | Build number the Steam client reports for itself in its `Client version:` log lines. | keyword |  |
+| steam.player.account_id | 32-bit Steam account ID exactly as the Steam client logs it, either in a `[U:1:\<accountid\>]` tag or as a plain `for user \<accountid\>` value. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable, and the Steam Web API accepts only the SteamID64. | keyword |  |
 | steam.player.id | 64-bit Steam ID (SteamID64) of the signed-in account, derived from the 32-bit account ID in the log with `SteamID64 = 76561197960265728 + accountID`. The Steam client logs the account ID rather than the SteamID64; it is converted here because `steam.player.id` is the field the Steam Web API data streams key on, which is what makes these documents correlatable with them. The `[U:1:0]` placeholder Steam writes when no user is signed in is not a real account and is never converted. | keyword |  |
-| steam.workshop.account_id | 32-bit Steam account ID exactly as the Steam client logs it, from the `[U:1:\<accountid\>]` tag at the end of a `Loading workshop items for \<n\> installed apps for user [U:1:\<accountid\>]:` line. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable and the Steam Web API accepts only the latter. | keyword |  |
 | steam.workshop.app_count | Number of installed applications the Steam client is about to load Workshop items for, from a `Loading workshop items for \<n\> installed apps` line. This counts applications, not Workshop items. | long |  |
 | steam.workshop.cursor.current | Change feed cursor the Steam server reported alongside a single-cursor result, from an `Item change feed returned \<result\> (revision \<n\>, cursor \<n\>)` line. Cursors are opaque sequence positions in the Workshop change feed. | long |  |
 | steam.workshop.cursor.from | Change feed cursor the Steam client polled from, the left-hand value of the `cursor \<n\> -\> \<n\>` pair on an `Item change feed:` line. | long |  |
@@ -1038,6 +1057,13 @@ Two caveats are worth knowing. A private profile is reported as offline, so offl
 | server.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | server.as.organization.name | Organization name. | keyword |
 | server.as.organization.name.text | Multi-field of `server.as.organization.name`. | match_only_text |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | steam.app.id | Steam application ID of the game the account was in at the time of the poll, from `gameid`. Matches `steam.app.id` on the Steam client log data streams, so presence can be joined against client side session events. A non-Steam shortcut reports a large synthetic value here rather than a real application ID. | keyword |

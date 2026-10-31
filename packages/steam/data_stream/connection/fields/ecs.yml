@@ -54,3 +54,17 @@
   external: ecs
 - name: url.scheme
   external: ecs
+- name: server.geo.city_name
+  external: ecs
+- name: server.geo.continent_name
+  external: ecs
+- name: server.geo.country_iso_code
+  external: ecs
+- name: server.geo.country_name
+  external: ecs
+- name: server.geo.location
+  external: ecs
+- name: server.geo.region_iso_code
+  external: ecs
+- name: server.geo.region_name
+  external: ecs

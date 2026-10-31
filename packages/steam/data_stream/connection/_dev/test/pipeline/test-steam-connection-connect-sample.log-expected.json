@@ -33,11 +33,11 @@
             },
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "qos_level": "eNetQOSLevelLow",
                     "state": "Connecting"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },
@@ -104,10 +104,10 @@
             },
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "state": "Connecting"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },
@@ -136,13 +136,13 @@
             "message": "RecvMsgClientLogOnResponse() : [U:1:11223344] 'OK'",
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "logon": {
                         "result": "OK"
                     },
                     "state": "Logging On"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },

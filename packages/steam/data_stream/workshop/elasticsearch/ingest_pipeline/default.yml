@@ -59,7 +59,20 @@ processors:
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       timezone: '{{{event.timezone}}}'
-      if: ctx._temp?.timestamp != null
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone != null
+
+  # Steam writes local time with no offset, so the agent's `add_locale` normally
+  # supplies `event.timezone`. If it is missing the mustache above would render
+  # empty and fail the document into `on_failure`, turning every line into a
+  # pipeline error. Falling back to UTC degrades the timestamp instead.
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp_no_timezone
+      target_field: '@timestamp'
+      description: Falls back to UTC when the agent did not supply `event.timezone`.
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone == null
 
   # Each pattern captures the literal token that identifies the message shape
   # into `_temp.shape`, which is the lookup key for the ECS categorization table
@@ -114,7 +127,7 @@ processors:
         - '^(?<_temp.shape>Detected workshop change : removing unknown item) %{NONNEGINT:steam.workshop.item.id}$'
         - '^(?<_temp.shape>Get details for item) %{NONNEGINT:steam.workshop.item.id} failed : %{GREEDYDATA:steam.workshop.item.result}$'
         - '^(?<_temp.shape>skipping item) %{NONNEGINT:steam.workshop.item.id} because item entry result = %{DATA:steam.workshop.item.result} \(%{NONNEGINT:steam.workshop.item.result_code}\)$'
-        - '^(?<_temp.shape>Loading workshop items for) %{NONNEGINT:steam.workshop.app_count:long} installed apps for user \[U:1:%{NONNEGINT:steam.workshop.account_id}\]:$'
+        - '^(?<_temp.shape>Loading workshop items for) %{NONNEGINT:steam.workshop.app_count:long} installed apps for user \[U:1:%{NONNEGINT:steam.player.account_id}\]:$'
         - '^(?<_temp.shape>Finished Workshop download job) : %{GREEDYDATA:steam.workshop.download_job.result}$'
         - '^(?<_temp.shape>Workshop update job started while app is running), commit : %{WORD:steam.workshop.update_job.commit}$'
         - '^(?<_temp.shape>Starting Workshop download job \(requested item) %{NONNEGINT:steam.workshop.item.id} \)$'
@@ -185,10 +198,10 @@ processors:
   # placeholder rather than an account, so it is dropped instead of indexed and
   # never used to derive a player ID.
   - remove:
-      field: steam.workshop.account_id
+      field: steam.player.account_id
       tag: remove_placeholder_account_id
       ignore_missing: true
-      if: ctx.steam?.workshop?.account_id == '0'
+      if: ctx.steam?.player?.account_id == '0'
 
   # The ID in the `[U:1:<accountid>]` tag is a 32-bit account ID. The Steam Web
   # API data streams key on the SteamID64, so it is derived here with
@@ -199,7 +212,7 @@ processors:
       lang: painless
       tag: script_derive_steam_player_id
       description: Derives the SteamID64 in `steam.player.id` from the 32-bit Steam account ID.
-      if: ctx.steam?.workshop?.account_id != null
+      if: ctx.steam?.player?.account_id != null
       source: |-
         // The base is a long literal here, deliberately NOT a script param.
         // 76561197960265728 does not survive the round trip through Fleet's
@@ -209,8 +222,8 @@ processors:
         // Pipeline tests cannot catch this, because elastic-package installs
         // the literal directly; only a Fleet install reproduces it.
         long base = 76561197960265728L;
-        long accountId = Long.parseLong(ctx.steam.workshop.account_id);
-        ctx.steam.player = ['id': String.valueOf(base + accountId)];
+        long accountId = Long.parseLong(ctx.steam.player.account_id);
+        ctx.steam.player.id = String.valueOf(base + accountId);
 
   - set:
       field: event.kind
@@ -356,10 +369,10 @@ processors:
         }
         ctx.event.action = mapping.action;
         if (mapping.containsKey('category')) {
-          ctx.event.category = mapping.category;
+          ctx.event.category = new ArrayList(mapping.category);
         }
         if (mapping.containsKey('type')) {
-          ctx.event.type = mapping.type;
+          ctx.event.type = new ArrayList(mapping.type);
         }
         if (mapping.containsKey('outcome')) {
           ctx.event.outcome = mapping.outcome;

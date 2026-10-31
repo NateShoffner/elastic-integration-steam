@@ -52,7 +52,6 @@
             },
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "disconnect": {
                         "reason": "I/O Operation Failed",
                         "result": "OK"
@@ -60,6 +59,7 @@
                     "state": "Logged Off"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },
@@ -81,7 +81,8 @@
             "steam": {
                 "connection": {
                     "state": "Logged Off"
-                }
+                },
+                "player": {}
             },
             "tags": [
                 "preserve_original_event"
@@ -107,7 +108,6 @@
             "message": "StartAutoReconnect() will start in 28.0 seconds (attempt 3)",
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "reconnect": {
                         "attempt": 3,
                         "delay_seconds": 28.0
@@ -115,6 +115,7 @@
                     "state": "Logged Off"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },

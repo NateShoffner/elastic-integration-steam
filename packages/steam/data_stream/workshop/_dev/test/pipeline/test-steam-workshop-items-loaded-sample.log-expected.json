@@ -14,10 +14,10 @@
             "message": "Loading workshop items for 26 installed apps for user [U:1:11223344]:",
             "steam": {
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 },
                 "workshop": {
-                    "account_id": "11223344",
                     "app_count": 26
                 }
             },

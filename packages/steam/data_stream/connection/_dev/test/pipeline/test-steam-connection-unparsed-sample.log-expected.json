@@ -28,10 +28,10 @@
             "message": "Client thinks it can connect via: UDP - yes, TCP - yes, WebSocket:443 - yes, WebSocket:Non443 - yes",
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "state": "Connecting"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },
@@ -52,10 +52,10 @@
             "message": "CM Directory list says 75% of connections should be websockets, we rolled 31 - using WebSockets as default.",
             "steam": {
                 "connection": {
-                    "account_id": "11223344",
                     "state": "Connecting"
                 },
                 "player": {
+                    "account_id": "11223344",
                     "id": "76561197971489072"
                 }
             },

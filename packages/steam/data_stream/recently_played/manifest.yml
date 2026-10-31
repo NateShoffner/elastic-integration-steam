@@ -1,14 +1,78 @@
 title: "Steam recently played games"
 type: metrics
 streams:
-  - input: sample/metrics
-    title: Sample metrics
-    description: Collect sample metrics
+  - input: cel
+    title: Steam recently played games
+    description: >-
+      Poll `IPlayerService/GetRecentlyPlayedGames` for the games each account listed in the `steam_ids` setting of this integration has played in the last two weeks, one document per account and game with its playtime in minutes. The accounts, the API key and the API URL are shared with the other Steam Web API data streams and are configured once on the integration.
+    template_path: cel.yml.hbs
     vars:
-      - name: period
+      - name: interval
         type: text
-        title: Period
-        default: 10s
+        title: Interval
+        description: >-
+          How often the Steam Web API is polled, as a duration. Each poll is a complete snapshot of the rolling two week window for every configured account, since this endpoint has no incremental filter. Unlike player summaries this endpoint takes one account per call, so a poll costs one request per account: at the default hourly interval that is 24 of the 100,000 calls a key is allowed per day per account. Playtime only moves when a game session ends, so polling much faster mostly re-records the same numbers.
+        multi: false
+        required: true
+        show_user: true
+        default: 1h
+      - name: http_client_timeout
+        type: text
+        title: HTTP client timeout
+        description: Duration before a request to the Steam Web API is abandoned.
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - steam-recently-played
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        multi: false
+        required: false
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracer
+        description: >-
+          Log every request and response to `../../logs/cel/http-request-trace-*.ndjson` for troubleshooting. The API key is redacted, but traces are verbose and should not be left enabled.
+        multi: false
+        required: false
+        show_user: false
+        default: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: URL of the proxy to use when reaching the Steam Web API, including the scheme.
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL configuration
+        description: >-
+          TLS settings for the connection to the Steam Web API. See [SSL](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for details.
+        multi: false
+        required: false
+        show_user: false
 elasticsearch:
   source_mode: synthetic
   index_mode: time_series

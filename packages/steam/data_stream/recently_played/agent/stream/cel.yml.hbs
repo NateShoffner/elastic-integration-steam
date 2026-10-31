@@ -1,0 +1,116 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  steam_ids:
+{{#each steam_ids as |steam_id|}}
+    - "{{steam_id}}"
+{{/each}}
+redact:
+  fields:
+    - api_key
+program: |-
+  // GetRecentlyPlayedGames takes a single steamid rather than a batch, and has
+  // no pagination of any kind, so every poll is a complete snapshot of the
+  // rolling two week window for each account. The configured steam_ids list is
+  // walked one ID per evaluation: state.player_offset is the index of the ID
+  // being requested, and is reset to 0 on the last ID and on error so the next
+  // poll starts a fresh walk from the top of the list. This mirrors the batch
+  // walk in the player_summary stream, with a batch of one.
+  int(state.?player_offset.orValue(0)).as(offset,
+    // front(tail(...)) rather than steam_ids[offset] so an offset left behind
+    // by a shortened list cannot index out of range. string() is deliberate: a
+    // SteamID64 that reached state as a number rather than a string fails here
+    // instead of being silently rounded to a different account.
+    front(tail(state.steam_ids, offset), 1).map(id, string(id)).join(",").as(steam_id,
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/IPlayerService/GetRecentlyPlayedGames/v1/?" + {
+            "key": [state.api_key],
+            "steamid": [steam_id],
+            // count=0 returns every game played in the window, not a prefix.
+            "count": ["0"],
+          }.format_query()
+        ).do_request().as(resp,
+          // Neither a private profile nor an account that has played nothing
+          // recently is an error. Both arrive as a plain 200: the first as
+          // {"response":{}} with no games key at all, the second as an empty
+          // games array. Nothing below may assume the key is present.
+          // The failure branch never decodes the body: an invalid key returns
+          // 403 and a malformed steamid 400, both with an HTML body.
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              {
+                // The response carries no steamid anywhere, but steam.player.id
+                // is a required time series dimension, so the account that was
+                // asked about is injected into each game here. Without it every
+                // document would be rejected at index time.
+                "events": (size(body.?response.games.orValue([])) != 0) ?
+                  dyn(
+                    body.response.games.map(g,
+                      {
+                        "message": g.with({"steamid": steam_id}).encode_json(),
+                      }
+                    )
+                  )
+                :
+                  // An account with nothing to report still has to publish
+                  // something, or want_more is ignored and the remaining
+                  // accounts are never requested. Dropped by a processor below.
+                  dyn([{"retry": true}]),
+                "player_offset": (offset + 1 < size(state.steam_ids)) ? (offset + 1) : 0,
+                "want_more": offset + 1 < size(state.steam_ids),
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  // Path only, never the query string: the API key travels as
+                  // a query parameter and must not reach the logs.
+                  "message": "GET /IPlayerService/GetRecentlyPlayedGames/v1/: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "player_offset": 0,
+              "want_more": false,
+            }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

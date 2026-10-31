@@ -1,0 +1,15 @@
+version: "2.3"
+services:
+  steam-recently-played-cel:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: steam-recently-played-cel
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-recently-played.yml

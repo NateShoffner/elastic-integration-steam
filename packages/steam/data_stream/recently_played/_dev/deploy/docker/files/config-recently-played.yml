@@ -1,0 +1,218 @@
+rules:
+  # An invalid Steam Web API key is rejected with HTTP 403 and an HTML body,
+  # not JSON. Driven with key=invalid-api-key so the CEL error path can be
+  # exercised without disturbing the system test, which sends a valid key.
+  - path: /IPlayerService/GetRecentlyPlayedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: 'invalid-api-key'
+      steamid: '{steamid:.*}'
+      count: '0'
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - 'text/html; charset=UTF-8'
+        body: |-
+          <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify that your key parameter is correct.</body></html>
+  # A malformed steamid is rejected with HTTP 400, also with an HTML body.
+  - path: /IPlayerService/GetRecentlyPlayedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: 'not-a-steamid'
+      count: '0'
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - 'text/html; charset=UTF-8'
+        body: |-
+          <html><head><title>Bad Request</title></head><body><h1>Bad Request</h1>Please verify that all required parameters are being sent.</body></html>
+  # ...072  public, several games played in the last two weeks. Two response
+  # bodies are defined and the server alternates between them, so a repeat poll
+  # observes changed playtime: Team Fortress 2 and Dota 2 both gain minutes,
+  # and Counter-Strike 2 has fallen out of the rolling two week window
+  # entirely, which drops total_count from 3 to 2.
+  #
+  # The per-platform playtimes deliberately do not sum to playtime_forever on
+  # appids 440 and 570, which is how the real API behaves: Steam only began
+  # per-platform tracking later, so the platform fields cover a shorter history
+  # than playtime_forever does. Nothing may derive one from the others.
+  - path: /IPlayerService/GetRecentlyPlayedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: '76561197971489072'
+      count: '0'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: |-
+          {{ minify_json `
+          {
+            "response": {
+              "total_count": 3,
+              "games": [
+                {
+                  "appid": 440,
+                  "name": "Team Fortress 2",
+                  "playtime_2weeks": 126,
+                  "playtime_forever": 58896,
+                  "img_icon_url": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
+                  "playtime_windows_forever": 41200,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 3150,
+                  "playtime_deck_forever": 0
+                },
+                {
+                  "appid": 570,
+                  "name": "Dota 2",
+                  "playtime_2weeks": 342,
+                  "playtime_forever": 12045,
+                  "img_icon_url": "0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57",
+                  "playtime_windows_forever": 9800,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 420,
+                  "playtime_deck_forever": 622
+                },
+                {
+                  "appid": 730,
+                  "name": "Counter-Strike 2",
+                  "playtime_2weeks": 58,
+                  "playtime_forever": 7310,
+                  "img_icon_url": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
+                  "playtime_windows_forever": 7310,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 0,
+                  "playtime_deck_forever": 0
+                }
+              ]
+            }
+          }
+          ` }}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: |-
+          {{ minify_json `
+          {
+            "response": {
+              "total_count": 2,
+              "games": [
+                {
+                  "appid": 440,
+                  "name": "Team Fortress 2",
+                  "playtime_2weeks": 184,
+                  "playtime_forever": 58954,
+                  "img_icon_url": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
+                  "playtime_windows_forever": 41258,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 3150,
+                  "playtime_deck_forever": 0
+                },
+                {
+                  "appid": 570,
+                  "name": "Dota 2",
+                  "playtime_2weeks": 361,
+                  "playtime_forever": 12064,
+                  "img_icon_url": "0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57",
+                  "playtime_windows_forever": 9800,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 420,
+                  "playtime_deck_forever": 641
+                }
+              ]
+            }
+          }
+          ` }}
+  # ...073  public profile that has played nothing in the last two weeks. The
+  # call succeeds, total_count is 0 and games is an empty array, so no event
+  # may be emitted for this account and the walk must still carry on to the
+  # next configured ID.
+  - path: /IPlayerService/GetRecentlyPlayedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: '76561197971489073'
+      count: '0'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: '{"response":{"total_count":0,"games":[]}}'
+  # ...074  private profile. Also a plain HTTP 200, but the response object is
+  # empty: there is no games key at all, and no total_count either. Every
+  # access in the program has to tolerate the key being absent rather than
+  # merely empty.
+  - path: /IPlayerService/GetRecentlyPlayedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: '76561197971489074'
+      count: '0'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: '{"response":{}}'
+  # ...075  public, a single game, played entirely on a Steam Deck. Present so
+  # that more than one configured account returns games: the SteamID64 each
+  # event carries then has to track the account being walked rather than being
+  # fixed, and the asserted hit_count changes if the walk ever stops advancing.
+  # playtime_windows_forever is 0 while playtime_forever is not, which is the
+  # other direction the per-platform fields diverge in.
+  - path: /IPlayerService/GetRecentlyPlayedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: '76561197971489075'
+      count: '0'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: |-
+          {{ minify_json `
+          {
+            "response": {
+              "total_count": 1,
+              "games": [
+                {
+                  "appid": 730,
+                  "name": "Counter-Strike 2",
+                  "playtime_2weeks": 913,
+                  "playtime_forever": 21480,
+                  "img_icon_url": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
+                  "playtime_windows_forever": 0,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 0,
+                  "playtime_deck_forever": 20950
+                }
+              ]
+            }
+          }
+          ` }}
+  # Catch-all on steamid, last so the rules above win. A well formed SteamID64
+  # that does not resolve to a readable account is not an error either: the
+  # call succeeds with the same empty response object a private profile
+  # returns. This keeps an unexpected configured ID on the normal path instead
+  # of turning it into an error event.
+  - path: /IPlayerService/GetRecentlyPlayedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: '{steamid:.*}'
+      count: '0'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: '{"response":{}}'

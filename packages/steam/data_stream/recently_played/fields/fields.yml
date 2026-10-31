@@ -8,3 +8,51 @@
   dimension: true
   description: >-
     Steam application ID of the game this document describes. Used as a time series dimension for this data stream.
+- name: steam.app.name
+  type: keyword
+  description: >-
+    Name of the game, from `name`. Matches `steam.app.name` on the player summary data stream.
+- name: steam.app.icon.hash
+  type: keyword
+  description: >-
+    Hash identifying the game's icon image, from `img_icon_url`. Despite the API field name this is a bare hash and not a URL; the image lives at `https://media.steampowered.com/steamcommunity/public/images/apps/<appid>/<hash>.jpg`.
+- name: steam.app.icon.url
+  type: keyword
+  description: >-
+    Full URL of the game's icon image, built from `steam.app.id` and `steam.app.icon.hash`. Not returned by the API.
+- name: steam.playtime.two_weeks.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account played this game in the rolling two week window, from `playtime_2weeks`. The headline metric of this data stream, and the only playtime field the Steam Web API reports exclusively here: `GetOwnedGames` does not return it. A game drops out of the response entirely once this reaches zero, so the absence of a document is how a game leaving the window is recorded.
+- name: steam.playtime.forever.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account has played this game in total, from `playtime_forever`. Counts only from early 2009, when Steam began tracking playtime, so it understates older games.
+- name: steam.playtime.windows.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account has played this game on Windows, from `playtime_windows_forever`. Steam began per-platform tracking later than total tracking, so this and the other per-platform fields do not necessarily add up to `steam.playtime.forever.minutes`; none of these values may be derived from the others.
+- name: steam.playtime.mac.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account has played this game on macOS, from `playtime_mac_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total.
+- name: steam.playtime.linux.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account has played this game on Linux, from `playtime_linux_forever`. Playtime on a Steam Deck is reported separately in `steam.playtime.deck.minutes` rather than counted here, even though the Deck runs Linux.
+- name: steam.playtime.deck.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account has played this game on a Steam Deck, from `playtime_deck_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total.

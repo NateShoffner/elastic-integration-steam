@@ -1,0 +1,378 @@
+---
+description: Pipeline for parsing Steam Web API player summaries.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+
+  # A non-2xx response from the Steam Web API makes the CEL program publish a
+  # single error event whose entire content is an `error` object:
+  #   {"error":{"code":"403","id":"403 Forbidden","message":"GET /ISteamUser/GetPlayerSummaries/v2/: <html>..."}}
+  # An invalid API key is answered with HTTP 403 and an HTML body, a malformed
+  # SteamID64 with HTTP 400.
+  #
+  # There is no payload to parse, and no `steam.player.id` either. This data
+  # stream is `time_series`, and a document that carries none of its routing
+  # dimensions is rejected by Elasticsearch at index time, so the error event
+  # can never be stored here. The `terminate` processor the CEL opening
+  # normally uses would stop the pipeline but still hand that unindexable
+  # document on to indexing, which turns one failed API call into a rejected
+  # bulk item on every poll. It is therefore dropped outright instead.
+  #
+  # Dropping does not lose the signal: the CEL input surfaces the same failure
+  # through its own input status and the agent log, which is where an operator
+  # looks for a rejected API key. Only the copy Elasticsearch could not store
+  # is discarded. The same guard, with the same reasoning, opens the
+  # `recently_played` and `owned_game` pipelines.
+  - drop:
+      tag: drop_data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: >-
+        Drops the error-only document the CEL program publishes when the Steam Web API answers with a non-2xx status. It has no payload and no time series dimension, so it cannot be indexed into this data stream.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # The CEL program emits one event per player, carrying the `GetPlayerSummaries`
+  # player object verbatim. Only `steamid` is guaranteed to be there: a profile
+  # that is not readable by the configured key comes back as a normal HTTP 200
+  # with most of the optional fields simply absent, so every access below is
+  # guarded and nothing may fail on a missing field.
+  - json:
+      field: event.original
+      tag: parse_json
+      target_field: json
+      if: ctx.event?.original != null
+
+  # `steam.player.id` is the time series dimension of this data stream and the
+  # join key shared with the Steam client log data streams, which derive the
+  # same SteamID64 from the 32-bit account ID in the log line. It is always
+  # present: it is the key the response is addressed by.
+  - rename:
+      field: json.steamid
+      tag: rename_player_id
+      target_field: steam.player.id
+      ignore_missing: true
+
+  # The account is also the ECS actor of the document, so the three fields that
+  # have a direct ECS equivalent are copied across. `steam.player.*` stays the
+  # canonical location (it is the declared dimension and carries the Steam
+  # specific semantics); `user.*` is the cross-integration view of the same
+  # account.
+  - set:
+      field: user.id
+      tag: set_user_id
+      copy_from: steam.player.id
+      if: ctx.steam?.player?.id != null
+  - rename:
+      field: json.personaname
+      tag: rename_player_persona_name
+      target_field: steam.player.persona_name
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name
+      copy_from: steam.player.persona_name
+      if: ctx.steam?.player?.persona_name != null
+  - rename:
+      field: json.realname
+      tag: rename_player_real_name
+      target_field: steam.player.real_name
+      ignore_missing: true
+  - set:
+      field: user.full_name
+      tag: set_user_full_name
+      copy_from: steam.player.real_name
+      if: ctx.steam?.player?.real_name != null
+
+  - rename:
+      field: json.profileurl
+      tag: rename_player_profile_url
+      target_field: steam.player.profile_url
+      ignore_missing: true
+  - rename:
+      field: json.profilestate
+      tag: rename_player_profile_state
+      target_field: steam.player.profile_state
+      ignore_missing: true
+  - rename:
+      field: json.communityvisibilitystate
+      tag: rename_player_visibility_code
+      target_field: steam.player.visibility.code
+      ignore_missing: true
+  - rename:
+      field: json.personastate
+      tag: rename_player_persona_state_code
+      target_field: steam.player.persona_state.code
+      ignore_missing: true
+  - rename:
+      field: json.personastateflags
+      tag: rename_player_persona_state_flags
+      target_field: steam.player.persona_state_flags
+      ignore_missing: true
+  - rename:
+      field: json.commentpermission
+      tag: rename_player_comment_permission
+      target_field: steam.player.comment_permission
+      ignore_missing: true
+  - rename:
+      field: json.primaryclanid
+      tag: rename_player_primary_clan_id
+      target_field: steam.player.primary_clan.id
+      ignore_missing: true
+
+  - rename:
+      field: json.avatar
+      tag: rename_player_avatar_small
+      target_field: steam.player.avatar.small
+      ignore_missing: true
+  - rename:
+      field: json.avatarmedium
+      tag: rename_player_avatar_medium
+      target_field: steam.player.avatar.medium
+      ignore_missing: true
+  - rename:
+      field: json.avatarfull
+      tag: rename_player_avatar_full
+      target_field: steam.player.avatar.full
+      ignore_missing: true
+  # `avatar`, `avatarmedium` and `avatarfull` are full URLs; `avatarhash` is the
+  # bare hash they share and is not a URL.
+  - rename:
+      field: json.avatarhash
+      tag: rename_player_avatar_hash
+      target_field: steam.player.avatar.hash
+      ignore_missing: true
+
+  # The location fields are what the account owner typed into their profile,
+  # not a geolocation of the account, so they are kept under `steam.player.*`
+  # and deliberately not promoted to `*.geo.*`. Valve publishes no mapping from
+  # `loccityid` to a city name.
+  - rename:
+      field: json.loccountrycode
+      tag: rename_player_location_country
+      target_field: steam.player.location.country_iso_code
+      ignore_missing: true
+  - rename:
+      field: json.locstatecode
+      tag: rename_player_location_state
+      target_field: steam.player.location.state_code
+      ignore_missing: true
+  - rename:
+      field: json.loccityid
+      tag: rename_player_location_city_id
+      target_field: steam.player.location.city_id
+      ignore_missing: true
+
+  # `lastlogoff` and `timecreated` are Unix epoch seconds. Neither is the time
+  # of this event: the document is a snapshot taken at collection time, so
+  # `@timestamp` stays the agent supplied collection time and these two are
+  # kept as their own date fields.
+  - date:
+      field: json.lastlogoff
+      tag: date_player_last_logoff
+      target_field: steam.player.last_logoff
+      formats:
+        - UNIX
+      if: ctx.json?.lastlogoff != null
+  - date:
+      field: json.timecreated
+      tag: date_player_created
+      target_field: steam.player.created
+      formats:
+        - UNIX
+      if: ctx.json?.timecreated != null
+
+  # `gameid`, `gameextrainfo` and `gameserverip` are returned only while the
+  # account is in a game, so every access to them is guarded. `gameid` is not
+  # necessarily a real AppID: a non-Steam shortcut added to the library reports
+  # a large synthetic value here, and `gameextrainfo` is then the name the
+  # account owner gave the shortcut.
+  - rename:
+      field: json.gameid
+      tag: rename_app_id
+      target_field: steam.app.id
+      ignore_missing: true
+  - rename:
+      field: json.gameextrainfo
+      tag: rename_app_name
+      target_field: steam.app.name
+      ignore_missing: true
+
+  # Presence of the game triple is the in-game signal. A profile the key cannot
+  # read reports no game, so this reads `false` for a private profile, which is
+  # indistinguishable from an account that is simply not playing: exactly the
+  # same caveat `steam.player.persona_state.code` carries, where `0` is both
+  # Offline and unreadable.
+  - set:
+      field: steam.player.in_game
+      tag: set_player_in_game
+      value: true
+      if: ctx.steam?.app?.id != null
+  - set:
+      field: steam.player.in_game
+      tag: set_player_not_in_game
+      value: false
+      if: ctx.steam?.app?.id == null
+
+  # `gameserverip` is an `<ip>:<port>` pair for the game server the account is
+  # connected to, and `0.0.0.0:0` when the game reports no server (single
+  # player, or a game that does not use one). That is a sentinel, not an
+  # endpoint, so it is split first and promoted only when it is a real address,
+  # the same way the `content` data stream treats the identical sentinel on
+  # download interface lines.
+  - grok:
+      field: json.gameserverip
+      tag: grok_game_server_endpoint
+      description: Splits the `<ip>:<port>` game server endpoint reported by `gameserverip`.
+      patterns:
+        - '^%{IP:_temp.game_server_ip}:%{NONNEGINT:_temp.game_server_port:long}$'
+      if: ctx.json?.gameserverip != null
+  - set:
+      field: server.ip
+      tag: set_server_ip
+      copy_from: _temp.game_server_ip
+      if: ctx._temp?.game_server_ip != null && ctx._temp.game_server_ip != '0.0.0.0'
+  - set:
+      field: server.port
+      tag: set_server_port
+      copy_from: _temp.game_server_port
+      if: ctx._temp?.game_server_ip != null && ctx._temp.game_server_ip != '0.0.0.0' && ctx._temp.game_server_port != null
+
+  - geoip:
+      field: server.ip
+      target_field: server.geo
+      tag: geoip_server_geo
+      ignore_missing: true
+      if: ctx.server?.ip != null && ctx.server.geo == null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: server.ip
+      target_field: server.as
+      properties:
+        - asn
+        - organization_name
+      tag: geoip_server_asn
+      ignore_missing: true
+      if: ctx.server?.ip != null && ctx.server.as == null
+  - rename:
+      field: server.as.asn
+      tag: rename_server_as_number
+      target_field: server.as.number
+      ignore_missing: true
+  - rename:
+      field: server.as.organization_name
+      tag: rename_server_as_organization_name
+      target_field: server.as.organization.name
+      ignore_missing: true
+
+  # Both enums keep the raw code and gain a human readable name. The
+  # `communityvisibilitystate` names are the documented ones, but only `1` and
+  # `3` are ever observed in practice and `3` is what a profile readable by the
+  # configured key reports, so `3` covers public profiles and `5` should not be
+  # expected to appear. An unknown code leaves the name unset rather than
+  # inventing a label.
+  - script:
+      lang: painless
+      tag: set_player_enum_names
+      description: Maps the raw `personastate` and `communityvisibilitystate` codes to their documented names.
+      if: ctx.steam?.player != null
+      params:
+        persona_state:
+          '0': Offline
+          '1': Online
+          '2': Busy
+          '3': Away
+          '4': Snooze
+          '5': Looking to trade
+          '6': Looking to play
+        visibility:
+          '1': Private
+          '2': Friends only
+          '3': Friends of Friends
+          '4': Users Only
+          '5': Public
+      source: |-
+        def player = ctx.steam.player;
+        if (player.persona_state != null && player.persona_state.code != null) {
+          def name = params.persona_state[String.valueOf(player.persona_state.code)];
+          if (name != null) {
+            player.persona_state.name = name;
+          }
+        }
+        if (player.visibility != null && player.visibility.code != null) {
+          def name = params.visibility[String.valueOf(player.visibility.code)];
+          if (name != null) {
+            player.visibility.name = name;
+          }
+        }
+
+  # A player summary is a periodic presence snapshot rather than something that
+  # happened, so `event.kind` is `metric`. No `event.category` or `event.type`
+  # value in ECS describes "the current state of a game account", and
+  # `event.outcome` has nothing to report for a measurement, so all three are
+  # deliberately left unset rather than filled with an approximation.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: metric
+
+  - append:
+      field: related.ip
+      tag: append_server_ip_to_related_ip
+      value: '{{{server.ip}}}'
+      allow_duplicates: false
+      if: ctx.server?.ip != null
+
+  - remove:
+      field:
+        - json
+        - _temp
+      tag: remove_temp_fields
+      ignore_missing: true
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

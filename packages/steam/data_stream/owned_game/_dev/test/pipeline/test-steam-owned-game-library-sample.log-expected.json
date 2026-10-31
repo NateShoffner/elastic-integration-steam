@@ -1,0 +1,104 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-02-25T06:13:20.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "kind": "metric",
+                "original": "{\"appid\":440,\"name\":\"Team Fortress 2\",\"playtime_forever\":58896,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"has_community_visible_stats\":true,\"playtime_windows_forever\":41200,\"playtime_mac_forever\":0,\"playtime_linux_forever\":3150,\"playtime_deck_forever\":0,\"rtime_last_played\":1771996800,\"playtime_disconnected\":0,\"steamid\":\"76561197971489072\"}"
+            },
+            "steam": {
+                "app": {
+                    "has_community_visible_stats": true,
+                    "icon": {
+                        "hash": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
+                        "url": "https://media.steampowered.com/steamcommunity/public/images/apps/440/4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4.jpg"
+                    },
+                    "id": "440",
+                    "name": "Team Fortress 2"
+                },
+                "player": {
+                    "id": "76561197971489072"
+                },
+                "playtime": {
+                    "deck": {
+                        "minutes": 0
+                    },
+                    "disconnected": {
+                        "minutes": 0
+                    },
+                    "forever": {
+                        "minutes": 58896
+                    },
+                    "last_played": "2026-02-25T05:20:00.000Z",
+                    "linux": {
+                        "minutes": 3150
+                    },
+                    "mac": {
+                        "minutes": 0
+                    },
+                    "windows": {
+                        "minutes": 41200
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-02-25T06:13:20.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "kind": "metric",
+                "original": "{\"appid\":570,\"name\":\"Dota 2\",\"playtime_forever\":12045,\"img_icon_url\":\"0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57\",\"has_community_visible_stats\":true,\"playtime_windows_forever\":9800,\"playtime_mac_forever\":0,\"playtime_linux_forever\":420,\"playtime_deck_forever\":622,\"rtime_last_played\":1769904000,\"playtime_disconnected\":95,\"content_descriptorids\":[2,5],\"steamid\":\"76561197971489072\"}"
+            },
+            "steam": {
+                "app": {
+                    "content_descriptors": [
+                        2,
+                        5
+                    ],
+                    "has_community_visible_stats": true,
+                    "icon": {
+                        "hash": "0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57",
+                        "url": "https://media.steampowered.com/steamcommunity/public/images/apps/570/0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57.jpg"
+                    },
+                    "id": "570",
+                    "name": "Dota 2"
+                },
+                "player": {
+                    "id": "76561197971489072"
+                },
+                "playtime": {
+                    "deck": {
+                        "minutes": 622
+                    },
+                    "disconnected": {
+                        "minutes": 95
+                    },
+                    "forever": {
+                        "minutes": 12045
+                    },
+                    "last_played": "2026-02-01T00:00:00.000Z",
+                    "linux": {
+                        "minutes": 420
+                    },
+                    "mac": {
+                        "minutes": 0
+                    },
+                    "windows": {
+                        "minutes": 9800
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

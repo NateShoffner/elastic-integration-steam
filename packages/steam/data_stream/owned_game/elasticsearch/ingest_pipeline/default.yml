@@ -1,0 +1,223 @@
+---
+description: Pipeline for parsing Steam Web API owned games.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+
+  # A non-2xx response from the Steam Web API makes the CEL program publish a
+  # single error event whose entire content is an `error` object:
+  #   {"error":{"code":"403","id":"403 Forbidden","message":"GET /IPlayerService/GetOwnedGames/v1/: <html>..."}}
+  # An invalid API key is answered with HTTP 403 and an HTML body, a malformed
+  # SteamID64 with HTTP 400.
+  #
+  # There is no payload to parse, and neither `steam.player.id` nor
+  # `steam.app.id` either. This data stream is `time_series`, and a document
+  # that carries none of its routing dimensions is rejected by Elasticsearch at
+  # index time, so the error event can never be stored here. The `terminate`
+  # processor the CEL opening normally uses would stop the pipeline but still
+  # hand that unindexable document on to indexing, which turns one failed API
+  # call into a rejected bulk item on every poll. It is therefore dropped
+  # outright instead.
+  #
+  # Dropping does not lose the signal: the CEL input surfaces the same failure
+  # through its own input status and the agent log, which is where an operator
+  # looks for a rejected API key. Only the copy Elasticsearch could not store
+  # is discarded. The same guard, with the same reasoning, opens the
+  # `player_summary` and `recently_played` pipelines.
+  - drop:
+      tag: drop_data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: >-
+        Drops the error-only document the CEL program publishes when the Steam Web API answers with a non-2xx status. It has no payload and no time series dimensions, so it cannot be indexed into this data stream.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # The CEL program emits one event per player-game pair: the game object from
+  # `GetOwnedGames`, plus a `steamid` key the program injects, because the API
+  # response carries no SteamID anywhere and `steam.player.id` is a required
+  # time series dimension.
+  - json:
+      field: event.original
+      tag: parse_json
+      target_field: json
+      if: ctx.event?.original != null
+
+  # The two time series dimensions of this data stream. `steam.player.id` is the
+  # injected SteamID64 and `steam.app.id` is the AppID; both are `keyword`, and
+  # both are the join keys shared with the other Steam data streams.
+  - rename:
+      field: json.steamid
+      tag: rename_player_id
+      target_field: steam.player.id
+      ignore_missing: true
+  # The API returns `appid` as a JSON number. It is converted rather than left
+  # to Elasticsearch's silent coercion so that the dimension is a string
+  # everywhere, matching the `steam.app.id` the Steam client log data streams
+  # grok out of a log line as text.
+  - convert:
+      field: json.appid
+      tag: convert_app_id
+      target_field: steam.app.id
+      type: string
+      ignore_missing: true
+  # `name` and `img_icon_url` are returned only because the request sends
+  # `include_appinfo=true`.
+  - rename:
+      field: json.name
+      tag: rename_app_name
+      target_field: steam.app.name
+      ignore_missing: true
+
+  # Despite the API field name, `img_icon_url` is a bare hash and not a URL. The
+  # URL is not returned by the API at all and is assembled from the AppID and
+  # the hash, so both the hash and the usable URL are kept.
+  - rename:
+      field: json.img_icon_url
+      tag: rename_app_icon_hash
+      target_field: steam.app.icon.hash
+      ignore_missing: true
+  - set:
+      field: steam.app.icon.url
+      tag: set_app_icon_url
+      value: 'https://media.steampowered.com/steamcommunity/public/images/apps/{{{steam.app.id}}}/{{{steam.app.icon.hash}}}.jpg'
+      if: ctx.steam?.app?.id != null && ctx.steam?.app?.icon?.hash != null
+
+  - rename:
+      field: json.has_community_visible_stats
+      tag: rename_app_has_community_visible_stats
+      target_field: steam.app.has_community_visible_stats
+      ignore_missing: true
+  # `content_descriptorids` is an array of Valve's mature content flags and is
+  # absent for most games.
+  - rename:
+      field: json.content_descriptorids
+      tag: rename_app_content_descriptors
+      target_field: steam.app.content_descriptors
+      ignore_missing: true
+
+  # Every `playtime_*` value the Steam Web API reports is in MINUTES, which is
+  # why each one lands on a `*.minutes` field. `playtime_2weeks` is not returned
+  # by this endpoint at all; it is reported only by
+  # `GetRecentlyPlayedGames`, so it has no mapping here.
+  #
+  # The per-platform values are a partial breakdown, not a partition: Steam
+  # began per-platform tracking later than total tracking, so they cover a
+  # shorter history than `playtime_forever` and genuinely do not sum to it.
+  # `playtime_disconnected` is time played offline and is already counted
+  # inside `playtime_forever` once the client has synced. None of these values
+  # is ever derived from any of the others.
+  - rename:
+      field: json.playtime_forever
+      tag: rename_playtime_forever
+      target_field: steam.playtime.forever.minutes
+      ignore_missing: true
+  - rename:
+      field: json.playtime_windows_forever
+      tag: rename_playtime_windows
+      target_field: steam.playtime.windows.minutes
+      ignore_missing: true
+  - rename:
+      field: json.playtime_mac_forever
+      tag: rename_playtime_mac
+      target_field: steam.playtime.mac.minutes
+      ignore_missing: true
+  - rename:
+      field: json.playtime_linux_forever
+      tag: rename_playtime_linux
+      target_field: steam.playtime.linux.minutes
+      ignore_missing: true
+  - rename:
+      field: json.playtime_deck_forever
+      tag: rename_playtime_deck
+      target_field: steam.playtime.deck.minutes
+      ignore_missing: true
+  - rename:
+      field: json.playtime_disconnected
+      tag: rename_playtime_disconnected
+      target_field: steam.playtime.disconnected.minutes
+      ignore_missing: true
+
+  # `rtime_last_played` is a Unix timestamp, not a duration. The API reports `0`
+  # for a game that has never been launched, and the CEL program already removes
+  # the key in that case rather than passing the sentinel on, so the key being
+  # absent is what "never launched" means. The conversion is therefore
+  # unconditional on presence and needs no epoch guard: a `0` can never reach
+  # it, and reintroducing one would turn "never launched" into 1970-01-01 and
+  # corrupt every least-recently-played query.
+  - date:
+      field: json.rtime_last_played
+      tag: date_playtime_last_played
+      target_field: steam.playtime.last_played
+      formats:
+        - UNIX
+      if: ctx.json?.rtime_last_played != null
+
+  # Playtime gauges read from a periodic snapshot, so `event.kind` is `metric`.
+  # The response carries no event time of its own and nothing happened to
+  # categorize: no ECS `event.category` or `event.type` value describes "how
+  # long an account has played a game it owns", and `event.outcome` has nothing
+  # to report for a measurement, so all three are deliberately left unset
+  # rather than filled with an approximation. `@timestamp` stays the agent
+  # supplied collection time, which is the correct time for a snapshot and is
+  # what the time series index uses to derive the document ID;
+  # `steam.playtime.last_played` is not an event time and is never promoted to
+  # one.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: metric
+
+  - remove:
+      field:
+        - json
+        - _temp
+      tag: remove_temp_fields
+      ignore_missing: true
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

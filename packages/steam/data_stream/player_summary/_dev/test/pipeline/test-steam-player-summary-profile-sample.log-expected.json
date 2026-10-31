@@ -1,0 +1,175 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-02-25T06:13:20.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "kind": "metric",
+                "original": "{\"steamid\":\"76561197971489072\",\"communityvisibilitystate\":3,\"profilestate\":1,\"personaname\":\"example_player\",\"profileurl\":\"https://steamcommunity.com/id/example_player/\",\"avatar\":\"https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d.jpg\",\"avatarmedium\":\"https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d_medium.jpg\",\"avatarfull\":\"https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d_full.jpg\",\"avatarhash\":\"1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d\",\"lastlogoff\":1772000000,\"personastate\":1,\"primaryclanid\":\"103582791429600001\",\"timecreated\":1263407589,\"personastateflags\":0,\"loccountrycode\":\"US\",\"locstatecode\":\"WA\",\"loccityid\":3961,\"gameid\":\"440\",\"gameextrainfo\":\"Team Fortress 2\",\"gameserverip\":\"203.0.113.71:27015\",\"realname\":\"Example Person\",\"commentpermission\":1}"
+            },
+            "related": {
+                "ip": [
+                    "203.0.113.71"
+                ]
+            },
+            "server": {
+                "as": {
+                    "number": 64502,
+                    "organization": {
+                        "name": "Documentation ASN"
+                    }
+                },
+                "geo": {
+                    "city_name": "Madrid",
+                    "continent_name": "Europe",
+                    "country_iso_code": "ES",
+                    "country_name": "Spain",
+                    "location": {
+                        "lat": 40.41639,
+                        "lon": -3.7025
+                    },
+                    "region_iso_code": "ES-M",
+                    "region_name": "Madrid"
+                },
+                "ip": "203.0.113.71",
+                "port": 27015
+            },
+            "steam": {
+                "app": {
+                    "id": "440",
+                    "name": "Team Fortress 2"
+                },
+                "player": {
+                    "avatar": {
+                        "full": "https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d_full.jpg",
+                        "hash": "1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d",
+                        "medium": "https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d_medium.jpg",
+                        "small": "https://avatars.steamstatic.com/1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d.jpg"
+                    },
+                    "comment_permission": 1,
+                    "created": "2010-01-13T18:33:09.000Z",
+                    "id": "76561197971489072",
+                    "in_game": true,
+                    "last_logoff": "2026-02-25T06:13:20.000Z",
+                    "location": {
+                        "city_id": 3961,
+                        "country_iso_code": "US",
+                        "state_code": "WA"
+                    },
+                    "persona_name": "example_player",
+                    "persona_state": {
+                        "code": 1,
+                        "name": "Online"
+                    },
+                    "persona_state_flags": 0,
+                    "primary_clan": {
+                        "id": "103582791429600001"
+                    },
+                    "profile_state": 1,
+                    "profile_url": "https://steamcommunity.com/id/example_player/",
+                    "real_name": "Example Person",
+                    "visibility": {
+                        "code": 3,
+                        "name": "Friends of Friends"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "full_name": "Example Person",
+                "id": "76561197971489072",
+                "name": "example_player"
+            }
+        },
+        {
+            "@timestamp": "2026-02-25T06:13:20.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "kind": "metric",
+                "original": "{\"steamid\":\"76561197971489073\",\"communityvisibilitystate\":3,\"profilestate\":1,\"personaname\":\"example_player_two\",\"profileurl\":\"https://steamcommunity.com/id/example_player_two/\",\"avatar\":\"https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e.jpg\",\"avatarmedium\":\"https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e_medium.jpg\",\"avatarfull\":\"https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e_full.jpg\",\"avatarhash\":\"2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e\",\"lastlogoff\":1771900000,\"personastate\":3,\"timecreated\":1301500000,\"personastateflags\":0,\"loccountrycode\":\"CA\"}"
+            },
+            "steam": {
+                "player": {
+                    "avatar": {
+                        "full": "https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e_full.jpg",
+                        "hash": "2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e",
+                        "medium": "https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e_medium.jpg",
+                        "small": "https://avatars.steamstatic.com/2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e.jpg"
+                    },
+                    "created": "2011-03-30T15:46:40.000Z",
+                    "id": "76561197971489073",
+                    "in_game": false,
+                    "last_logoff": "2026-02-24T02:26:40.000Z",
+                    "location": {
+                        "country_iso_code": "CA"
+                    },
+                    "persona_name": "example_player_two",
+                    "persona_state": {
+                        "code": 3,
+                        "name": "Away"
+                    },
+                    "persona_state_flags": 0,
+                    "profile_state": 1,
+                    "profile_url": "https://steamcommunity.com/id/example_player_two/",
+                    "visibility": {
+                        "code": 3,
+                        "name": "Friends of Friends"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "id": "76561197971489073",
+                "name": "example_player_two"
+            }
+        },
+        {
+            "@timestamp": "2026-02-25T06:13:20.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "kind": "metric",
+                "original": "{\"steamid\":\"76561197971489074\",\"communityvisibilitystate\":1,\"profilestate\":1,\"personaname\":\"example_player_private\",\"profileurl\":\"https://steamcommunity.com/profiles/76561197971489074/\",\"avatar\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg\",\"avatarmedium\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg\",\"avatarfull\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg\",\"avatarhash\":\"3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f\",\"personastate\":0}"
+            },
+            "steam": {
+                "player": {
+                    "avatar": {
+                        "full": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg",
+                        "hash": "3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f",
+                        "medium": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg",
+                        "small": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg"
+                    },
+                    "id": "76561197971489074",
+                    "in_game": false,
+                    "persona_name": "example_player_private",
+                    "persona_state": {
+                        "code": 0,
+                        "name": "Offline"
+                    },
+                    "profile_state": 1,
+                    "profile_url": "https://steamcommunity.com/profiles/76561197971489074/",
+                    "visibility": {
+                        "code": 1,
+                        "name": "Private"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "id": "76561197971489074",
+                "name": "example_player_private"
+            }
+        }
+    ]
+}

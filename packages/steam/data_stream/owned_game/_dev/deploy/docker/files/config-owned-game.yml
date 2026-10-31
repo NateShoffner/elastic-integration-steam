@@ -171,6 +171,17 @@ rules:
   # ...073  public profile that owns nothing. The call succeeds, game_count is
   # 0 and games is an empty array, so no event may be emitted for this account
   # and the walk must still carry on to the next configured ID.
+  #
+  # UNVERIFIED: this empty-array form is NOT observed behaviour. Nothing here
+  # was validated against the live API, and the research brief records only one
+  # empty shape for this endpoint - the {"response":{}} with no games key that
+  # ...074 below returns, which the brief gives for a private or unreadable
+  # profile. This rule is kept purely as defensive coverage, so that the
+  # program is exercised against an empty games array as well as an absent
+  # games key. Do not cite it as evidence that the API returns this form for a
+  # readable account that owns nothing; if the live API is ever consulted and it
+  # turns out to answer {"response":{}} here too, this rule can simply be
+  # changed to match without altering the asserted hit_count.
   - path: /IPlayerService/GetOwnedGames/v1/
     methods: ['GET']
     query_params:

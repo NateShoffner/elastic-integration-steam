@@ -51,7 +51,19 @@ rules:
   #   ...073  public, not in a game        <-> public, in Counter-Strike 2
   #                                             with gameserverip 0.0.0.0:0
   #   ...074  private (communityvisibilitystate 1), reduced field set,
-  #           no lastlogoff, unchanged between snapshots
+  #           no lastlogoff (UNVERIFIED, see below), unchanged between
+  #           snapshots
+  #
+  # UNVERIFIED: the omission of lastlogoff from the private player is not
+  # observed behaviour. Nothing here was validated against the live API, and
+  # the research brief's field-presence table lists lastlogoff in the Always
+  # present column, alongside steamid and personastate, rather than among the
+  # conditional fields a private profile sheds. The field is left out here
+  # purely as defensive coverage, so that the pipeline is exercised against a
+  # player document with no lastlogoff at all; the documented form, with
+  # lastlogoff present, is covered by ...072 and ...073 in both response
+  # bodies. Do not cite this player as evidence that a private profile omits
+  # lastlogoff.
   - path: /ISteamUser/GetPlayerSummaries/v2/
     methods: ['GET']
     query_params:

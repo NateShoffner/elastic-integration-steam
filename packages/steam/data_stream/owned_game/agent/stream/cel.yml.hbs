@@ -14,7 +14,7 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
 state:
-  api_key: {{api_key}}
+  api_key: "{{api_key}}"
   steam_ids:
 {{#each steam_ids as |steam_id|}}
     - "{{steam_id}}"
@@ -53,9 +53,12 @@ program: |-
           }.format_query()
         ).do_request().as(resp,
           // Neither a private profile nor an account that owns nothing is an
-          // error. Both arrive as a plain 200: the first as {"response":{}}
-          // with no games key at all, the second as an empty games array.
-          // Nothing below may assume the key is present.
+          // error: both arrive as a plain 200. A private or unreadable profile
+          // answers with {"response":{}} and no games key at all. An account
+          // that is readable but owns nothing is handled defensively for both
+          // that same empty response object and an empty games array, because
+          // which of the two the live API returns for that case has never been
+          // verified. Nothing below may assume the key is present.
           // The failure branch never decodes the body: an invalid key returns
           // 403 and a malformed steamid 400, both with an HTML body.
           (resp.StatusCode == 200) ?
@@ -101,21 +104,32 @@ program: |-
               }
             )
           :
+            // The array error shape, not the single-object one. The only two
+            // errors this endpoint produces are 403 for an invalid key and 400
+            // for a malformed SteamID64, and neither is transient: the
+            // single-object shape discards the returned state and re-runs from
+            // the last good state, so it would retry both of them on every
+            // evaluation forever and the player_offset reset below would never
+            // be persisted. With the array shape the reset does persist, so a
+            // failure part way through the walk sends the next poll back to
+            // the top of the list rather than resuming mid-walk.
             {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
-                  // Path only, never the query string: the API key travels as
-                  // a query parameter and must not reach the logs.
-                  "message": "GET /IPlayerService/GetOwnedGames/v1/: " + (
-                    (size(resp.Body) != 0) ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                  ),
+              "events": [
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    // Path only, never the query string: the API key travels
+                    // as a query parameter and must not reach the logs.
+                    "message": "GET /IPlayerService/GetOwnedGames/v1/: " + (
+                      (size(resp.Body) != 0) ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
                 },
-              },
+              ],
               "player_offset": 0,
               "want_more": false,
             }
@@ -134,7 +148,7 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
-  - drop_event.when.equals.retry: true
+- drop_event.when.equals.retry: true
 {{#if processors}}
 {{processors}}
 {{/if}}

@@ -10,3 +10,4 @@
 [2026-03-14 19:41:09] [AppID 570] Starting sync (eval,)
 [2026-03-14 21:55:32] [AppID 570] Starting sync (down,)
 [2026-03-14 21:55:33] [AppID 570] Successfully synced to ChangeNumber 12
+[2026-10-31 00:51:57] [AppID 431960] Need to sync from local change number '17484057825698955523' to global change number '0' (full), but not attempting now

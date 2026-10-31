@@ -118,7 +118,7 @@
                 },
                 "cloud": {
                     "sync": {
-                        "global_change_number": 7
+                        "global_change_number": "7"
                     }
                 }
             },
@@ -167,7 +167,7 @@
                 },
                 "cloud": {
                     "sync": {
-                        "change_number": 7
+                        "change_number": "7"
                     }
                 }
             },
@@ -221,8 +221,8 @@
                 },
                 "cloud": {
                     "sync": {
-                        "global_change_number": 9,
-                        "local_change_number": 7,
+                        "global_change_number": "9",
+                        "local_change_number": "7",
                         "scope": "full"
                     }
                 }
@@ -306,7 +306,35 @@
                 },
                 "cloud": {
                     "sync": {
-                        "change_number": 12
+                        "change_number": "12"
+                    }
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-10-31T00:51:57.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cloud-sync-deferred",
+                "kind": "event",
+                "original": "[2026-10-31 00:51:57] [AppID 431960] Need to sync from local change number '17484057825698955523' to global change number '0' (full), but not attempting now",
+                "timezone": "+00:00"
+            },
+            "message": "Need to sync from local change number '17484057825698955523' to global change number '0' (full), but not attempting now",
+            "steam": {
+                "app": {
+                    "id": "431960"
+                },
+                "cloud": {
+                    "sync": {
+                        "global_change_number": "0",
+                        "local_change_number": "17484057825698955523",
+                        "scope": "full"
                     }
                 }
             },

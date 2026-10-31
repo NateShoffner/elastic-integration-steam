@@ -22,15 +22,15 @@
       description: >-
         Scope of a sync the Steam client decided was needed but deferred, from the parenthesised token in a `Need to sync from local change number ... (<scope>), but not attempting now` line, for example `full`.
     - name: sync.change_number
-      type: long
+      type: unsigned_long
       description: >-
-        Steam Cloud change number the client successfully synchronised to, from a `Successfully synced to ChangeNumber <n>` line. Change numbers are Steam's monotonic sync sequence numbers for an application's cloud storage, not timestamps or file counts.
+        Steam Cloud change number the client successfully synchronised to, from a `Successfully synced to ChangeNumber <n>` line. Change numbers are Steam's monotonic sync sequence numbers for an application's cloud storage, not timestamps or file counts. Mapped as `unsigned_long` because real logs contain values above the signed 64-bit range, such as `17484057825698955523`.
     - name: sync.global_change_number
-      type: long
+      type: unsigned_long
       description: >-
         Steam Cloud change number currently held by the Steam servers for the application. Compared against `steam.cloud.sync.local_change_number` to decide whether a download is needed.
     - name: sync.local_change_number
-      type: long
+      type: unsigned_long
       description: >-
         Steam Cloud change number currently held by this machine for the application, from a `Need to sync from local change number <n>` line.
     - name: remote_file.path

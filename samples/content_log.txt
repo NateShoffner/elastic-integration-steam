@@ -1,9 +1,4 @@
 
-[2026-03-14 09:12:02] Client version: 1792618285
-[2026-03-14 09:12:02] Loaded Steam library folders configuration: C:\Program Files (x86)\Steam\steamapps\libraryfolders.vdf
-[2026-03-14 09:12:02] Loaded 26 apps from install folder "C:\Program Files (x86)\Steam\steamapps\appmanifest_*.acf".
-[2026-03-14 09:12:02] Loaded 1 apps from install folder "D:\SteamLibrary\steamapps\appmanifest_*.acf".
-[2026-03-14 09:12:02] Triggered async write of Steam library folders configuration (2 libraries).
 [2026-03-14 09:20:11] Adding peer server 'desktop-1' (192.168.1.24:27040)
 [2026-03-14 09:20:44] Removing peer server 'desktop-1' (192.168.1.24:27040)
 [2026-03-14 10:05:13] AppID 440 config changed : added depots 441
@@ -26,3 +21,9 @@
 [2026-03-14 14:31:22] HTTP (CDN,64) - edge.steam-dns.example.net (0.0.0.0:0 / 0.0.0.0:0, host: edge.steam-dns.example.net): Failed to get manifest request Code for depot 571 manifest 1110042708278992601 - No Connection (3) - failing download
 [2026-03-14 14:31:51] Validation: missing file "D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota\pak01_045.vpk"
 [2026-03-14 14:33:27] AppID 570 state changed : Fully Installed,
+
+[2026-03-14 21:04:00] Client version: 1792618285
+[2026-03-14 21:04:01] Loaded Steam library folders configuration: C:\Program Files (x86)\Steam\steamapps\libraryfolders.vdf
+[2026-03-14 21:04:02] Loaded 26 apps from install folder "C:\Program Files (x86)\Steam\steamapps\appmanifest_*.acf".
+[2026-03-14 21:04:03] Loaded 1 apps from install folder "D:\SteamLibrary\steamapps\appmanifest_*.acf".
+[2026-03-14 21:04:04] Triggered async write of Steam library folders configuration (2 libraries).

@@ -1,19 +1,306 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for parsing Steam client cloud sync logs.
 processors:
-- set:
-    tag: set_sample_field
-    field: sample_field
-    value: "1"
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # Every line the Steam client writes is `[YYYY-MM-DD HH:MM:SS] <message>`, and
+  # in this log the message itself carries up to two bracketed tags before it:
+  #   [AppID <n>] <message>                 -> the common shape
+  #   [U:1:<accountid>] [AppID <n>] <message> -> an account tag BEFORE the AppID tag
+  #   <message>                             -> no tag at all (`Client version:`)
+  # The two-tag form must be tried before the account-tag-only form, otherwise
+  # the latter would match and leave `[AppID <n>]` sitting in `message`.
+  #
+  # Steam also indents some messages inside the tag by 4 or 8 spaces to denote
+  # nesting under the preceding line. The timestamp prefix is still present, so
+  # these are not continuation lines; the indent depth carries no information, so
+  # the `\s+` after the closing bracket consumes it and `message` holds the
+  # message with no leading whitespace.
+  #
+  # The last pattern keeps an unexpected line without the bracketed timestamp
+  # prefix from failing the pipeline.
+  - grok:
+      field: event.original
+      tag: grok_log_line
+      description: Splits the leading local timestamp and the bracketed AppID and account tags from the log message.
+      patterns:
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[AppID %{NONNEGINT:steam.app.id}\]\s+%{GREEDYDATA:message}$'
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[U:1:%{NONNEGINT:steam.cloud.account_id}\] \[AppID %{NONNEGINT:steam.app.id}\]\s+%{GREEDYDATA:message}$'
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[U:1:%{NONNEGINT:steam.cloud.account_id}\]\s+%{GREEDYDATA:message}$'
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      if: ctx.event?.original != null
+
+  # Steam writes local time with no offset or timezone, so the agent's
+  # `add_locale` processor supplies `event.timezone`.
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      timezone: '{{{event.timezone}}}'
+      if: ctx._temp?.timestamp != null
+
+  # Each pattern captures the literal token that identifies the message shape
+  # into `_temp.shape`, which is the lookup key for the ECS categorization table
+  # further down.
+  #
+  # Two incompatible path conventions appear in this log and are deliberately
+  # kept in separate fields, because a cloud-relative path and a local absolute
+  # path mapped into one field would be indistinguishable:
+  #   `File is in sync` / `Delete OK for file` carry Steam's cloud-relative,
+  #   forward-slash remote storage path (`<publisher>/<game>/SaveData/<file>`),
+  #   which is not a path on this machine -> `steam.cloud.remote_file.path`.
+  #   `Persisting file` / `File ... was removed` / `YldWriteCacheDirectoryToFile`
+  #   carry an absolute local filesystem path -> ECS `file.path`.
+  #   `Found <n> files that match` carries a local filesystem *glob* rather than
+  #   a path, so it is neither -> `steam.cloud.file_match.pattern`.
+  #
+  # `HTTP upload for file '<name>'` names the remote storage file without a
+  # path, so it sets the remote file name directly.
+  #
+  # The most frequent shapes come first so common lines stop matching early. The
+  # last pattern matches any other line so unrecognized shapes keep their raw
+  # message instead of failing the pipeline.
+  - grok:
+      field: message
+      tag: grok_message
+      description: Parses the known Steam cloud message shapes.
+      patterns:
+        - '^(?<_temp.shape>YldWriteCacheDirectoryToFile - saved to) ''%{DATA:file.path}''$'
+        - '^(?<_temp.shape>AutoCloud checking local state for user) %{NONNEGINT:steam.cloud.account_id}$'
+        - '^(?<_temp.shape>Currently already synced to global change number) ''%{NONNEGINT:steam.cloud.sync.global_change_number:long}'', should be nothing to download$'
+        - '^(?<_temp.shape>HTTP upload for file) ''%{DATA:steam.cloud.remote_file.name}'' beginning \. \. \.$'
+        - '^(?<_temp.shape>Eval complete)$'
+        - '^(?<_temp.shape>Starting sync) \(%{DATA:steam.cloud.sync.flags}\)$'
+        - '^(?<_temp.shape>Successfully synced to ChangeNumber) %{NONNEGINT:steam.cloud.sync.change_number:long}$'
+        - '^(?<_temp.shape>Download complete in build list)$'
+        - '^(?<_temp.shape>File is in sync) %{GREEDYDATA:steam.cloud.remote_file.path}$'
+        - '^(?<_temp.shape>YldWriteCacheDirectoryToFile - empty vector, deleting) ''%{DATA:file.path}''$'
+        - '^(?<_temp.shape>Need to sync) from local change number ''%{NONNEGINT:steam.cloud.sync.local_change_number:long}'' to global change number ''%{NONNEGINT:steam.cloud.sync.global_change_number:long}'' \(%{WORD:steam.cloud.sync.scope}\), but not attempting now$'
+        - '^(?<_temp.shape>Delete OK for file) %{GREEDYDATA:steam.cloud.remote_file.path}$'
+        - '^File %{GREEDYDATA:file.path} (?<_temp.shape>was removed while the game was running)\. Deleting from cloud and remote machines$'
+        - '^Found %{NONNEGINT:steam.cloud.file_match.count:long} files? (?<_temp.shape>that match) %{GREEDYDATA:steam.cloud.file_match.pattern}$'
+        - '^(?<_temp.shape>Persisting file) %{GREEDYDATA:file.path} to the cloud$'
+        - '^(?<_temp.shape>Init cache request complete)$'
+        - '^Client version: %{GREEDYDATA:steam.client.version}$'
+        - '^%{GREEDYDATA}$'
+      if: ctx.message != null
+
+  # `Starting sync (...)` is a comma-separated flag set, not a single value:
+  # `eval`, `down`, `init`, `up` and the multi-flag `init,eval,` are all
+  # observed. The trailing comma before the closing paren is a list separator,
+  # so the value is always stored as an array even when one flag is reported.
+  - split:
+      field: steam.cloud.sync.flags
+      tag: split_sync_flags
+      separator: ','
+      ignore_missing: true
+
+  # Steam writes account ID 0 (`[U:1:0]`) when no user is signed in. That is a
+  # placeholder rather than an account, so it is dropped instead of indexed and
+  # never used to derive a player ID.
+  - remove:
+      field: steam.cloud.account_id
+      tag: remove_placeholder_account_id
+      ignore_missing: true
+      if: ctx.steam?.cloud?.account_id == '0'
+
+  # The IDs in this log are 32-bit account IDs, both in the `[U:1:<accountid>]`
+  # tag and in `AutoCloud checking local state for user <accountid>`. The Steam
+  # Web API data streams key on the SteamID64, so it is derived here with
+  # `SteamID64 = 76561197960265728 + accountID` and written to the shared
+  # `steam.player.id` field, which lets these documents join to API data.
+  - script:
+      lang: painless
+      tag: script_derive_steam_player_id
+      description: Derives the SteamID64 in `steam.player.id` from the 32-bit Steam account ID.
+      if: ctx.steam?.cloud?.account_id != null
+      params:
+        steamid64_base: 76561197960265728
+      source: |-
+        long base = ((Number)params.steamid64_base).longValue();
+        long accountId = Long.parseLong(ctx.steam.cloud.account_id);
+        ctx.steam.player = ['id': String.valueOf(base + accountId)];
+
+  - grok:
+      field: steam.cloud.remote_file.path
+      tag: grok_remote_file_name
+      description: Extracts the file name from the cloud-relative remote storage path, which always uses forward slashes.
+      patterns:
+        - '^(?:.*/)?%{DATA:steam.cloud.remote_file.name}$'
+      if: ctx.steam?.cloud?.remote_file?.path != null
+
+  - grok:
+      field: file.path
+      tag: grok_file_path_parts
+      description: Splits the local filesystem path into its directory and file name. Steam mixes backslashes and forward slashes in these paths, so both separators are accepted.
+      patterns:
+        - '^%{GREEDYDATA:file.directory}[\\/]%{DATA:file.name}$'
+        - '^%{DATA:file.name}$'
+      if: ctx.file?.path != null
+  - grok:
+      field: file.name
+      tag: grok_file_extension
+      description: Extracts the extension from the local file name. The second pattern keeps a name with no extension from failing.
+      patterns:
+        - '^%{GREEDYDATA}\.%{DATA:file.extension}$'
+        - '^%{GREEDYDATA}$'
+      if: ctx.file?.name != null
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+
+  # The per-file lines are genuine file activity, so they carry
+  # `event.category: [file]`. The sync-pass lines (`Starting sync`, `Eval
+  # complete`, `Successfully synced`, `Need to sync`, the AutoCloud state check
+  # and the init cache request) report the progress of a sync pass rather than an
+  # operation on an object ECS models, so they are given an `event.action` only
+  # and deliberately left without a category or type instead of being forced
+  # into one that does not fit.
+  #
+  # `event.outcome` is set only for the three shapes that state a result:
+  # `Successfully synced to ChangeNumber`, `Download complete in build list` and
+  # `Delete OK for file`. No failure shape occurs anywhere in this corpus, so no
+  # failure path is invented and no non-success token is assumed to exist.
+  #
+  # Purely informational lines (`Client version:` and anything unrecognized)
+  # never set `_temp.shape`, so they are left without an action or a category on
+  # purpose.
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Maps the recognized cloud message shape to its ECS action and categorization.
+      if: ctx._temp?.shape != null
+      params:
+        'Starting sync':
+          action: cloud-sync-started
+        'Eval complete':
+          action: cloud-sync-eval-completed
+        'Init cache request complete':
+          action: cloud-init-cache-request-completed
+        'AutoCloud checking local state for user':
+          action: cloud-local-state-checked
+        'Currently already synced to global change number':
+          action: cloud-sync-not-needed
+        'Need to sync':
+          action: cloud-sync-deferred
+        'Download complete in build list':
+          action: cloud-download-completed
+          outcome: success
+        'Successfully synced to ChangeNumber':
+          action: cloud-sync-completed
+          outcome: success
+        'File is in sync':
+          action: cloud-file-in-sync
+          category:
+            - file
+          type:
+            - info
+        'Delete OK for file':
+          action: cloud-file-deleted
+          category:
+            - file
+          type:
+            - deletion
+          outcome: success
+        'was removed while the game was running':
+          action: cloud-local-file-removal-detected
+          category:
+            - file
+          type:
+            - info
+        'Persisting file':
+          action: cloud-file-persisted
+          category:
+            - file
+          type:
+            - change
+        'HTTP upload for file':
+          action: cloud-file-upload-started
+          category:
+            - file
+          type:
+            - change
+        'that match':
+          action: cloud-file-match-enumerated
+          category:
+            - file
+          type:
+            - info
+        'YldWriteCacheDirectoryToFile - saved to':
+          action: cloud-cache-file-written
+          category:
+            - file
+          type:
+            - change
+        'YldWriteCacheDirectoryToFile - empty vector, deleting':
+          action: cloud-cache-file-deleted
+          category:
+            - file
+          type:
+            - deletion
+      source: |-
+        def mapping = params[ctx._temp.shape];
+        if (mapping == null) {
+          return;
+        }
+        ctx.event.action = mapping.action;
+        if (mapping.containsKey('category')) {
+          ctx.event.category = mapping.category;
+        }
+        if (mapping.containsKey('type')) {
+          ctx.event.type = mapping.type;
+        }
+        if (mapping.containsKey('outcome')) {
+          ctx.event.outcome = mapping.outcome;
+        }
+
+  - remove:
+      field:
+        - _temp
+      tag: remove_temp_fields
+      ignore_missing: true
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
 on_failure:
-- set:
-    field: error.message
-    value: >-
-      Processor '{{{ _ingest.on_failure_processor_type }}}'
-      with tag '{{{ _ingest.on_failure_processor_tag }}}'
-      in pipeline '{{{ _ingest.pipeline }}}'
-      failed with message '{{{ _ingest.on_failure_message }}}'
-- set:
-    field: event.kind
-    tag: set_pipeline_error_to_event_kind
-    value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,55 @@
+- name: steam.app.id
+  type: keyword
+  description: >-
+    Steam application ID of the game whose Steam Cloud save data this document describes. Matches `steam.app.id` on the Steam Web API data streams, so client log events can be joined against them.
+- name: steam.client.version
+  type: keyword
+  description: >-
+    Build number the Steam client reports for itself in its `Client version:` log lines.
+- name: steam.player.id
+  type: keyword
+  description: >-
+    64-bit Steam ID (SteamID64) of the signed-in account, derived from the 32-bit account ID in the log with `SteamID64 = 76561197960265728 + accountID`. The Steam client logs the account ID rather than the SteamID64; it is converted here because `steam.player.id` is the field the Steam Web API data streams key on, which is what makes these documents correlatable with them. The `[U:1:0]` placeholder Steam writes when no user is signed in is not a real account and is never converted.
+- name: steam.cloud
+  type: group
+  fields:
+    - name: account_id
+      type: keyword
+      description: >-
+        32-bit Steam account ID exactly as the Steam client logs it, either in a leading `[U:1:<accountid>]` tag or in an `AutoCloud checking local state for user <accountid>` line. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable and the Steam Web API accepts only the latter.
+    - name: sync.flags
+      type: keyword
+      description: >-
+        Passes the Steam client requested for a Steam Cloud sync, from a `Starting sync (<flags>)` line. Steam writes these as a comma-separated flag set with a trailing comma, and more than one pass can be requested at once (`init,eval,` is observed), so the value is always stored as an array even when a single pass is reported. Observed values are `init`, `eval`, `down` and `up`.
+    - name: sync.scope
+      type: keyword
+      description: >-
+        Scope of a sync the Steam client decided was needed but deferred, from the parenthesised token in a `Need to sync from local change number ... (<scope>), but not attempting now` line, for example `full`.
+    - name: sync.change_number
+      type: long
+      description: >-
+        Steam Cloud change number the client successfully synchronised to, from a `Successfully synced to ChangeNumber <n>` line. Change numbers are Steam's monotonic sync sequence numbers for an application's cloud storage, not timestamps or file counts.
+    - name: sync.global_change_number
+      type: long
+      description: >-
+        Steam Cloud change number currently held by the Steam servers for the application. Compared against `steam.cloud.sync.local_change_number` to decide whether a download is needed.
+    - name: sync.local_change_number
+      type: long
+      description: >-
+        Steam Cloud change number currently held by this machine for the application, from a `Need to sync from local change number <n>` line.
+    - name: remote_file.path
+      type: keyword
+      description: >-
+        Path of the file inside the application's Steam Cloud remote storage, as written by `File is in sync` and `Delete OK for file` lines, for example `Example Publisher/Example Game/SaveData/Slot1.savegame`. This is a cloud-relative, forward-slash path in Steam's remote storage namespace and is deliberately **not** mapped to ECS `file.path`, which this data stream reserves for paths that exist on the local filesystem; mapping both into one field would make them indistinguishable. Save file paths are user content and can carry user-chosen names.
+    - name: remote_file.name
+      type: keyword
+      description: >-
+        File name within the application's Steam Cloud remote storage, either the last segment of `steam.cloud.remote_file.path` or the name logged directly by an `HTTP upload for file '<name>' beginning` line. User content, as with `steam.cloud.remote_file.path`.
+    - name: file_match.count
+      type: long
+      description: >-
+        Number of local files that matched the glob in `steam.cloud.file_match.pattern`, from a `Found <n> files that match <glob>` line.
+    - name: file_match.pattern
+      type: keyword
+      description: >-
+        Local filesystem glob the Steam client expanded while collecting an application's save files for upload, for example `C:\Program Files (x86)\Steam\steamapps\common\Example Game\SaveData\*.sav`. This is a search pattern rather than a single file, which is why it is not mapped to `file.path`.

@@ -1,0 +1,107 @@
+- name: steam.client.version
+  type: keyword
+  description: >-
+    Build number the Steam client reports for itself in its `Client version:` log lines.
+- name: steam.player.id
+  type: keyword
+  description: >-
+    64-bit Steam ID (SteamID64) of the signed-in account, derived from the 32-bit account ID in the log with `SteamID64 = 76561197960265728 + accountID`. The Steam client logs the account ID rather than the SteamID64; it is converted here because `steam.player.id` is the field the Steam Web API data streams key on, which is what makes these documents correlatable with them. The `[U:1:0]` placeholder Steam writes when no user is signed in is not a real account and is never converted.
+- name: steam.connection
+  type: group
+  fields:
+    - name: state
+      type: keyword
+      description: >-
+        Connection manager state the Steam client was in when it wrote the line, from the leading `[<state>, <n>, <n>]` prefix. Observed values are `Connecting`, `Connected`, `Logging On` and `Logged Off`; note that two of them contain a space. The two numbers that follow the state in the prefix are undocumented internal Steam counters and are deliberately not captured.
+    - name: account_id
+      type: keyword
+      description: >-
+        32-bit Steam account ID exactly as the Steam client logs it, either in a leading `[U:1:<accountid>]` prefix tag or in the `RecvMsgClientLogOnResponse() : [U:1:<accountid>]` payload. This is a different and much shorter ID space than the SteamID64 in `steam.player.id`, which is derived from it; the two are not interchangeable and the Steam Web API accepts only the latter.
+    - name: qos_level
+      type: keyword
+      description: >-
+        Network quality-of-service level the Steam client requested for a connection manager connection, from a `Connect() starting connection (<qoslevel>, ...)` line, for example `eNetQOSLevelLow`. This is a Steam-internal enum name, kept exactly as logged.
+    - name: logon.result
+      type: keyword
+      description: >-
+        Result the Steam servers returned for the client logon, from the quoted value in a `RecvMsgClientLogOnResponse() : [U:1:<accountid>] '<result>'` line. Only `OK` is observed anywhere in the sampled corpus, so no failure wording is assumed; `event.outcome` is set to `success` for `OK` and left unset for any other value.
+    - name: disconnect.reason
+      type: keyword
+      description: >-
+        Reason the Steam client gave for a connection manager disconnect, from the parenthesised value in a `ConnectionDisconnected('<reason>') : '<result>'` line, for example `I/O Operation Failed`. This is why the connection went away, which is distinct from `steam.connection.disconnect.result` — the status of handling the disconnect.
+    - name: disconnect.result
+      type: keyword
+      description: >-
+        Status the Steam client reported for handling a connection manager disconnect, from the quoted value after the reason in a `ConnectionDisconnected('<reason>') : '<result>'` line, for example `OK`. A result of `OK` means the disconnect was processed cleanly, not that the connection is healthy, so it does not drive `event.outcome`.
+    - name: reconnect.delay_seconds
+      type: double
+      unit: s
+      description: >-
+        How long the Steam client will wait before the scheduled automatic reconnect, in seconds, from a `StartAutoReconnect() will start in <n> seconds` line. The reconnect has not been attempted yet when this line is written.
+    - name: reconnect.attempt
+      type: long
+      description: >-
+        Sequence number of the automatic reconnect attempt the Steam client scheduled, from the `(attempt <n>)` suffix of a `StartAutoReconnect()` line.
+    - name: ping.latency_ms
+      type: double
+      unit: ms
+      description: >-
+        Round-trip latency the Steam client measured to the connection manager in `server.address`, in milliseconds exactly as logged. The unit is in the field name because Steam logs these as milliseconds and the sibling age value is in seconds. Steam writes `100000.0000ms` with `load 0.0000` as a "no usable ping data" sentinel rather than a measurement, and that sentinel is never indexed here, so every value in this field is a real measurement.
+    - name: ping.load
+      type: double
+      description: >-
+        Load the connection manager reported for itself alongside the ping result. This is Steam's own unitless server load figure, not a percentage or a queue depth. It is suppressed together with the latency when Steam reports the "no usable ping data" sentinel, because the `0.0000` beside that sentinel is not a reading.
+    - name: ping.age_seconds
+      type: long
+      unit: s
+      description: >-
+        Age of the cached ping sample the Steam client reused, in seconds, from the `(<n> seconds ago)` suffix of an `Existing WebSocket ping data` line. This is the only meaningful value on a line that reports the stale-data sentinel instead of a latency.
+    - name: ping.failure_reason
+      type: keyword
+      description: >-
+        Reason the connection manager ping failed, from the parenthesised value in a `PingWebSocketCM() (<endpoint>) failed talking to cm (<reason>)` line, for example `timeout/neterror - Invalid`. Ping failures are common and routine in a healthy install rather than an anomaly, so a document carrying this field is not by itself a problem signal.
+    - name: cm_list.netfilter_count
+      type: long
+      description: >-
+        Number of Netfilter connection managers the Steam directory returned, from a `GetCMListForConnect -- got <n> Netfilter CMs and <n> WebSocket CMs` line.
+    - name: cm_list.websocket_count
+      type: long
+      description: >-
+        Number of WebSocket connection managers the Steam directory returned, from a `GetCMListForConnect -- got <n> Netfilter CMs and <n> WebSocket CMs` line.
+    - name: cm_list.datacenter
+      type: keyword
+      description: >-
+        Steam datacenter code whose connection manager count is reported on a `GetCMListForConnect -- DC '<dc>' count: <n>` line, for example `lhr1`. These are Valve's own short datacenter identifiers.
+    - name: cm_list.count
+      type: long
+      description: >-
+        Number of connection managers the Steam directory returned for the datacenter in `steam.connection.cm_list.datacenter`.
+    - name: connectivity_test.result
+      type: keyword
+      description: >-
+        Result of the HTTP reachability probe against a resolved address, from the trailing token of a `Connectivity test (<addr> (<addr>)): <result>` line. Only `OK!` is observed, and only that token sets `event.outcome` to `success`. This field belongs to the HTTP reachability probe family and is unrelated to `steam.connection.ip_stack_test.outcome`.
+    - name: connectivity_test.state
+      type: keyword
+      description: >-
+        Current state of the Steam client's HTTP reachability probe, from `result=<state>` in a `Connectivity test: result=...` line. Observed values are `Connected` and `Failed`, which drive `event.outcome`; any other value leaves the outcome unset.
+    - name: connectivity_test.previous_state
+      type: keyword
+      description: >-
+        State the HTTP reachability probe was in before the current one, from `prev=<state>` in a `Connectivity test: result=...` line.
+    - name: connectivity_test.state_age_seconds
+      type: double
+      unit: s
+      description: >-
+        How long the HTTP reachability probe has been in `steam.connection.connectivity_test.state`, in seconds, from the `(since <n>s ago)` clause of a `Connectivity test: result=...` line.
+    - name: connectivity_test.in_progress
+      type: long
+      description: >-
+        Number of HTTP reachability probes the Steam client had in flight, from `in progress=<n>` in a `Connectivity test: result=...` line.
+    - name: ip_stack_test.protocol
+      type: keyword
+      description: >-
+        Protocol of the IP-stack reachability probe, from an `IPv4/IPv6 <proto> connectivity test ...` line. Observed values are `UDP` and `HTTP`. This family of line probes whether the host's IP stack can reach Steam at all and is deliberately kept apart from the `steam.connection.connectivity_test.*` HTTP reachability probe, which is a different test; the IP version of the probe is recorded in ECS `network.type`.
+    - name: ip_stack_test.outcome
+      type: keyword
+      description: >-
+        Outcome token of the IP-stack reachability probe, exactly as logged. The only values observed anywhere in the sampled corpus are `TIMEOUT` and `FAILED, no addresses resolved`, both of which set `event.outcome` to `failure`; no success wording exists for this line family, so any other token leaves `event.outcome` unset rather than being assumed to be a success.

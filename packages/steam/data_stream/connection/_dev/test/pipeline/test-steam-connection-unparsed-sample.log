@@ -1,0 +1,6 @@
+[2026-03-14 09:12:01] CCMInterface::YieldingConnect -- calling ISteamDirectory/GetCMListForConnect/?cellid=0&qoslevel=2
+[2026-03-14 09:12:01] [Connecting, 4, 0] [U:1:11223344] Client thinks it can connect via: UDP - yes, TCP - yes, WebSocket:443 - yes, WebSocket:Non443 - yes
+[2026-03-14 09:12:01] [Connecting, 4, 0] [U:1:11223344] CM Directory list says 75% of connections should be websockets, we rolled 31 - using WebSockets as default.
+[2026-03-14 10:44:18] CCMInterface::CheckSuspectConnectionWorking() -- Checking if current connection is still good
+[2026-03-14 10:44:18] CCMInterface - received heartbeat response, connection still good
+a line with no bracketed timestamp prefix

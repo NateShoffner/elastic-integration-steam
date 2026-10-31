@@ -1,0 +1,126 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T13:07:50.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cm-connection-disconnected",
+                "category": [
+                    "network"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 13:07:50] [Logged Off, 4, 0] [U:1:11223344] ConnectionDisconnected('I/O Operation Failed') : 'OK' (203.0.113.87:27021, WebSocket)",
+                "timezone": "+00:00",
+                "type": [
+                    "connection",
+                    "end"
+                ]
+            },
+            "message": "ConnectionDisconnected('I/O Operation Failed') : 'OK' (203.0.113.87:27021, WebSocket)",
+            "network": {
+                "protocol": "websocket"
+            },
+            "related": {
+                "ip": [
+                    "203.0.113.87"
+                ]
+            },
+            "server": {
+                "address": "203.0.113.87",
+                "as": {
+                    "number": 64502,
+                    "organization": {
+                        "name": "Documentation ASN"
+                    }
+                },
+                "geo": {
+                    "city_name": "Madrid",
+                    "continent_name": "Europe",
+                    "country_iso_code": "ES",
+                    "country_name": "Spain",
+                    "location": {
+                        "lat": 40.41639,
+                        "lon": -3.7025
+                    },
+                    "region_iso_code": "ES-M",
+                    "region_name": "Madrid"
+                },
+                "ip": "203.0.113.87",
+                "port": 27021
+            },
+            "steam": {
+                "connection": {
+                    "account_id": "11223344",
+                    "disconnect": {
+                        "reason": "I/O Operation Failed",
+                        "result": "OK"
+                    },
+                    "state": "Logged Off"
+                },
+                "player": {
+                    "id": "76561197971489072"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T13:07:50.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "kind": "event",
+                "original": "[2026-03-14 13:07:50] [Logged Off, 0, 0] [U:1:0] CCMInterface::SetSteamID( [U:1:0] )",
+                "timezone": "+00:00"
+            },
+            "message": "CCMInterface::SetSteamID( [U:1:0] )",
+            "steam": {
+                "connection": {
+                    "state": "Logged Off"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T13:07:52.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "cm-auto-reconnect-scheduled",
+                "category": [
+                    "network"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 13:07:52] [Logged Off, 4, 0] [U:1:11223344] StartAutoReconnect() will start in 28.0 seconds (attempt 3)",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "StartAutoReconnect() will start in 28.0 seconds (attempt 3)",
+            "steam": {
+                "connection": {
+                    "account_id": "11223344",
+                    "reconnect": {
+                        "attempt": 3,
+                        "delay_seconds": 28.0
+                    },
+                    "state": "Logged Off"
+                },
+                "player": {
+                    "id": "76561197971489072"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

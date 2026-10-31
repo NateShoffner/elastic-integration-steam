@@ -1,0 +1,6 @@
+[2026-03-14 09:12:01] [Connecting, 4, 0] [U:1:11223344] PingWebSocketCM() (cmp1-lhr1.steamserver.net:27021) starting...
+[2026-03-14 09:12:02] [Connecting, 4, 0] [U:1:11223344] PingWebSocketCM() (cmp1-lhr1.steamserver.net:27021) results: 18.4ms + load 0.2
+[2026-03-14 09:12:02] [Connecting, 4, 0] [U:1:11223344] PingWebSocketCM() (ext1-fra2.steamserver.net:27037) failed talking to cm (timeout/neterror - Invalid)
+[2026-03-14 09:12:02] [Connecting, 4, 0] [U:1:11223344] Existing WebSocket ping data (ext1-fra2.steamserver.net:27020) results: 100000.0000ms + load 0.0000 (111370 seconds ago)
+[2026-03-14 13:08:20] [Connecting, 4, 0] [U:1:11223344] PingWebSocketCM() (cmp2-lhr1.steamserver.net:27021) starting...
+[2026-03-14 13:08:21] [Connecting, 4, 0] [U:1:11223344] PingWebSocketCM() (cmp2-lhr1.steamserver.net:27021) results: 21.1ms + load 0.3

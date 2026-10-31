@@ -1,0 +1,3 @@
+[2026-03-14 13:07:50] [Logged Off, 4, 0] [U:1:11223344] ConnectionDisconnected('I/O Operation Failed') : 'OK' (203.0.113.87:27021, WebSocket)
+[2026-03-14 13:07:50] [Logged Off, 0, 0] [U:1:0] CCMInterface::SetSteamID( [U:1:0] )
+[2026-03-14 13:07:52] [Logged Off, 4, 0] [U:1:11223344] StartAutoReconnect() will start in 28.0 seconds (attempt 3)

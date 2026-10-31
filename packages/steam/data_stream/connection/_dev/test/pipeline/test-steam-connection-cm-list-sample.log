@@ -1,0 +1,3 @@
+[2026-03-14 09:12:01] GetCMListForConnect -- got 20 Netfilter CMs and 20 WebSocket CMs
+[2026-03-14 09:12:01] GetCMListForConnect -- DC 'lhr1' count: 10
+[2026-03-14 09:12:01] GetCMListForConnect -- DC 'fra2' count: 10

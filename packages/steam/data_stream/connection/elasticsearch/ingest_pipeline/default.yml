@@ -1,19 +1,503 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for parsing Steam client connection logs.
 processors:
-- set:
-    tag: set_sample_field
-    field: sample_field
-    value: "1"
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # Every line the Steam client writes is `[YYYY-MM-DD HH:MM:SS] <message>`, and
+  # in this log the message is optionally preceded by a connection-manager state
+  # prefix:
+  #   [<state>, <n>, <n>] [U:1:<accountid>] <message>
+  #
+  # The state word is NOT a single word: `Connecting`, `Connected`, `Logging On`
+  # and `Logged Off` are all observed, so it is captured with `%{DATA}` bounded
+  # by the following `, ` rather than `%{WORD}`, which would fail on the two
+  # two-word states.
+  #
+  # The two numbers between the state and the closing bracket are internal Steam
+  # counters with no documented meaning, so they are matched but deliberately
+  # not captured: naming a field for them would assert semantics this corpus
+  # does not support.
+  #
+  # The last pattern keeps an unexpected line without the bracketed timestamp
+  # prefix from failing the pipeline.
+  - grok:
+      field: event.original
+      tag: grok_log_line
+      description: Splits the leading local timestamp and the optional connection state prefix from the log message.
+      patterns:
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] \[%{DATA:steam.connection.state}, %{NONNEGINT}, %{NONNEGINT}\] \[U:1:%{NONNEGINT:steam.connection.account_id}\] %{GREEDYDATA:message}$'
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      if: ctx.event?.original != null
+
+  # Steam writes local time with no offset or timezone, so the agent's
+  # `add_locale` processor supplies `event.timezone`.
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      timezone: '{{{event.timezone}}}'
+      if: ctx._temp?.timestamp != null
+
+  # This log carries 40+ distinct message shapes, most of them internal debug
+  # chatter, so only the high-value ones are parsed here: connection manager
+  # ping latency and reported load, ping failures, connection establishment and
+  # teardown, logon results, auto-reconnect scheduling, connectivity test
+  # outcomes and connection manager list composition. Everything else keeps its
+  # raw `message` and is left uncategorized by the final `%{GREEDYDATA}`
+  # pattern, which is the right outcome for debug lines such as
+  # `CCMInterface - received heartbeat response, connection still good`,
+  # `Client thinks it can connect via: ...`, `CM Directory list says ...` and
+  # `CCMInterface::SetSteamID( ... )`.
+  #
+  # `CClientJobGetClientUpdateHosts: cached version not expired` is 21% of all
+  # lines in a real install and carries no information at all. It is parsed
+  # rather than dropped, because dropping data in the pipeline would discard it
+  # silently; giving it an explicit `event.action` instead makes the noise
+  # addressable, so an operator who wants it gone can filter or drop it
+  # deliberately and visibly.
+  #
+  # Each pattern captures the literal token that identifies the message shape
+  # into `_temp.shape`, which is the lookup key for the ECS categorization table
+  # further down.
+  #
+  # Two unrelated families of "connectivity test" line exist and are kept
+  # strictly apart, because conflating them would mix an IP-stack reachability
+  # probe with an HTTP reachability probe:
+  #   `Connectivity test: ...` / `Connectivity test (<addr>): OK!`
+  #       -> the HTTP reachability probe  -> steam.connection.connectivity_test.*
+  #   `IPv4/IPv6 <proto> connectivity test ... - <OUTCOME>`
+  #       -> the DNS/IP-stack probe       -> steam.connection.ip_stack_test.*
+  #
+  # On a `Connectivity test (<ip:port> (<ip:port>)): OK!` line the two address
+  # pairs are the same remote address printed twice (identical on every line
+  # measured across the corpus), so the second pair is captured into a throwaway
+  # `_temp` field and dropped, exactly as the `content` data stream does for its
+  # download interface lines. It is deliberately NOT mapped to a local address:
+  # that would assert this machine and the probe target are the same host. The
+  # one line in this log with a genuine local address says so explicitly, and is
+  # handled below.
+  #
+  # The most frequent shapes come first so common lines stop matching early.
+  - grok:
+      field: message
+      tag: grok_message
+      description: Parses the known Steam connection message shapes.
+      patterns:
+        - '^(?<_temp.shape>CClientJobGetClientUpdateHosts: cached version not expired)$'
+        - '^PingWebSocketCM\(\) \(%{HOSTNAME:server.address}:%{NONNEGINT:server.port:long}\) (?<_temp.shape>starting)\.\.\.$'
+        - '^(?<_temp.shape>GetCMListForConnect -- DC) ''%{DATA:steam.connection.cm_list.datacenter}'' count: %{NONNEGINT:steam.connection.cm_list.count:long}$'
+        - '^PingWebSocketCM\(\) \(%{HOSTNAME:server.address}:%{NONNEGINT:server.port:long}\) (?<_temp.shape>failed talking to cm) \(%{DATA:steam.connection.ping.failure_reason}\)$'
+        - '^PingWebSocketCM\(\) \(%{HOSTNAME:server.address}:%{NONNEGINT:server.port:long}\) (?<_temp.shape>results): %{NUMBER:_temp.latency_ms:double}ms \+ load %{NUMBER:_temp.load:double}$'
+        - '^(?<_temp.shape>Connectivity test: Starting test, fetching) ''%{DATA:url.original}''$'
+        - '^(?<_temp.shape>Connect\(\) starting connection) \(%{WORD:steam.connection.qos_level}, %{HOSTNAME:server.address}:%{NONNEGINT:server.port:long}, %{WORD:network.protocol}\)$'
+        - '^(?<_temp.shape>Existing WebSocket ping data) \(%{HOSTNAME:server.address}:%{NONNEGINT:server.port:long}\) results: %{NUMBER:_temp.latency_ms:double}ms \+ load %{NUMBER:_temp.load:double} \(%{NONNEGINT:steam.connection.ping.age_seconds:long} seconds ago\)$'
+        - '^%{WORD:network.type} %{WORD:steam.connection.ip_stack_test.protocol} connectivity test \(%{HOSTNAME:server.address}\) - %{GREEDYDATA:steam.connection.ip_stack_test.outcome}$'
+        - '^%{WORD:network.type} %{WORD:steam.connection.ip_stack_test.protocol} connectivity test \(%{HOSTNAME:server.address} / %{IP:_temp.remote_ip}:%{NONNEGINT:_temp.remote_port:long} \(%{IP:_temp.remote_ip_repeat}:%{NONNEGINT:_temp.remote_port_repeat:long}\)\) - %{GREEDYDATA:steam.connection.ip_stack_test.outcome}$'
+        - '^(?<_temp.shape>GetCMListForConnect -- got) %{NONNEGINT:steam.connection.cm_list.netfilter_count:long} Netfilter CMs and %{NONNEGINT:steam.connection.cm_list.websocket_count:long} WebSocket CMs$'
+        - '^(?<_temp.shape>StartAutoReconnect\(\)) will start in %{NUMBER:steam.connection.reconnect.delay_seconds:double} seconds \(attempt %{NONNEGINT:steam.connection.reconnect.attempt:long}\)$'
+        - '^(?<_temp.shape>Connectivity test) \(%{IP:_temp.remote_ip}:%{NONNEGINT:_temp.remote_port:long} \(%{IP:_temp.remote_ip_repeat}:%{NONNEGINT:_temp.remote_port_repeat:long}\)\): %{GREEDYDATA:steam.connection.connectivity_test.result}$'
+        - '^(?<_temp.shape>ConnectionCompleted\(\)) \(%{IP:server.ip}:%{NONNEGINT:server.port:long}, %{WORD:network.protocol}\) local address \(%{IP:_temp.local_ip}:%{NONNEGINT:_temp.local_port:long}\)$'
+        - '^(?<_temp.shape>ConnectionDisconnected)\(''%{DATA:steam.connection.disconnect.reason}''\) : ''%{DATA:steam.connection.disconnect.result}'' \(%{IP:server.ip}:%{NONNEGINT:server.port:long}, %{WORD:network.protocol}\)$'
+        - '^(?<_temp.shape>Connectivity test: result)=%{WORD:steam.connection.connectivity_test.state} \(since %{NUMBER:steam.connection.connectivity_test.state_age_seconds:double}s ago\), prev=%{WORD:steam.connection.connectivity_test.previous_state}, in progress=%{NONNEGINT:steam.connection.connectivity_test.in_progress:long}$'
+        - '^(?<_temp.shape>RecvMsgClientLogOnResponse\(\)) : \[U:1:%{NONNEGINT:steam.connection.account_id}\] ''%{DATA:steam.connection.logon.result}''$'
+        - '^Client version: %{GREEDYDATA:steam.client.version}$'
+        - '^%{GREEDYDATA}$'
+      if: ctx.message != null
+
+  # The two IP-stack probe shapes above differ only in whether Steam resolved an
+  # address, so their shape key is set from the parsed protocol instead of from a
+  # literal in the line, which keeps the key out of reach of the capitalised
+  # `Connectivity test` family.
+  - set:
+      field: _temp.shape
+      tag: set_shape_ip_stack_test
+      value: 'IP stack connectivity test'
+      if: ctx.steam?.connection?.ip_stack_test?.protocol != null
+
+  # `WebSocket` is the connection type Steam prints for a connection manager
+  # endpoint, and it is an application protocol rather than an ECS transport, so
+  # it is normalised into `network.protocol`. `network.transport` is deliberately
+  # left unset: the only other value Steam uses here is its own `Netfilter`
+  # label, which is a vendor name, not a `tcp`/`udp` token, so deriving a
+  # transport would mean inventing one.
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  # `IPv6` / `IPv4` from an IP-stack probe is exactly ECS `network.type`, which
+  # expects the lower-case form.
+  - lowercase:
+      field: network.type
+      tag: lowercase_network_type
+      ignore_missing: true
+
+  # When Steam has no resolved address it prints `0.0.0.0` with a port. That is
+  # a sentinel rather than an endpoint, so it is never promoted to a real
+  # address and never reaches `related.ip`. The repeated second pair is dropped
+  # with the rest of `_temp`.
+  - set:
+      field: server.ip
+      tag: set_server_ip
+      copy_from: _temp.remote_ip
+      if: ctx._temp?.remote_ip != null && ctx._temp.remote_ip != '0.0.0.0'
+  - set:
+      field: server.port
+      tag: set_server_port
+      copy_from: _temp.remote_port
+      if: ctx._temp?.remote_ip != null && ctx._temp.remote_ip != '0.0.0.0' && ctx._temp.remote_port != null
+  - set:
+      field: server.address
+      tag: set_server_address_from_ip
+      copy_from: server.ip
+      description: Some lines name the connection manager by address only, in which case the address is the IP as logged.
+      if: ctx.server?.address == null && ctx.server?.ip != null
+
+  # `ConnectionCompleted()` is the only shape in this log with a genuine
+  # remote/local address pair: the local side is explicitly labelled `local
+  # address` and carries an ephemeral port. Everywhere else a second address is
+  # the same remote address printed twice. The remote endpoint is already in
+  # `server.*`, consistently with every other parsed shape in this data stream,
+  # so the local socket becomes `client.*` — the Steam client is the side that
+  # initiated the connection, which is exactly what ECS `client.*` means.
+  - set:
+      field: client.ip
+      tag: set_client_ip
+      copy_from: _temp.local_ip
+      if: ctx._temp?.local_ip != null
+  - set:
+      field: client.address
+      tag: set_client_address
+      copy_from: _temp.local_ip
+      if: ctx._temp?.local_ip != null
+  - set:
+      field: client.port
+      tag: set_client_port
+      copy_from: _temp.local_port
+      if: ctx._temp?.local_port != null
+
+  # `100000.0000ms + load 0.0000` on an `Existing WebSocket ping data` line is
+  # Steam's "no usable ping data" sentinel, not a 100 second round trip, and the
+  # trailing `(<n> seconds ago)` is the age of the stale sample. Indexing the
+  # sentinel would poison every latency aggregation, so neither the latency nor
+  # the meaningless load beside it is promoted; the age is kept, because that is
+  # the real information on the line.
+  - set:
+      field: steam.connection.ping.latency_ms
+      tag: set_ping_latency_ms
+      copy_from: _temp.latency_ms
+      if: ctx._temp?.latency_ms != null && ctx._temp.latency_ms < 100000
+  - set:
+      field: steam.connection.ping.load
+      tag: set_ping_load
+      copy_from: _temp.load
+      if: ctx._temp?.latency_ms != null && ctx._temp.latency_ms < 100000 && ctx._temp.load != null
+
+  # Steam writes account ID 0 (`[U:1:0]`) when no user is signed in. That is a
+  # placeholder rather than an account, so it is dropped instead of indexed and
+  # never used to derive a player ID.
+  - remove:
+      field: steam.connection.account_id
+      tag: remove_placeholder_account_id
+      ignore_missing: true
+      if: ctx.steam?.connection?.account_id == '0'
+
+  # The IDs in this log are 32-bit account IDs, both in the `[U:1:<accountid>]`
+  # state prefix and in the `RecvMsgClientLogOnResponse()` payload. The Steam
+  # Web API data streams key on the SteamID64, so it is derived here with
+  # `SteamID64 = 76561197960265728 + accountID` and written to the shared
+  # `steam.player.id` field, the same way the `cloud` data stream does, which
+  # lets these documents join to API data.
+  - script:
+      lang: painless
+      tag: script_derive_steam_player_id
+      description: Derives the SteamID64 in `steam.player.id` from the 32-bit Steam account ID.
+      if: ctx.steam?.connection?.account_id != null
+      params:
+        steamid64_base: 76561197960265728
+      source: |-
+        long base = ((Number)params.steamid64_base).longValue();
+        long accountId = Long.parseLong(ctx.steam.connection.account_id);
+        ctx.steam.player = ['id': String.valueOf(base + accountId)];
+
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_connectivity_test_url
+      target_field: url
+      keep_original: true
+      if: ctx.url?.original != null
+
+  - geoip:
+      field: server.ip
+      target_field: server.geo
+      tag: geoip_server_geo
+      ignore_missing: true
+      if: ctx.server?.ip != null && ctx.server.geo == null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: server.ip
+      target_field: server.as
+      properties:
+        - asn
+        - organization_name
+      tag: geoip_server_asn
+      ignore_missing: true
+      if: ctx.server?.ip != null && ctx.server.as == null
+  - rename:
+      field: server.as.asn
+      tag: rename_server_as_number
+      target_field: server.as.number
+      ignore_missing: true
+  - rename:
+      field: server.as.organization_name
+      tag: rename_server_as_organization_name
+      target_field: server.as.organization.name
+      ignore_missing: true
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+
+  # Most of this log is network activity, so `event.category: [network]` fits
+  # nearly every parsed shape. Connection establishment and teardown are the
+  # only shapes that genuinely describe a connection changing state, so they are
+  # the only ones given `[connection, start]` / `[connection, end]`; ping probes,
+  # connectivity tests and connection manager list reports are measurements and
+  # therefore `[info]`. `RecvMsgClientLogOnResponse()` is the result of the Steam
+  # logon handshake, which is authentication rather than plain connectivity.
+  #
+  # `StartAutoReconnect()` only schedules a future reconnect, so it is `[info]`
+  # rather than `[connection, start]` — no connection is attempted on that line.
+  #
+  # `CClientJobGetClientUpdateHosts` gets an action but no category or type: it
+  # is internal client bookkeeping that matches no ECS category.
+  #
+  # `Client version:` and every unrecognized shape never set `_temp.shape`, so
+  # they are left without an action or a category on purpose.
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Maps the recognized connection message shape to its ECS action and categorization.
+      if: ctx._temp?.shape != null
+      params:
+        'starting':
+          action: cm-ping-started
+          category:
+            - network
+          type:
+            - info
+        'results':
+          action: cm-ping-completed
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+        'failed talking to cm':
+          action: cm-ping-failed
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+        'Existing WebSocket ping data':
+          action: cm-ping-data-reused
+          category:
+            - network
+          type:
+            - info
+        'Connect() starting connection':
+          action: cm-connection-started
+          category:
+            - network
+          type:
+            - connection
+            - start
+        'ConnectionCompleted()':
+          action: cm-connection-completed
+          category:
+            - network
+          type:
+            - connection
+            - start
+          outcome: success
+        'ConnectionDisconnected':
+          action: cm-connection-disconnected
+          category:
+            - network
+          type:
+            - connection
+            - end
+        'RecvMsgClientLogOnResponse()':
+          action: cm-logon-response-received
+          category:
+            - authentication
+          type:
+            - start
+        'StartAutoReconnect()':
+          action: cm-auto-reconnect-scheduled
+          category:
+            - network
+          type:
+            - info
+        'Connectivity test: Starting test, fetching':
+          action: connectivity-test-started
+          category:
+            - network
+          type:
+            - info
+        'Connectivity test':
+          action: connectivity-test-completed
+          category:
+            - network
+          type:
+            - info
+        'Connectivity test: result':
+          action: connectivity-test-state-reported
+          category:
+            - network
+          type:
+            - info
+        'IP stack connectivity test':
+          action: ip-stack-connectivity-test-completed
+          category:
+            - network
+          type:
+            - info
+        'GetCMListForConnect -- got':
+          action: cm-list-received
+          category:
+            - network
+          type:
+            - info
+        'GetCMListForConnect -- DC':
+          action: cm-list-datacenter-reported
+          category:
+            - network
+          type:
+            - info
+        'CClientJobGetClientUpdateHosts: cached version not expired':
+          action: client-update-hosts-cache-checked
+      source: |-
+        def mapping = params[ctx._temp.shape];
+        if (mapping == null) {
+          return;
+        }
+        ctx.event.action = mapping.action;
+        if (mapping.containsKey('category')) {
+          ctx.event.category = mapping.category;
+        }
+        if (mapping.containsKey('type')) {
+          ctx.event.type = mapping.type;
+        }
+        if (mapping.containsKey('outcome')) {
+          ctx.event.outcome = mapping.outcome;
+        }
+
+  # Every outcome below is driven by an explicit allowlist of tokens that were
+  # measured in a real install. Tokens outside these lists leave `event.outcome`
+  # unset rather than being assumed to be successes: in particular the IP-stack
+  # probe has no observed success wording at all (only `TIMEOUT` and
+  # `FAILED, no addresses resolved`), so treating "not TIMEOUT" as success would
+  # manufacture successes that never happened. The genuine success case for
+  # reachability is the separate `Connectivity test (<addr>): OK!` line.
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_logon_success
+      value: success
+      if: ctx.steam?.connection?.logon?.result == 'OK'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_connectivity_test_success
+      value: success
+      if: ctx.steam?.connection?.connectivity_test?.result == 'OK!'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_connectivity_state_success
+      value: success
+      if: ctx.steam?.connection?.connectivity_test?.state == 'Connected'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_connectivity_state_failure
+      value: failure
+      if: ctx.steam?.connection?.connectivity_test?.state == 'Failed'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_ip_stack_test_failure
+      value: failure
+      if: ctx.steam?.connection?.ip_stack_test?.outcome == 'TIMEOUT' || ctx.steam?.connection?.ip_stack_test?.outcome == 'FAILED, no addresses resolved'
+
+  - append:
+      field: related.ip
+      tag: append_server_ip_to_related_ip
+      value: '{{{server.ip}}}'
+      allow_duplicates: false
+      if: ctx.server?.ip != null
+  - append:
+      field: related.ip
+      tag: append_client_ip_to_related_ip
+      value: '{{{client.ip}}}'
+      allow_duplicates: false
+      if: ctx.client?.ip != null
+  - append:
+      field: related.hosts
+      tag: append_server_address_to_related_hosts
+      value: '{{{server.address}}}'
+      allow_duplicates: false
+      description: Only when the address is a host name; when Steam names the endpoint by IP the value is already in `related.ip`.
+      if: ctx.server?.address != null && ctx.server.address != ctx.server?.ip
+  - append:
+      field: related.hosts
+      tag: append_url_domain_to_related_hosts
+      value: '{{{url.domain}}}'
+      allow_duplicates: false
+      if: ctx.url?.domain != null
+
+  - remove:
+      field:
+        - _temp
+      tag: remove_temp_fields
+      ignore_missing: true
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
 on_failure:
-- set:
-    field: error.message
-    value: >-
-      Processor '{{{ _ingest.on_failure_processor_type }}}'
-      with tag '{{{ _ingest.on_failure_processor_tag }}}'
-      in pipeline '{{{ _ingest.pipeline }}}'
-      failed with message '{{{ _ingest.on_failure_message }}}'
-- set:
-    field: event.kind
-    tag: set_pipeline_error_to_event_kind
-    value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

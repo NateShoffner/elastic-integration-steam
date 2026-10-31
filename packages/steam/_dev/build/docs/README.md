@@ -50,7 +50,17 @@ The three Web API data streams are time series (TSDB) data streams, dimensioned 
 - Watch download and update activity, including CDN endpoints used, achieved download rates, failed manifest requests, and file-validation problems.
 - Confirm Steam Cloud saves are syncing, and spot accounts or titles where sync is repeatedly deferred.
 - Follow Workshop content: which items are added, removed or updated, and which item detail lookups are being denied.
-- Query presence across a group of accounts, showing who is online and what they are playing. This release ships no Kibana dashboards; the data streams are designed to be charted directly in Discover or Lens.
+- Query presence across a group of accounts, showing who is online and what they are playing.
+
+### Dashboards
+
+The integration installs three dashboards, linked to each other from a navigation bar at the top of each:
+
+- **[Logs Steam] Game activity**: game processes started, abnormal exits and their exit codes, application updates, download rates and content errors, from `gameprocess` and `content`.
+- **[Logs Steam] Client connectivity and sync**: connection manager latency, the connection lifecycle and disconnect reasons, connectivity tests, Steam Cloud sync activity and Workshop activity and failures, from `connection`, `cloud` and `workshop`.
+- **[Metrics Steam] Players and playtime**: account presence, who is in game, two-week and lifetime playtime by game, playtime by platform and recently launched games, from the three Web API data streams.
+
+The client logs identify games by Steam application ID only, so the two log dashboards show application IDs; game names come from the Web API data streams.
 
 ## What do I need to use this integration?
 
@@ -130,7 +140,8 @@ To confirm data is flowing:
 1. In Kibana, open **Discover**.
 2. For the client-log data streams, query `logs-steam.*`. Launching and then quitting a game is the quickest way to generate activity: it produces `gameprocess` documents with `event.category: process` and `event.type: start`, then a matching `event.type: end` carrying `process.exit_code`.
 3. For the Web API data streams, query `metrics-steam.*`. Documents appear on the first poll after the policy is applied, which can take up to the configured interval.
-4. Confirm correlation works by picking a `steam.app.id` present in both, for example comparing a `gameprocess` session against the `owned_game` playtime for the same `steam.player.id`.
+4. Open **[Logs Steam] Game activity** or **[Metrics Steam] Players and playtime** and confirm the panels populate.
+5. Confirm correlation works by picking a `steam.app.id` present in both, for example comparing a `gameprocess` session against the `owned_game` playtime for the same `steam.player.id`.
 
 ## Troubleshooting
 

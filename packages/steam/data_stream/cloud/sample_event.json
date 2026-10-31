@@ -1,0 +1,76 @@
+{
+    "@timestamp": "2026-03-14T09:12:05.000Z",
+    "agent": {
+        "ephemeral_id": "820c3252-e721-4d09-9314-cf5b2319e77a",
+        "id": "d5c4f0d3-16fe-40a2-aef1-487d8bf091c1",
+        "name": "elastic-agent-54140",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "data_stream": {
+        "dataset": "steam.cloud",
+        "namespace": "25513",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "d5c4f0d3-16fe-40a2-aef1-487d8bf091c1",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "steam.cloud",
+        "ingested": "2026-10-31T09:46:29Z",
+        "kind": "event",
+        "module": "steam",
+        "original": "[2026-03-14 09:12:05] Client version: 1792618285",
+        "timezone": "+00:00"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-54140",
+        "ip": [
+            "192.168.160.2",
+            "172.18.0.5"
+        ],
+        "mac": [
+            "02-42-AC-12-00-05",
+            "02-42-C0-A8-A0-02"
+        ],
+        "name": "elastic-agent-54140",
+        "os": {
+            "family": "",
+            "kernel": "6.18.33.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "device_id": "74",
+            "fingerprint": "ea5863b7b405f3d9d0b43e80f736b75e5062673c7f1f46cdf8373fd0b7c69d69",
+            "inode": "107241966127668991",
+            "path": "/tmp/service_logs/cloud_log.txt"
+        },
+        "offset": 1
+    },
+    "message": "Client version: 1792618285",
+    "steam": {
+        "client": {
+            "version": "1792618285"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "steam-cloud"
+    ]
+}

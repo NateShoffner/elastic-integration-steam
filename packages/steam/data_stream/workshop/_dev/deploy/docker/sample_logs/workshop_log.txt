@@ -1,0 +1,16 @@
+
+[2026-03-14 09:12:06] Client version: 1792618285
+[2026-03-14 09:12:06] Loading workshop items for 26 installed apps for user [U:1:11223344]:
+[2026-03-14 09:12:06] [AppID 440] Loaded workshop items in "C:\Program Files (x86)\Steam\steamapps\workshop\content\440" (12 installed, 0 needed)
+[2026-03-14 09:12:06] [AppID 570] Loaded workshop items in "D:\SteamLibrary\steamapps\workshop\content\570" (143 installed, 2 needed)
+[2026-03-14 09:12:07] [AppID 440] Requesting updated subscription list
+[2026-03-14 09:12:07] [AppID 570] Skipping subscription list update. Last updated less than a day ago ( 3241 < 86400 ).
+[2026-03-14 09:12:08] [AppID 440] Subscribed items did not change. Number of items: 12 (cache update time: 1793430334)
+[2026-03-14 09:12:08] [AppID 440] Item info for 12 item(s) (full list): revision 0, 0 update(s), 0 private, update time 1793430334
+[2026-03-14 09:12:09] [AppID 440] Item change feed: revision 0, 0 change(s), cursor 1793424738 -> 1793424738, legacy included
+[2026-03-14 09:12:09] [AppID 570] Item change feed returned Ignored (revision 0, cursor 1793427457)
+[2026-03-14 14:22:00] [AppID 570] Item change feed: revision 0, 2 change(s), cursor 1793423991 -> 1793429315
+[2026-03-14 14:22:01] [AppID 570] Detected workshop change : added subscribed item 2814593102
+[2026-03-14 14:22:04] [AppID 570] Finished Workshop download job : No Error
+[2026-03-14 14:22:05] [AppID 570] Item info for 144 item(s) (full list): revision 0, 1 update(s), 0 private, update time 1793430401
+[2026-03-14 18:50:12] [AppID 440] Skipping subscription list update (not needed).

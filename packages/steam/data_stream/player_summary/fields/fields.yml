@@ -2,5 +2,4 @@
   type: keyword
   dimension: true
   description: >-
-    64-bit Steam ID (SteamID64) of the account this document describes. Used as the time series
-    dimension for this data stream.
+    64-bit Steam ID (SteamID64) of the account this document describes. Used as the time series dimension for this data stream.

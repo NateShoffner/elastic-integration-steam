@@ -1,0 +1,10 @@
+wait_for_data_timeout: 1m
+input: filestream
+service: steam-gameprocess-filestream
+data_stream:
+  vars:
+    paths:
+      - "{{SERVICE_LOGS_DIR}}/gameprocess_log.txt"
+    preserve_original_event: true
+assert:
+  hit_count: 20

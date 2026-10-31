@@ -56,8 +56,7 @@ policy_templates:
             type: password
             title: Steam Web API Key
             description: >-
-              Steam Web API key, issued at https://steamcommunity.com/dev/apikey. A key is tied to a Steam
-              account and a domain, and is rate limited to 100,000 calls per day.
+              Steam Web API key, issued at https://steamcommunity.com/dev/apikey. A key is tied to a Steam account and a domain, and is rate limited to 100,000 calls per day.
             required: true
             show_user: true
             secret: true
@@ -65,9 +64,7 @@ policy_templates:
             type: text
             title: Steam IDs
             description: >-
-              64-bit Steam IDs of the accounts to poll, one per entry. A profile's 64-bit ID can be read from
-              its profile URL, or resolved from a vanity name with `ISteamUser/ResolveVanityURL`. Profiles
-              must be public for playtime and recently played games to be returned.
+              64-bit Steam IDs of the accounts to poll, one per entry. A profile's 64-bit ID can be read from its profile URL, or resolved from a vanity name with `ISteamUser/ResolveVanityURL`. Profiles must be public for playtime and recently played games to be returned.
             multi: true
             required: true
             show_user: true

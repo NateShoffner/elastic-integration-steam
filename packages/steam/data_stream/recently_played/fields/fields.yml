@@ -2,11 +2,9 @@
   type: keyword
   dimension: true
   description: >-
-    64-bit Steam ID (SteamID64) of the account that owns the playtime this document describes. Used
-    as a time series dimension for this data stream.
+    64-bit Steam ID (SteamID64) of the account that owns the playtime this document describes. Used as a time series dimension for this data stream.
 - name: steam.app.id
   type: keyword
   dimension: true
   description: >-
-    Steam application ID of the game this document describes. Used as a time series dimension for
-    this data stream.
+    Steam application ID of the game this document describes. Used as a time series dimension for this data stream.

@@ -1,0 +1,9 @@
+version: "2.3"
+services:
+  steam-cloud-filestream:
+    image: alpine
+    hostname: steam-cloud-filestream
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log/
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"

@@ -1,0 +1,10 @@
+wait_for_data_timeout: 1m
+input: filestream
+service: steam-content-filestream
+data_stream:
+  vars:
+    paths:
+      - "{{SERVICE_LOGS_DIR}}/content_log.txt"
+    preserve_original_event: true
+assert:
+  hit_count: 21

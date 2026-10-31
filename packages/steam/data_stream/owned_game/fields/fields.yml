@@ -24,6 +24,10 @@
   type: boolean
   description: >-
     Whether the game publishes achievement and stat data to the Steam community, from `has_community_visible_stats`. A property of the game rather than of the account, and absent for games that publish nothing.
+- name: steam.app.has_leaderboards
+  type: boolean
+  description: >-
+    Whether the game has Steam leaderboards, from `has_leaderboards`. A property of the game rather than of the account, and absent for games without leaderboards.
 - name: steam.app.content_descriptors
   type: long
   description: >-

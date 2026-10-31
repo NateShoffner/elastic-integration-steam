@@ -7,11 +7,12 @@
             },
             "event": {
                 "kind": "metric",
-                "original": "{\"appid\":440,\"name\":\"Team Fortress 2\",\"playtime_forever\":58896,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"has_community_visible_stats\":true,\"playtime_windows_forever\":41200,\"playtime_mac_forever\":0,\"playtime_linux_forever\":3150,\"playtime_deck_forever\":0,\"rtime_last_played\":1771996800,\"playtime_disconnected\":0,\"steamid\":\"76561197971489072\"}"
+                "original": "{\"appid\":440,\"name\":\"Team Fortress 2\",\"playtime_forever\":58896,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"has_community_visible_stats\":true,\"has_leaderboards\":true,\"playtime_windows_forever\":41200,\"playtime_mac_forever\":0,\"playtime_linux_forever\":3150,\"playtime_deck_forever\":0,\"rtime_last_played\":1771996800,\"playtime_disconnected\":0,\"steamid\":\"76561197971489072\"}"
             },
             "steam": {
                 "app": {
                     "has_community_visible_stats": true,
+                    "has_leaderboards": true,
                     "icon": {
                         "hash": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
                         "url": "https://media.steampowered.com/steamcommunity/public/images/apps/440/4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4.jpg"

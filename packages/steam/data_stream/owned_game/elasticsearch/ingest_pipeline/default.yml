@@ -112,6 +112,11 @@ processors:
       tag: rename_app_has_community_visible_stats
       target_field: steam.app.has_community_visible_stats
       ignore_missing: true
+  - rename:
+      field: json.has_leaderboards
+      tag: rename_app_has_leaderboards
+      target_field: steam.app.has_leaderboards
+      ignore_missing: true
   # `content_descriptorids` is an array of Valve's mature content flags and is
   # absent for most games.
   - rename:

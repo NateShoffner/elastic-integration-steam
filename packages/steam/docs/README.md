@@ -289,22 +289,22 @@ An example event for `gameprocess` looks as following:
 {
     "@timestamp": "2026-03-14T09:14:21.000Z",
     "agent": {
-        "ephemeral_id": "18c0a3fd-3b79-4997-833c-42bc7202ce52",
-        "id": "105cfd0d-15d3-4fd7-94a5-1501f195686f",
-        "name": "elastic-agent-69599",
+        "ephemeral_id": "698c9442-1e47-4017-ad96-9766ed5cce8b",
+        "id": "e859cf68-0504-4fec-b57a-69f2a7537deb",
+        "name": "elastic-agent-16025",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.gameprocess",
-        "namespace": "77833",
+        "namespace": "40024",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "105cfd0d-15d3-4fd7-94a5-1501f195686f",
+        "id": "e859cf68-0504-4fec-b57a-69f2a7537deb",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -315,7 +315,7 @@ An example event for `gameprocess` looks as following:
             "process"
         ],
         "dataset": "steam.gameprocess",
-        "ingested": "2026-10-31T10:09:49Z",
+        "ingested": "2026-10-31T12:11:45Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:14:21] AppID 440 adding PID 31400 as a tracked process \"\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe\"\"",
@@ -327,16 +327,16 @@ An example event for `gameprocess` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-69599",
+        "hostname": "elastic-agent-16025",
         "ip": [
-            "172.29.0.2",
+            "172.23.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-AC-1D-00-02"
+            "02-42-AC-17-00-02"
         ],
-        "name": "elastic-agent-69599",
+        "name": "elastic-agent-16025",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -353,7 +353,7 @@ An example event for `gameprocess` looks as following:
         "file": {
             "device_id": "74",
             "fingerprint": "dbbf7f91c8676d594721ede12bca6e7d989458f4355d0f3f0ff28e6f36370152",
-            "inode": "11540474046107746",
+            "inode": "3940649676030185",
             "path": "/tmp/service_logs/gameprocess_log.txt"
         },
         "offset": 1
@@ -463,22 +463,22 @@ An example event for `content` looks as following:
 {
     "@timestamp": "2026-03-14T09:20:11.000Z",
     "agent": {
-        "ephemeral_id": "633adbe5-0434-460a-b4b0-cc3629887272",
-        "id": "0ba0dea4-c06f-45b6-8d97-0b068b244456",
-        "name": "elastic-agent-31156",
+        "ephemeral_id": "51320279-185c-49b3-98f3-ef144074889b",
+        "id": "5e6b6c18-b3b9-4155-ba3c-c13772128540",
+        "name": "elastic-agent-38193",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.content",
-        "namespace": "97932",
+        "namespace": "40496",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "0ba0dea4-c06f-45b6-8d97-0b068b244456",
+        "id": "5e6b6c18-b3b9-4155-ba3c-c13772128540",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -489,7 +489,7 @@ An example event for `content` looks as following:
             "network"
         ],
         "dataset": "steam.content",
-        "ingested": "2026-10-31T10:11:11Z",
+        "ingested": "2026-10-31T12:13:10Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:20:11] Adding peer server 'desktop-1' (192.168.1.24:27040)",
@@ -501,16 +501,16 @@ An example event for `content` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-31156",
+        "hostname": "elastic-agent-38193",
         "ip": [
-            "172.31.0.2",
+            "172.25.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-AC-1F-00-02"
+            "02-42-AC-19-00-02"
         ],
-        "name": "elastic-agent-31156",
+        "name": "elastic-agent-38193",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -526,11 +526,11 @@ An example event for `content` looks as following:
     "log": {
         "file": {
             "device_id": "74",
-            "fingerprint": "9a0e8733676ce124765b893475a761ac8cd5c302cb6c1379649d8ce8316dd09b",
-            "inode": "9288674232422530",
+            "fingerprint": "a493e8f6924418cf981733e0d92753abc938c5a00d794e17e6d7636ff582cb5c",
+            "inode": "4785074606161838",
             "path": "/tmp/service_logs/content_log.txt"
         },
-        "offset": 1
+        "offset": 2
     },
     "message": "Adding peer server 'desktop-1' (192.168.1.24:27040)",
     "related": {
@@ -614,22 +614,22 @@ An example event for `cloud` looks as following:
 {
     "@timestamp": "2026-03-14T09:14:22.000Z",
     "agent": {
-        "ephemeral_id": "7946fe62-56cb-48ad-92f0-d087e2661d94",
-        "id": "1049ca04-afaf-4ec4-af94-3c04955b1b46",
-        "name": "elastic-agent-99394",
+        "ephemeral_id": "df88756b-33c7-43ae-8b9d-b86785ceb649",
+        "id": "2b7d44bb-d2e9-4a2d-b960-39fe8ebbc32a",
+        "name": "elastic-agent-98808",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.cloud",
-        "namespace": "82734",
+        "namespace": "93598",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "1049ca04-afaf-4ec4-af94-3c04955b1b46",
+        "id": "2b7d44bb-d2e9-4a2d-b960-39fe8ebbc32a",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -637,7 +637,7 @@ An example event for `cloud` looks as following:
         "action": "cloud-init-cache-request-completed",
         "agent_id_status": "verified",
         "dataset": "steam.cloud",
-        "ingested": "2026-10-31T10:12:32Z",
+        "ingested": "2026-10-31T12:14:30Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:14:22] [U:1:11223344] [AppID 440] Init cache request complete",
@@ -646,16 +646,16 @@ An example event for `cloud` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-99394",
+        "hostname": "elastic-agent-98808",
         "ip": [
-            "192.168.16.2",
+            "172.27.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-C0-A8-10-02"
+            "02-42-AC-1B-00-02"
         ],
-        "name": "elastic-agent-99394",
+        "name": "elastic-agent-98808",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -672,7 +672,7 @@ An example event for `cloud` looks as following:
         "file": {
             "device_id": "74",
             "fingerprint": "56ea323ff4bea31ca029ad99dbfc4f51e83051e04f3b411db21e61032489b548",
-            "inode": "6473924465315981",
+            "inode": "9007199256821766",
             "path": "/tmp/service_logs/cloud_log.txt"
         },
         "offset": 1
@@ -682,10 +682,8 @@ An example event for `cloud` looks as following:
         "app": {
             "id": "440"
         },
-        "cloud": {
-            "account_id": "11223344"
-        },
         "player": {
+            "account_id": "11223344",
             "id": "76561197971489072"
         }
     },
@@ -791,22 +789,22 @@ An example event for `connection` looks as following:
 {
     "@timestamp": "2026-03-14T09:12:01.000Z",
     "agent": {
-        "ephemeral_id": "649b4e98-25e6-4366-bc60-f97d0f80bed1",
-        "id": "07936a40-0c28-458d-b962-1c070659888c",
-        "name": "elastic-agent-42380",
+        "ephemeral_id": "c41a5b50-e3e5-42fe-8a15-5169f9516f2b",
+        "id": "6c7b5935-591c-4507-a32b-be021ca014ef",
+        "name": "elastic-agent-98658",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.connection",
-        "namespace": "48989",
+        "namespace": "31454",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "07936a40-0c28-458d-b962-1c070659888c",
+        "id": "6c7b5935-591c-4507-a32b-be021ca014ef",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -817,7 +815,7 @@ An example event for `connection` looks as following:
             "network"
         ],
         "dataset": "steam.connection",
-        "ingested": "2026-10-31T10:13:50Z",
+        "ingested": "2026-10-31T12:15:49Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:12:01] GetCMListForConnect -- got 20 Netfilter CMs and 20 WebSocket CMs",
@@ -829,16 +827,16 @@ An example event for `connection` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-42380",
+        "hostname": "elastic-agent-98658",
         "ip": [
-            "192.168.48.2",
+            "172.29.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-C0-A8-30-02"
+            "02-42-AC-1D-00-02"
         ],
-        "name": "elastic-agent-42380",
+        "name": "elastic-agent-98658",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -855,7 +853,7 @@ An example event for `connection` looks as following:
         "file": {
             "device_id": "74",
             "fingerprint": "f51a77fecedbf0910892fe360d92a3cd1e1cadb2d15df8f5c9e993510fdf88a6",
-            "inode": "5066549581762704",
+            "inode": "6473924466426089",
             "path": "/tmp/service_logs/connection_log.txt"
         },
         "offset": 1
@@ -950,22 +948,22 @@ An example event for `workshop` looks as following:
 {
     "@timestamp": "2026-03-14T09:12:06.000Z",
     "agent": {
-        "ephemeral_id": "e8c2e467-e26e-4adb-86e5-149ff1c875d8",
-        "id": "aed69669-fce1-45bb-abd5-37537e7d331d",
-        "name": "elastic-agent-27654",
+        "ephemeral_id": "6345995d-6af3-4a38-91c1-65184142e05d",
+        "id": "6c2b89cb-264a-4c55-ac71-5b474e05066e",
+        "name": "elastic-agent-38094",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.workshop",
-        "namespace": "68193",
+        "namespace": "75765",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "aed69669-fce1-45bb-abd5-37537e7d331d",
+        "id": "6c2b89cb-264a-4c55-ac71-5b474e05066e",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -973,7 +971,7 @@ An example event for `workshop` looks as following:
         "action": "workshop-items-load-started",
         "agent_id_status": "verified",
         "dataset": "steam.workshop",
-        "ingested": "2026-10-31T10:15:21Z",
+        "ingested": "2026-10-31T12:17:08Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:12:06] Loading workshop items for 26 installed apps for user [U:1:11223344]:",
@@ -982,16 +980,16 @@ An example event for `workshop` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-27654",
+        "hostname": "elastic-agent-38094",
         "ip": [
-            "192.168.96.2",
+            "172.31.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-C0-A8-60-02"
+            "02-42-AC-1F-00-02"
         ],
-        "name": "elastic-agent-27654",
+        "name": "elastic-agent-38094",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -1008,7 +1006,7 @@ An example event for `workshop` looks as following:
         "file": {
             "device_id": "74",
             "fingerprint": "183d36e855fa667dc38c81728030a4df0bba5b7d7c97f33a95498d713669e2a1",
-            "inode": "10977524092686477",
+            "inode": "7599824373268469",
             "path": "/tmp/service_logs/workshop_log.txt"
         },
         "offset": 1
@@ -1016,10 +1014,10 @@ An example event for `workshop` looks as following:
     "message": "Loading workshop items for 26 installed apps for user [U:1:11223344]:",
     "steam": {
         "player": {
+            "account_id": "11223344",
             "id": "76561197971489072"
         },
         "workshop": {
-            "account_id": "11223344",
             "app_count": 26
         }
     },
@@ -1104,56 +1102,34 @@ An example event for `player_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-31T11:07:26.400Z",
+    "@timestamp": "2026-10-31T12:18:25.186Z",
     "agent": {
-        "ephemeral_id": "05d7fa41-d6e2-4887-a07c-f451aea4de7f",
-        "id": "ecee3242-62b5-4fdf-8bd8-9d02987d353c",
-        "name": "elastic-agent-40699",
+        "ephemeral_id": "81fa54f0-3216-4281-a408-a962e619f9a7",
+        "id": "c2b8a735-1710-4fb2-924c-de7986b10d07",
+        "name": "elastic-agent-28941",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.player_summary",
-        "namespace": "36301",
+        "namespace": "68944",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "ecee3242-62b5-4fdf-8bd8-9d02987d353c",
+        "id": "c2b8a735-1710-4fb2-924c-de7986b10d07",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "steam.player_summary",
-        "ingested": "2026-10-31T11:07:30Z",
+        "ingested": "2026-10-31T12:18:29Z",
         "kind": "metric",
         "module": "steam",
         "original": "{\"avatar\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg\",\"avatarfull\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg\",\"avatarhash\":\"3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f\",\"avatarmedium\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg\",\"communityvisibilitystate\":1,\"personaname\":\"example_player_private\",\"personastate\":0,\"profilestate\":1,\"profileurl\":\"https://steamcommunity.com/profiles/76561197971489074/\",\"steamid\":\"76561197971489074\"}"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "elastic-agent-40699",
-        "ip": [
-            "172.18.0.5",
-            "192.168.128.2"
-        ],
-        "mac": [
-            "02-42-AC-12-00-05",
-            "02-42-C0-A8-80-02"
-        ],
-        "name": "elastic-agent-40699",
-        "os": {
-            "family": "",
-            "kernel": "6.18.33.1-microsoft-standard-WSL2",
-            "name": "Wolfi",
-            "platform": "wolfi",
-            "type": "linux",
-            "version": "20230201"
-        }
     },
     "input": {
         "type": "cel"
@@ -1182,6 +1158,7 @@ An example event for `player_summary` looks as following:
         }
     },
     "tags": [
+        "forwarded",
         "preserve_original_event",
         "steam-player-summary"
     ],
@@ -1235,56 +1212,34 @@ An example event for `recently_played` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-31T11:08:45.372Z",
+    "@timestamp": "2026-10-31T12:19:47.328Z",
     "agent": {
-        "ephemeral_id": "5ac9fc1a-9009-4da1-abc6-e6d18204cf0c",
-        "id": "769cdca4-4be4-4739-b7cf-888d34eab0b1",
-        "name": "elastic-agent-69176",
+        "ephemeral_id": "e0efaaae-6a47-426b-a4c6-f5fd4ae68dc4",
+        "id": "5039073d-64cc-4984-84d9-3882ab971e5f",
+        "name": "elastic-agent-30994",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.recently_played",
-        "namespace": "51435",
+        "namespace": "58385",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "769cdca4-4be4-4739-b7cf-888d34eab0b1",
+        "id": "5039073d-64cc-4984-84d9-3882ab971e5f",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "steam.recently_played",
-        "ingested": "2026-10-31T11:08:49Z",
+        "ingested": "2026-10-31T12:19:51Z",
         "kind": "metric",
         "module": "steam",
-        "original": "{\"appid\":440,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"name\":\"Team Fortress 2\",\"playtime_2weeks\":126,\"playtime_deck_forever\":0,\"playtime_forever\":58896,\"playtime_linux_forever\":3150,\"playtime_mac_forever\":0,\"playtime_windows_forever\":41200,\"steamid\":\"76561197971489072\"}"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "elastic-agent-69176",
-        "ip": [
-            "172.18.0.5",
-            "192.168.160.2"
-        ],
-        "mac": [
-            "02-42-AC-12-00-05",
-            "02-42-C0-A8-A0-02"
-        ],
-        "name": "elastic-agent-69176",
-        "os": {
-            "family": "",
-            "kernel": "6.18.33.1-microsoft-standard-WSL2",
-            "name": "Wolfi",
-            "platform": "wolfi",
-            "type": "linux",
-            "version": "20230201"
-        }
+        "original": "{\"appid\":730,\"img_icon_url\":\"9e2a461db0c85f37214ba6d9c08e7f351ad64b20\",\"name\":\"Counter-Strike 2\",\"playtime_2weeks\":58,\"playtime_deck_forever\":0,\"playtime_forever\":7310,\"playtime_linux_forever\":0,\"playtime_mac_forever\":0,\"playtime_windows_forever\":7310,\"steamid\":\"76561197971489072\"}"
     },
     "input": {
         "type": "cel"
@@ -1292,11 +1247,11 @@ An example event for `recently_played` looks as following:
     "steam": {
         "app": {
             "icon": {
-                "hash": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
-                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/440/4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4.jpg"
+                "hash": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
+                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/730/9e2a461db0c85f37214ba6d9c08e7f351ad64b20.jpg"
             },
-            "id": "440",
-            "name": "Team Fortress 2"
+            "id": "730",
+            "name": "Counter-Strike 2"
         },
         "player": {
             "id": "76561197971489072"
@@ -1306,23 +1261,24 @@ An example event for `recently_played` looks as following:
                 "minutes": 0
             },
             "forever": {
-                "minutes": 58896
+                "minutes": 7310
             },
             "linux": {
-                "minutes": 3150
+                "minutes": 0
             },
             "mac": {
                 "minutes": 0
             },
             "two_weeks": {
-                "minutes": 126
+                "minutes": 58
             },
             "windows": {
-                "minutes": 41200
+                "minutes": 7310
             }
         }
     },
     "tags": [
+        "forwarded",
         "preserve_original_event",
         "steam-recently-played"
     ]
@@ -1375,56 +1331,34 @@ An example event for `owned_game` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-31T11:10:06.509Z",
+    "@timestamp": "2026-10-31T12:21:05.405Z",
     "agent": {
-        "ephemeral_id": "0beee747-81ef-4682-8c57-666e592fc56d",
-        "id": "1d517cf3-c2d6-41c8-a0d3-105ac08d0962",
-        "name": "elastic-agent-99204",
+        "ephemeral_id": "f978618c-534d-40f3-b95b-2932a7f4ca7c",
+        "id": "0adc3b85-8086-40ff-bfdb-24c4949e3e2e",
+        "name": "elastic-agent-86232",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.owned_game",
-        "namespace": "56290",
+        "namespace": "87096",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "1d517cf3-c2d6-41c8-a0d3-105ac08d0962",
+        "id": "0adc3b85-8086-40ff-bfdb-24c4949e3e2e",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "steam.owned_game",
-        "ingested": "2026-10-31T11:10:10Z",
+        "ingested": "2026-10-31T12:21:09Z",
         "kind": "metric",
         "module": "steam",
-        "original": "{\"appid\":440,\"has_community_visible_stats\":true,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"name\":\"Team Fortress 2\",\"playtime_deck_forever\":0,\"playtime_disconnected\":0,\"playtime_forever\":58896,\"playtime_linux_forever\":3150,\"playtime_mac_forever\":0,\"playtime_windows_forever\":41200,\"rtime_last_played\":1771996800,\"steamid\":\"76561197971489072\"}"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "elastic-agent-99204",
-        "ip": [
-            "172.18.0.5",
-            "192.168.192.2"
-        ],
-        "mac": [
-            "02-42-AC-12-00-05",
-            "02-42-C0-A8-C0-02"
-        ],
-        "name": "elastic-agent-99204",
-        "os": {
-            "family": "",
-            "kernel": "6.18.33.1-microsoft-standard-WSL2",
-            "name": "Wolfi",
-            "platform": "wolfi",
-            "type": "linux",
-            "version": "20230201"
-        }
+        "original": "{\"appid\":730,\"has_community_visible_stats\":true,\"img_icon_url\":\"9e2a461db0c85f37214ba6d9c08e7f351ad64b20\",\"name\":\"Counter-Strike 2\",\"playtime_deck_forever\":0,\"playtime_disconnected\":0,\"playtime_forever\":0,\"playtime_linux_forever\":0,\"playtime_mac_forever\":0,\"playtime_windows_forever\":0,\"steamid\":\"76561197971489072\"}"
     },
     "input": {
         "type": "cel"
@@ -1433,11 +1367,11 @@ An example event for `owned_game` looks as following:
         "app": {
             "has_community_visible_stats": true,
             "icon": {
-                "hash": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
-                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/440/4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4.jpg"
+                "hash": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
+                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/730/9e2a461db0c85f37214ba6d9c08e7f351ad64b20.jpg"
             },
-            "id": "440",
-            "name": "Team Fortress 2"
+            "id": "730",
+            "name": "Counter-Strike 2"
         },
         "player": {
             "id": "76561197971489072"
@@ -1450,21 +1384,21 @@ An example event for `owned_game` looks as following:
                 "minutes": 0
             },
             "forever": {
-                "minutes": 58896
+                "minutes": 0
             },
-            "last_played": "2026-02-25T05:20:00.000Z",
             "linux": {
-                "minutes": 3150
+                "minutes": 0
             },
             "mac": {
                 "minutes": 0
             },
             "windows": {
-                "minutes": 41200
+                "minutes": 0
             }
         }
     },
     "tags": [
+        "forwarded",
         "preserve_original_event",
         "steam-owned-game"
     ]

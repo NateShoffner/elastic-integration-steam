@@ -1,22 +1,22 @@
 {
     "@timestamp": "2026-03-14T09:14:21.000Z",
     "agent": {
-        "ephemeral_id": "18c0a3fd-3b79-4997-833c-42bc7202ce52",
-        "id": "105cfd0d-15d3-4fd7-94a5-1501f195686f",
-        "name": "elastic-agent-69599",
+        "ephemeral_id": "698c9442-1e47-4017-ad96-9766ed5cce8b",
+        "id": "e859cf68-0504-4fec-b57a-69f2a7537deb",
+        "name": "elastic-agent-16025",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.gameprocess",
-        "namespace": "77833",
+        "namespace": "40024",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "105cfd0d-15d3-4fd7-94a5-1501f195686f",
+        "id": "e859cf68-0504-4fec-b57a-69f2a7537deb",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -27,7 +27,7 @@
             "process"
         ],
         "dataset": "steam.gameprocess",
-        "ingested": "2026-10-31T10:09:49Z",
+        "ingested": "2026-10-31T12:11:45Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:14:21] AppID 440 adding PID 31400 as a tracked process \"\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe\"\"",
@@ -39,16 +39,16 @@
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-69599",
+        "hostname": "elastic-agent-16025",
         "ip": [
-            "172.29.0.2",
+            "172.23.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-AC-1D-00-02"
+            "02-42-AC-17-00-02"
         ],
-        "name": "elastic-agent-69599",
+        "name": "elastic-agent-16025",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -65,7 +65,7 @@
         "file": {
             "device_id": "74",
             "fingerprint": "dbbf7f91c8676d594721ede12bca6e7d989458f4355d0f3f0ff28e6f36370152",
-            "inode": "11540474046107746",
+            "inode": "3940649676030185",
             "path": "/tmp/service_logs/gameprocess_log.txt"
         },
         "offset": 1

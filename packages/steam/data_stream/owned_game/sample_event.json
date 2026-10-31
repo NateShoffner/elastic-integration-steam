@@ -1,54 +1,32 @@
 {
-    "@timestamp": "2026-10-31T11:10:06.509Z",
+    "@timestamp": "2026-10-31T12:21:05.405Z",
     "agent": {
-        "ephemeral_id": "0beee747-81ef-4682-8c57-666e592fc56d",
-        "id": "1d517cf3-c2d6-41c8-a0d3-105ac08d0962",
-        "name": "elastic-agent-99204",
+        "ephemeral_id": "f978618c-534d-40f3-b95b-2932a7f4ca7c",
+        "id": "0adc3b85-8086-40ff-bfdb-24c4949e3e2e",
+        "name": "elastic-agent-86232",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.owned_game",
-        "namespace": "56290",
+        "namespace": "87096",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "1d517cf3-c2d6-41c8-a0d3-105ac08d0962",
+        "id": "0adc3b85-8086-40ff-bfdb-24c4949e3e2e",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "steam.owned_game",
-        "ingested": "2026-10-31T11:10:10Z",
+        "ingested": "2026-10-31T12:21:09Z",
         "kind": "metric",
         "module": "steam",
-        "original": "{\"appid\":440,\"has_community_visible_stats\":true,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"name\":\"Team Fortress 2\",\"playtime_deck_forever\":0,\"playtime_disconnected\":0,\"playtime_forever\":58896,\"playtime_linux_forever\":3150,\"playtime_mac_forever\":0,\"playtime_windows_forever\":41200,\"rtime_last_played\":1771996800,\"steamid\":\"76561197971489072\"}"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "elastic-agent-99204",
-        "ip": [
-            "172.18.0.5",
-            "192.168.192.2"
-        ],
-        "mac": [
-            "02-42-AC-12-00-05",
-            "02-42-C0-A8-C0-02"
-        ],
-        "name": "elastic-agent-99204",
-        "os": {
-            "family": "",
-            "kernel": "6.18.33.1-microsoft-standard-WSL2",
-            "name": "Wolfi",
-            "platform": "wolfi",
-            "type": "linux",
-            "version": "20230201"
-        }
+        "original": "{\"appid\":730,\"has_community_visible_stats\":true,\"img_icon_url\":\"9e2a461db0c85f37214ba6d9c08e7f351ad64b20\",\"name\":\"Counter-Strike 2\",\"playtime_deck_forever\":0,\"playtime_disconnected\":0,\"playtime_forever\":0,\"playtime_linux_forever\":0,\"playtime_mac_forever\":0,\"playtime_windows_forever\":0,\"steamid\":\"76561197971489072\"}"
     },
     "input": {
         "type": "cel"
@@ -57,11 +35,11 @@
         "app": {
             "has_community_visible_stats": true,
             "icon": {
-                "hash": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
-                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/440/4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4.jpg"
+                "hash": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
+                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/730/9e2a461db0c85f37214ba6d9c08e7f351ad64b20.jpg"
             },
-            "id": "440",
-            "name": "Team Fortress 2"
+            "id": "730",
+            "name": "Counter-Strike 2"
         },
         "player": {
             "id": "76561197971489072"
@@ -74,21 +52,21 @@
                 "minutes": 0
             },
             "forever": {
-                "minutes": 58896
+                "minutes": 0
             },
-            "last_played": "2026-02-25T05:20:00.000Z",
             "linux": {
-                "minutes": 3150
+                "minutes": 0
             },
             "mac": {
                 "minutes": 0
             },
             "windows": {
-                "minutes": 41200
+                "minutes": 0
             }
         }
     },
     "tags": [
+        "forwarded",
         "preserve_original_event",
         "steam-owned-game"
     ]

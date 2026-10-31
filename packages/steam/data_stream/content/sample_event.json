@@ -1,22 +1,22 @@
 {
     "@timestamp": "2026-03-14T09:20:11.000Z",
     "agent": {
-        "ephemeral_id": "633adbe5-0434-460a-b4b0-cc3629887272",
-        "id": "0ba0dea4-c06f-45b6-8d97-0b068b244456",
-        "name": "elastic-agent-31156",
+        "ephemeral_id": "51320279-185c-49b3-98f3-ef144074889b",
+        "id": "5e6b6c18-b3b9-4155-ba3c-c13772128540",
+        "name": "elastic-agent-38193",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.content",
-        "namespace": "97932",
+        "namespace": "40496",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "0ba0dea4-c06f-45b6-8d97-0b068b244456",
+        "id": "5e6b6c18-b3b9-4155-ba3c-c13772128540",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -27,7 +27,7 @@
             "network"
         ],
         "dataset": "steam.content",
-        "ingested": "2026-10-31T10:11:11Z",
+        "ingested": "2026-10-31T12:13:10Z",
         "kind": "event",
         "module": "steam",
         "original": "[2026-03-14 09:20:11] Adding peer server 'desktop-1' (192.168.1.24:27040)",
@@ -39,16 +39,16 @@
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-31156",
+        "hostname": "elastic-agent-38193",
         "ip": [
-            "172.31.0.2",
+            "172.25.0.2",
             "172.18.0.5"
         ],
         "mac": [
             "02-42-AC-12-00-05",
-            "02-42-AC-1F-00-02"
+            "02-42-AC-19-00-02"
         ],
-        "name": "elastic-agent-31156",
+        "name": "elastic-agent-38193",
         "os": {
             "family": "",
             "kernel": "6.18.33.1-microsoft-standard-WSL2",
@@ -64,11 +64,11 @@
     "log": {
         "file": {
             "device_id": "74",
-            "fingerprint": "9a0e8733676ce124765b893475a761ac8cd5c302cb6c1379649d8ce8316dd09b",
-            "inode": "9288674232422530",
+            "fingerprint": "a493e8f6924418cf981733e0d92753abc938c5a00d794e17e6d7636ff582cb5c",
+            "inode": "4785074606161838",
             "path": "/tmp/service_logs/content_log.txt"
         },
-        "offset": 1
+        "offset": 2
     },
     "message": "Adding peer server 'desktop-1' (192.168.1.24:27040)",
     "related": {

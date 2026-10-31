@@ -1,0 +1,21 @@
+
+[2026-03-14 09:12:03] Client version: 1792618285
+[2026-03-14 09:12:03] SSGL: UI mode (0->7)
+[2026-03-14 09:12:04] SSGL: persona state flags
+[2026-03-14 09:14:21] SSGL: InternalUpdateClientGame indicates change to games list
+[2026-03-14 09:14:21] AppID 440 adding PID 31400 as a tracked process ""C:\Program Files (x86)\Steam\steamapps\common\Team Fortress 2\hl2.exe""
+[2026-03-14 09:14:23] SSGL: change [1] LCT 0->1
+[2026-03-14 11:02:47] AppID 440 no longer tracking PID 31400, exit code 0
+[2026-03-14 11:02:47] Remove 440 from running list
+[2026-03-14 11:02:47] SSGL: InternalUpdateClientGame indicates change to games list
+[2026-03-14 19:41:08] AppID 570 adding PID 18244 as a tracked process ""D:\SteamLibrary\steamapps\common\dota 2 beta\game\bin\win64\dota2.exe" -steam -console"
+[2026-03-14 19:41:12] AppID 570 adding PID 7132 as a tracked process ""D:\SteamLibrary\steamapps\common\dota 2 beta\UnityCrashHandler64.exe" --attach 18244 2831924989952"
+[2026-03-14 21:55:30] AppID 570 no longer tracking PID 7132, exit code 0
+[2026-03-14 21:55:31] AppID 570 no longer tracking PID 18244, exit code -1073741819
+[2026-03-14 21:55:31] Remove 570 from running list
+[2026-03-15 08:03:19] AppID 730 adding PID 24880 as a tracked process ""C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\game\bin\win64\cs2.exe""
+[2026-03-15 08:03:21] AppID 730 adding PID 25104 as a tracked process ""LauncherHelper.exe" -appFolder="C:\Users\user\AppData\Local\Example Studios\Launcher""
+[2026-03-15 09:17:44] AppID 730 no longer tracking PID 25104, exit code 0
+[2026-03-15 09:17:45] AppID 730 no longer tracking PID 24880, exit code 1
+[2026-03-15 09:17:45] Remove 730 from running list
+[2026-03-15 09:17:46] SSGL: UI mode (7->0)

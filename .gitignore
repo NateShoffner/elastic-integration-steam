@@ -10,3 +10,6 @@ samples/private/
 # Local credentials and scratch config
 .env
 *.local.yml
+
+# scratch workspace for build-time helper scripts
+.scratch/

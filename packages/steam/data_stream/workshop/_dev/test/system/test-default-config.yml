@@ -7,4 +7,4 @@ data_stream:
       - "{{SERVICE_LOGS_DIR}}/workshop_log.txt"
     preserve_original_event: true
 assert:
-  hit_count: 15
+  hit_count: 24

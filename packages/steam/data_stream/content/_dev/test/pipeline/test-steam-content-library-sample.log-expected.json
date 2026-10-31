@@ -1,0 +1,132 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-03-14T09:12:02.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "kind": "event",
+                "original": "[2026-03-14 09:12:02] Client version: 1792618285",
+                "timezone": "+00:00"
+            },
+            "message": "Client version: 1792618285",
+            "steam": {
+                "client": {
+                    "version": "1792618285"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:12:02.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "library-folders-configuration-loaded",
+                "category": [
+                    "configuration"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:12:02] Loaded Steam library folders configuration: C:\\Program Files (x86)\\Steam\\steamapps\\libraryfolders.vdf",
+                "timezone": "+00:00",
+                "type": [
+                    "access"
+                ]
+            },
+            "file": {
+                "path": "C:\\Program Files (x86)\\Steam\\steamapps\\libraryfolders.vdf"
+            },
+            "message": "Loaded Steam library folders configuration: C:\\Program Files (x86)\\Steam\\steamapps\\libraryfolders.vdf",
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:12:02.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "install-folder-loaded",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:12:02] Loaded 26 apps from install folder \"C:\\Program Files (x86)\\Steam\\steamapps\\appmanifest_*.acf\".",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "Loaded 26 apps from install folder \"C:\\Program Files (x86)\\Steam\\steamapps\\appmanifest_*.acf\".",
+            "steam": {
+                "content": {
+                    "app_count": 26,
+                    "install_folder": "C:\\Program Files (x86)\\Steam\\steamapps\\appmanifest_*.acf"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:12:02.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "install-folder-loaded",
+                "category": [
+                    "package"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:12:02] Loaded 1 apps from install folder \"D:\\SteamLibrary\\steamapps\\appmanifest_*.acf\".",
+                "timezone": "+00:00",
+                "type": [
+                    "info"
+                ]
+            },
+            "message": "Loaded 1 apps from install folder \"D:\\SteamLibrary\\steamapps\\appmanifest_*.acf\".",
+            "steam": {
+                "content": {
+                    "app_count": 1,
+                    "install_folder": "D:\\SteamLibrary\\steamapps\\appmanifest_*.acf"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2026-03-14T09:12:02.000Z",
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "library-folders-configuration-written",
+                "category": [
+                    "configuration"
+                ],
+                "kind": "event",
+                "original": "[2026-03-14 09:12:02] Triggered async write of Steam library folders configuration (2 libraries).",
+                "timezone": "+00:00",
+                "type": [
+                    "change"
+                ]
+            },
+            "message": "Triggered async write of Steam library folders configuration (2 libraries).",
+            "steam": {
+                "content": {
+                    "library_count": 2
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 
 [2026-03-14 09:12:05] Client version: 1792618285
-[2026-03-14 09:14:22] [AppID 440] Starting sync (init,)
+[2026-03-14 09:14:22] [U:1:11223344] [AppID 440] Init cache request complete
+[2026-03-14 09:14:22] [AppID 440] Starting sync (init,eval,)
 [2026-03-14 09:14:22] [AppID 440] AutoCloud checking local state for user 11223344
 [2026-03-14 09:14:22] [AppID 440] Eval complete
 [2026-03-14 09:14:23] [AppID 440] Currently already synced to global change number '7', should be nothing to download
@@ -9,10 +10,13 @@
 [2026-03-14 09:14:23] [AppID 440] YldWriteCacheDirectoryToFile - saved to 'C:\Program Files (x86)\Steam/userdata/11223344/440/remotecache.vdf'
 [2026-03-14 11:02:48] [AppID 440] Starting sync (up,)
 [2026-03-14 11:02:48] [AppID 440] File is in sync Example Publisher/Example Game/SaveData/Slot1.savegame
-[2026-03-14 11:02:48] [AppID 440] File is in sync Example Publisher/Example Game/SaveData/Slot1.metadata
+[2026-03-14 11:02:48] [AppID 440]         Found 2 files that match C:\Program Files (x86)\Steam\steamapps\common\Example Game\SaveData\*.sav
+[2026-03-14 11:02:48] [AppID 440]     Persisting file C:\Program Files (x86)\Steam\steamapps\common\Example Game\SaveData\Slot1.sav to the cloud
+[2026-03-14 11:02:49] [AppID 440] HTTP upload for file 'Slot1.savegame' beginning . . .
 [2026-03-14 11:02:49] [AppID 440] Need to sync from local change number '7' to global change number '9' (full), but not attempting now
 [2026-03-14 19:41:09] [AppID 570] Starting sync (eval,)
-[2026-03-14 19:41:09] [AppID 570] AutoCloud checking local state for user 11223344
+[2026-03-14 19:41:09] [AppID 570]     File C:\Users\user\AppData\LocalLow\Example Publisher\Example Game\Backup\Save0_backup256\notes.py was removed while the game was running. Deleting from cloud and remote machines
+[2026-03-14 19:41:10] [AppID 570] Delete OK for file Example Publisher/Example Game/Backup/Save0_backup256/notes.py
 [2026-03-14 19:41:10] [AppID 570] Eval complete
 [2026-03-14 21:55:32] [AppID 570] Starting sync (down,)
 [2026-03-14 21:55:33] [AppID 570] Successfully synced to ChangeNumber 12

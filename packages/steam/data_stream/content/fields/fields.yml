@@ -1,0 +1,76 @@
+- name: steam.app.id
+  type: keyword
+  description: >-
+    Steam application ID of the game whose content this document describes. Matches `steam.app.id` on the Steam Web API data streams, so client log events can be joined against them.
+- name: steam.client.version
+  type: keyword
+  description: >-
+    Build number the Steam client reports for itself in its `Client version:` log lines.
+- name: steam.content
+  type: group
+  fields:
+    - name: app_state
+      type: keyword
+      description: >-
+        Install state flags of the application, from an `AppID <id> state changed : <state>,` line. Steam writes the flags as a comma-separated list, so the value is stored as an array even when a single state is reported. Distinct from `steam.content.update_state` and `steam.content.app_update_state`, which report the state of an update rather than the installed application.
+    - name: update_state
+      type: keyword
+      description: >-
+        Update state flags reported by an `AppID <id> update changed : <state>,` or `AppID <id> update started : <state>,` line. Steam writes the flags as a comma-separated list, so the value is stored as an array even when a single state is reported.
+    - name: app_update_state
+      type: keyword
+      description: >-
+        Update state flags reported by an `AppID <id> App update changed : <state>,` line. This is a separate Steam state machine from the one behind `steam.content.update_state`, which comes from `update changed` lines, and the two are never conflated.
+    - name: app_count
+      type: long
+      description: >-
+        Number of application manifests Steam loaded from an install folder, from a `Loaded <n> apps from install folder` line.
+    - name: install_folder
+      type: keyword
+      description: >-
+        Application manifest search pattern of the Steam library install folder that was loaded, for example `C:\Program Files (x86)\Steam\steamapps\appmanifest_*.acf`. This is a glob rather than a single file, which is why it is not mapped to `file.path`.
+    - name: library_count
+      type: long
+      description: >-
+        Number of Steam library folders in the library folders configuration Steam wrote, from a `Triggered async write of Steam library folders configuration (<n> libraries).` line.
+    - name: cdn.operation
+      type: keyword
+      description: >-
+        Operation the Steam client performed over a download interface connection, as written at the end of an `HTTP`/`HTTPS (<type>,<handle>)` line, for example `AuthenticateDepotID (441) - Success!`, `Closing connection` or `Negotiated HTTP/2`.
+    - name: depot.id
+      type: keyword
+      description: >-
+        Steam depot ID the event refers to. Depots are the content packages that make up an application, so a depot ID belongs to the application in `steam.app.id`.
+    - name: manifest.id
+      type: keyword
+      description: >-
+        Steam depot manifest ID the event refers to. A manifest pins the exact file set of one revision of the depot in `steam.content.depot.id`.
+    - name: request.target
+      type: keyword
+      description: >-
+        Depot manifest request target as logged, for example `edge.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440`. The leading portion may be a chained or proxied form carrying more than one host, so its first host is not necessarily the host in `server.address`.
+    - name: connection.idle_seconds
+      type: long
+      unit: s
+      description: >-
+        How long the download interface connection had been idle, in seconds, when the Steam client closed it for inactivity.
+    - name: error.reason
+      type: keyword
+      description: >-
+        Reason the Steam client gave for a failed depot manifest request, for example `No Connection`. Kept under the `steam.content` namespace rather than ECS `error.*`, which this data stream reserves for ingest pipeline failures.
+    - name: error.code
+      type: keyword
+      description: >-
+        Numeric code the Steam client reported alongside `steam.content.error.reason`. Opaque identifier, stored as a keyword even though Steam logs it as a number.
+    - name: download.interface.type
+      type: keyword
+      description: >-
+        Type of download interface the content download uses. `CDN` and `SteamCache` are both observed.
+    - name: download.interface.handle
+      type: keyword
+      description: >-
+        Connection handle the Steam client assigned to the download interface. This is a handle, not a port. Opaque identifier, stored as a keyword even though Steam logs it as a number.
+    - name: download.rate_mbps
+      type: double
+      description: >-
+        Current content download rate reported by the Steam client, in megabits per second (Mbps) exactly as logged. This is a bit rate, not a byte count, and it is not converted to bytes or to `network.bytes`.

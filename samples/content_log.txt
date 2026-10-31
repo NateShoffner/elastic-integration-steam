@@ -11,12 +11,18 @@
 [2026-03-14 10:05:14] AppID 440 update changed : Running Update,
 [2026-03-14 10:05:14] AppID 440 App update changed : Running Update,
 [2026-03-14 10:05:15] Created download interface of type 'CDN' (1) to host edge.steam-dns.example.net (edge.steam-dns.example.net)
-[2026-03-14 10:05:15] HTTP (CDN,1) - edge.steam-dns.example.net (203.0.113.44:80 / 198.51.100.7:51324, host: edge.steam-dns.example.net): AuthenticateDepotID (441) - Success!
+[2026-03-14 10:05:15] HTTP (CDN,1) - edge.steam-dns.example.net (203.0.113.44:80 / 203.0.113.44:80, host: edge.steam-dns.example.net): AuthenticateDepotID (441) - Success!
+[2026-03-14 10:05:16] HTTPS (CDN,64) - edge.steam-dns.example.net (203.0.113.44:443 / 203.0.113.44:443, host: edge.steam-dns.example.net): Negotiated HTTP/2
+[2026-03-14 10:05:17] HTTPS (CDN,64) - edge.steam-dns.example.net (203.0.113.44:443 / 203.0.113.44:443, host: edge.steam-dns.example.net): edge.steam-dns.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440 - manifest request received 200 (OK) HTTP response
 [2026-03-14 10:05:22] Current download rate: 92.4 Mbps
+[2026-03-14 10:05:31] HTTPS (SteamCache,284) - cache16-fra2.steamcontent.com (203.0.113.60:443 / 203.0.113.60:443, host: cache16-fra2.steamcontent.com): edge.steam-dns.example.net/depot/441/manifest/4862689776909173546/5/1685312922164819440 - received 200 (OK) HTTP response
 [2026-03-14 10:05:38] Current download rate: 118.7 Mbps
-[2026-03-14 10:06:02] HTTPS (CDN,1) - edge.steam-dns.example.net (203.0.113.44:443 / 198.51.100.7:51325, host: edge.steam-dns.example.net): Closing connection
+[2026-03-14 10:06:01] HTTPS (CDN,64) - edge.steam-dns.example.net (203.0.113.44:443 / 203.0.113.44:443, host: edge.steam-dns.example.net): Connection has been idle for '61' seconds, closing
+[2026-03-14 10:06:02] HTTPS (CDN,1) - edge.steam-dns.example.net (203.0.113.44:443 / 203.0.113.44:443, host: edge.steam-dns.example.net): Closing connection
 [2026-03-14 10:06:03] AppID 440 state changed : Fully Installed,
 [2026-03-14 10:06:03] AppID 440 App update changed : No Update,
 [2026-03-14 14:31:09] AppID 570 update started : Validating,
+[2026-03-14 14:31:20] HTTPS (CDN,64) - edge.steam-dns.example.net (203.0.113.44:443 / 203.0.113.44:443, host: edge.steam-dns.example.net): edge.steam-dns.example.net/depot/571/manifest/1110042708278992601/5/14827557387867260875 - received 0 (Invalid) HTTP response
+[2026-03-14 14:31:22] HTTP (CDN,64) - edge.steam-dns.example.net (0.0.0.0:0 / 0.0.0.0:0, host: edge.steam-dns.example.net): Failed to get manifest request Code for depot 571 manifest 1110042708278992601 - No Connection (3) - failing download
 [2026-03-14 14:31:51] Validation: missing file "D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota\pak01_045.vpk"
 [2026-03-14 14:33:27] AppID 570 state changed : Fully Installed,

@@ -1,19 +1,450 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for parsing Steam client content logs.
 processors:
-- set:
-    tag: set_sample_field
-    field: sample_field
-    value: "1"
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # Every line the Steam client writes is `[YYYY-MM-DD HH:MM:SS] <message>`. The
+  # second pattern keeps an unexpected line without the bracketed prefix from
+  # failing the pipeline.
+  - grok:
+      field: event.original
+      tag: grok_log_line
+      description: Splits the leading local timestamp from the log message.
+      patterns:
+        - '^\[%{TIMESTAMP_ISO8601:_temp.timestamp}\] %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      if: ctx.event?.original != null
+
+  # Steam writes local time with no offset or timezone, so the agent's
+  # `add_locale` processor supplies `event.timezone`.
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+      timezone: '{{{event.timezone}}}'
+      if: ctx._temp?.timestamp != null
+
+  # Each pattern captures the literal token that identifies the message shape
+  # into `_temp.shape`, which is the lookup key for the ECS categorization table
+  # further down. The four `changed` shapes are deliberately kept apart; they are
+  # distinct Steam state machines that happen to read alike:
+  #   AppID <n> config changed : <added|updated> depots <n>  -> depot set of the app config
+  #   AppID <n> update changed : <state>                     -> state of the update
+  #   AppID <n> App update changed : <state>                 -> state of the app update
+  #   AppID <n> state changed : <state>                      -> install state of the app
+  #
+  # On a download interface line the two `<ip>:<port>` pairs are always the same
+  # remote endpoint printed twice, so the second pair is captured into a
+  # throwaway `_temp` field and dropped, exactly like the repeated `host:` value.
+  # Both are deliberately NOT mapped to `client.*`/`source.*`: that would assert
+  # the client and the server are the same host. The interface type token varies
+  # (`CDN` and `SteamCache` are both observed), so it is captured rather than
+  # assumed, and the number beside it is a connection handle, not a port.
+  #
+  # The most frequent shapes come first so common lines stop matching early. The
+  # last pattern matches any other line so unrecognized shapes keep their raw
+  # message instead of failing the pipeline.
+  - grok:
+      field: message
+      tag: grok_message
+      description: Parses the known Steam content message shapes.
+      patterns:
+        - '^(?<_temp.shape>Adding peer server|Removing peer server) ''%{DATA:server.address}'' \(%{IP:server.ip}:%{NONNEGINT:server.port:long}\)$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>config changed : added|config changed : updated) depots %{NONNEGINT:steam.content.depot.id}$'
+        - '^(?<_temp.shape>Created download interface) of type ''%{DATA:steam.content.download.interface.type}'' \(%{NONNEGINT:steam.content.download.interface.handle}\) to host %{HOSTNAME:server.address} \(%{HOSTNAME:_temp.resolved_host}\)$'
+        - '^(?<network.protocol>HTTPS?) \(%{DATA:steam.content.download.interface.type},%{NONNEGINT:steam.content.download.interface.handle}\) - %{HOSTNAME:server.address} \(%{IP:_temp.remote_ip}:%{NONNEGINT:_temp.remote_port:long} / %{IP:_temp.remote_ip_repeat}:%{NONNEGINT:_temp.remote_port_repeat:long}, host: %{HOSTNAME:_temp.http_host}\): %{GREEDYDATA:steam.content.cdn.operation}$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>App update changed) : %{DATA:steam.content.app_update_state},$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>update changed) : %{DATA:steam.content.update_state},$'
+        - '^(?<_temp.shape>Current download rate): %{NUMBER:steam.content.download.rate_mbps:double} Mbps$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>state changed) : %{DATA:steam.content.app_state},$'
+        - '^(?<_temp.shape>Validation: missing file) "%{DATA:file.path}"$'
+        - '^AppID %{NONNEGINT:steam.app.id} (?<_temp.shape>update started) : %{DATA:steam.content.update_state},$'
+        - '^Loaded %{NONNEGINT:steam.content.app_count:long} (?<_temp.shape>apps from install folder) "%{DATA:steam.content.install_folder}"\.$'
+        - '^(?<_temp.shape>Loaded Steam library folders configuration): %{GREEDYDATA:file.path}$'
+        - '^(?<_temp.shape>Triggered async write of Steam library folders configuration) \(%{NONNEGINT:steam.content.library_count:long} libraries\)\.$'
+        - '^Client version: %{GREEDYDATA:steam.client.version}$'
+        - '^%{GREEDYDATA}$'
+      if: ctx.message != null
+
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+      description: ECS expects `network.protocol` in lower case; the log writes `HTTP` and `HTTPS`.
+
+  # The trailing comma on a Steam state value is a list separator, not
+  # punctuation: the value is a flag set and can carry more than one state.
+  - split:
+      field: steam.content.app_state
+      tag: split_app_state
+      separator: ','
+      ignore_missing: true
+  - split:
+      field: steam.content.update_state
+      tag: split_update_state
+      separator: ','
+      ignore_missing: true
+  - split:
+      field: steam.content.app_update_state
+      tag: split_app_update_state
+      separator: ','
+      ignore_missing: true
+
+  # The operation that closes a download interface line varies; the shapes below
+  # account for 1970 of the 1989 such lines measured in a real install. Default
+  # every one of them to the generic shape first, then refine it for the
+  # operations we recognize, so an operation outside this set is still
+  # categorized as a download interface connection.
+  - set:
+      field: _temp.shape
+      tag: set_shape_cdn_connection
+      value: 'CDN connection'
+      if: ctx.steam?.content?.cdn?.operation != null
+  - grok:
+      field: steam.content.cdn.operation
+      tag: grok_cdn_operation
+      description: Parses the known download interface operations and their depot, manifest, HTTP response and error details.
+      patterns:
+        - '^(?<_temp.shape>Closing connection)$'
+        - '^(?<_temp.shape>AuthenticateDepotID) \(%{NONNEGINT:steam.content.depot.id}\) - %{DATA:_temp.outcome}$'
+        - '^(?<_temp.shape>Connection has been idle) for ''%{NONNEGINT:steam.content.connection.idle_seconds:long}'' seconds, closing$'
+        - '^%{DATA:steam.content.request.target} - (?<_temp.shape>received) %{NONNEGINT:_temp.http_status:long} \(%{WORD:_temp.http_status_text}\) HTTP response$'
+        - '^(?<_temp.shape>Negotiated HTTP)/%{NOTSPACE:http.version}$'
+        - '^%{DATA:steam.content.request.target} - (?<_temp.shape>manifest request received) %{NONNEGINT:_temp.http_status:long} \(%{WORD:_temp.http_status_text}\) HTTP response$'
+        - '^(?<_temp.shape>Failed to get manifest request Code) for depot %{NONNEGINT:steam.content.depot.id} manifest %{NONNEGINT:steam.content.manifest.id} - %{DATA:steam.content.error.reason} \(%{NONNEGINT:steam.content.error.code}\) - failing download$'
+        - '^%{GREEDYDATA}$'
+      if: ctx.steam?.content?.cdn?.operation != null
+
+  # The request target leading a manifest response can be a chained/proxied form
+  # (`<cdn-provider-host>/<steam-host>/depot/...`), so its first host is not
+  # necessarily the host in the line prefix. It is captured separately and never
+  # overwrites `server.address`.
+  - grok:
+      field: steam.content.request.target
+      tag: grok_request_target
+      description: Extracts the leading host, depot ID and manifest ID from a depot manifest request target.
+      patterns:
+        - '^%{HOSTNAME:_temp.request_host}/%{DATA}depot/%{NONNEGINT:steam.content.depot.id}/manifest/%{NONNEGINT:steam.content.manifest.id}/%{GREEDYDATA}$'
+        - '^%{GREEDYDATA}$'
+      if: ctx.steam?.content?.request?.target != null
+
+  # When there is no connection Steam prints `0.0.0.0:0` for both address pairs.
+  # That is a sentinel, not an endpoint, so it is never promoted to a real
+  # address and never reaches `related.ip`.
+  - set:
+      field: server.ip
+      tag: set_server_ip
+      copy_from: _temp.remote_ip
+      if: ctx._temp?.remote_ip != null && ctx._temp.remote_ip != '0.0.0.0'
+  - set:
+      field: server.port
+      tag: set_server_port
+      copy_from: _temp.remote_port
+      if: ctx._temp?.remote_ip != null && ctx._temp.remote_ip != '0.0.0.0' && ctx._temp.remote_port != null
+
+  # The remote endpoint is both the server and the destination of the request.
+  # The `network.protocol` guard limits this to download interface lines: a peer
+  # server line names a server that is not the destination of any request.
+  - set:
+      field: destination.address
+      tag: set_destination_address
+      copy_from: server.address
+      if: ctx.network?.protocol != null && ctx.server?.address != null
+  - set:
+      field: destination.ip
+      tag: set_destination_ip
+      copy_from: server.ip
+      if: ctx.network?.protocol != null && ctx.server?.ip != null
+  - set:
+      field: destination.port
+      tag: set_destination_port
+      copy_from: server.port
+      if: ctx.network?.protocol != null && ctx.server?.port != null
+
+  # Steam prints `0 (Invalid)` when no usable HTTP response arrived. Zero is a
+  # sentinel rather than a status, so it is not indexed as a real status code;
+  # the `(Invalid)` token drives `event.outcome` instead.
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code
+      copy_from: _temp.http_status
+      if: ctx._temp?.http_status != null && ctx._temp.http_status != 0
+
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination_geo
+      ignore_missing: true
+      if: ctx.destination?.ip != null && ctx.destination.geo == null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      tag: geoip_destination_asn
+      ignore_missing: true
+      if: ctx.destination?.ip != null && ctx.destination.as == null
+  - rename:
+      field: destination.as.asn
+      tag: rename_destination_as_number
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      tag: rename_destination_as_organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+
+  # Purely informational lines (`Client version:` and anything unrecognized)
+  # never set `_temp.shape`, so they are left without a category on purpose.
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Maps the recognized content message shape to its ECS action and categorization.
+      if: ctx._temp?.shape != null
+      params:
+        'Adding peer server':
+          action: peer-server-added
+          category:
+            - network
+          type:
+            - info
+        'Removing peer server':
+          action: peer-server-removed
+          category:
+            - network
+          type:
+            - info
+        'config changed : added':
+          action: app-depots-added
+          category:
+            - package
+          type:
+            - change
+        'config changed : updated':
+          action: app-depots-updated
+          category:
+            - package
+          type:
+            - change
+        'App update changed':
+          action: app-update-state-changed
+          category:
+            - package
+          type:
+            - change
+        'update changed':
+          action: update-state-changed
+          category:
+            - package
+          type:
+            - change
+        'state changed':
+          action: app-state-changed
+          category:
+            - package
+          type:
+            - change
+        'update started':
+          action: app-update-started
+          category:
+            - package
+          type:
+            - start
+        'Created download interface':
+          action: download-interface-created
+          category:
+            - network
+          type:
+            - connection
+            - start
+        'CDN connection':
+          action: cdn-connection
+          category:
+            - network
+          type:
+            - connection
+        'AuthenticateDepotID':
+          action: cdn-depot-authentication
+          category:
+            - network
+          type:
+            - connection
+            - access
+        'Closing connection':
+          action: cdn-connection-closed
+          category:
+            - network
+          type:
+            - connection
+            - end
+        'Connection has been idle':
+          action: cdn-connection-idle-closed
+          category:
+            - network
+          type:
+            - connection
+            - end
+        'Negotiated HTTP':
+          action: cdn-http-version-negotiated
+          category:
+            - network
+          type:
+            - protocol
+        'received':
+          action: cdn-response-received
+          category:
+            - network
+          type:
+            - connection
+            - access
+        'manifest request received':
+          action: cdn-manifest-request-received
+          category:
+            - network
+          type:
+            - connection
+            - access
+        'Failed to get manifest request Code':
+          action: cdn-manifest-request-failed
+          category:
+            - network
+          type:
+            - connection
+          outcome: failure
+        'Current download rate':
+          action: download-rate-reported
+          category:
+            - network
+          type:
+            - info
+        'Validation: missing file':
+          action: file-validation-missing
+          category:
+            - file
+          type:
+            - info
+        'apps from install folder':
+          action: install-folder-loaded
+          category:
+            - package
+          type:
+            - info
+        'Loaded Steam library folders configuration':
+          action: library-folders-configuration-loaded
+          category:
+            - configuration
+          type:
+            - access
+        'Triggered async write of Steam library folders configuration':
+          action: library-folders-configuration-written
+          category:
+            - configuration
+          type:
+            - change
+      source: |-
+        def mapping = params[ctx._temp.shape];
+        if (mapping == null) {
+          return;
+        }
+        ctx.event.action = mapping.action;
+        ctx.event.category = mapping.category;
+        ctx.event.type = mapping.type;
+        if (mapping.containsKey('outcome')) {
+          ctx.event.outcome = mapping.outcome;
+        }
+
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_authenticate_success
+      value: success
+      if: ctx._temp?.outcome != null && ctx._temp.outcome.startsWith('Success')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_authenticate_failure
+      value: failure
+      if: ctx._temp?.outcome != null && !ctx._temp.outcome.startsWith('Success')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_http_response_success
+      value: success
+      if: ctx._temp?.http_status_text == 'OK'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_http_response_failure
+      value: failure
+      if: ctx._temp?.http_status_text != null && ctx._temp.http_status_text != 'OK'
+
+  - append:
+      field: related.ip
+      tag: append_server_ip_to_related_ip
+      value: '{{{server.ip}}}'
+      allow_duplicates: false
+      if: ctx.server?.ip != null
+  - append:
+      field: related.hosts
+      tag: append_server_address_to_related_hosts
+      value: '{{{server.address}}}'
+      allow_duplicates: false
+      if: ctx.server?.address != null
+  - append:
+      field: related.hosts
+      tag: append_request_host_to_related_hosts
+      value: '{{{_temp.request_host}}}'
+      allow_duplicates: false
+      if: ctx._temp?.request_host != null
+
+  - remove:
+      field:
+        - _temp
+      tag: remove_temp_fields
+      ignore_missing: true
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
 on_failure:
-- set:
-    field: error.message
-    value: >-
-      Processor '{{{ _ingest.on_failure_processor_type }}}'
-      with tag '{{{ _ingest.on_failure_processor_tag }}}'
-      in pipeline '{{{ _ingest.pipeline }}}'
-      failed with message '{{{ _ingest.on_failure_message }}}'
-- set:
-    field: event.kind
-    tag: set_pipeline_error_to_event_kind
-    value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

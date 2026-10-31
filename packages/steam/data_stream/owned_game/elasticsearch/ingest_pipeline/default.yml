@@ -126,9 +126,15 @@ processors:
       ignore_missing: true
 
   # Every `playtime_*` value the Steam Web API reports is in MINUTES, which is
-  # why each one lands on a `*.minutes` field. `playtime_2weeks` is not returned
-  # by this endpoint at all; it is reported only by
-  # `GetRecentlyPlayedGames`, so it has no mapping here.
+  # why each one lands on a `*.minutes` field. This endpoint also returns
+  # `playtime_2weeks` on games played recently, but it is deliberately left
+  # unmapped here: the recently_played data stream records it, with a document
+  # per game in the window, and mapping it twice would invite double counting.
+  #
+  # The per-platform values, `playtime_disconnected` and `rtime_last_played`
+  # are only returned for the account that owns the API key. For every other
+  # account the API sends `appid`, `name`, `playtime_forever`, `img_icon_url`
+  # and the `has_*`/`content_descriptorids` flags only.
   #
   # The per-platform values are a partial breakdown, not a partition: Steam
   # began per-platform tracking later than total tracking, so they cover a

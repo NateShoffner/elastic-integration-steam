@@ -38,7 +38,7 @@ From the Steam Web API, as `metrics` data streams:
 
 * `player_summary` — persona name, presence state, profile visibility, and the application a player is currently in.
 * `recently_played` — per-application playtime over Steam's rolling two-week window.
-* `owned_game` — per-application lifetime and per-platform playtime, plus when each title was last played.
+* `owned_game` — per-application lifetime playtime, plus per-platform playtime and when each title was last played for the account that owns the API key.
 
 The three Web API data streams are time series (TSDB) data streams, dimensioned on `steam.player.id` and, where applicable, `steam.app.id`.
 
@@ -147,6 +147,8 @@ To confirm data is flowing:
 - A Web API data stream returns nothing for one account only: Confirm the value is a SteamID64, not a vanity name or a 32-bit account ID. For `recently_played` and `owned_game`, a malformed ID returns HTTP 400 for that account, which is logged by the agent while the other accounts continue normally. `player_summary` does not report an error at all: a malformed ID is silently left out of the response.
 
 - Playtime looks too low for an old account: `playtime_forever` only counts play since early 2009, when Steam began tracking it. Earlier play is not recorded by Steam and cannot be recovered.
+
+- Per-platform playtime or last played time is missing for some accounts: This is expected. The Steam Web API only returns them for the account that owns the API key, whatever that account's privacy settings, and leaves them out for everyone else.
 
 - Per-platform playtimes do not add up to the total: This is expected. Steam added per-platform tracking later than the overall total, so `steam.playtime.windows.minutes` and its siblings genuinely do not sum to `steam.playtime.forever.minutes`. Do not derive one from the others. The per-platform breakdown is only available from `owned_game`; `GetRecentlyPlayedGames` does not report it.
 
@@ -287,7 +289,7 @@ A title leaving the two-week window is recorded by the absence of a document rat
 
 #### owned_game
 
-The `owned_game` data stream provides a periodic snapshot of each configured account's library from `IPlayerService/GetOwnedGames`, as one document per account and application, with lifetime and per-platform playtime and the time each title was last played. All playtime values are in minutes.
+The `owned_game` data stream provides a periodic snapshot of each configured account's library from `IPlayerService/GetOwnedGames`, as one document per account and application, with lifetime playtime. For the account that owns the API key only, it also carries per-platform playtime and the time each title was last played: the Steam Web API does not return those for any other account. All playtime values are in minutes.
 
 A title that has never been launched has no last-played value at all, rather than a zero or epoch timestamp.
 

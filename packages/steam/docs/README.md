@@ -39,7 +39,7 @@ From the Steam Web API, as `metrics` data streams:
 
 * `player_summary` — persona name, presence state, profile visibility, and the application a player is currently in.
 * `recently_played` — per-application playtime over Steam's rolling two-week window.
-* `owned_game` — per-application lifetime and per-platform playtime, plus when each title was last played.
+* `owned_game` — per-application lifetime playtime, plus per-platform playtime and when each title was last played for the account that owns the API key.
 
 The three Web API data streams are time series (TSDB) data streams, dimensioned on `steam.player.id` and, where applicable, `steam.app.id`.
 
@@ -148,6 +148,8 @@ To confirm data is flowing:
 - A Web API data stream returns nothing for one account only: Confirm the value is a SteamID64, not a vanity name or a 32-bit account ID. For `recently_played` and `owned_game`, a malformed ID returns HTTP 400 for that account, which is logged by the agent while the other accounts continue normally. `player_summary` does not report an error at all: a malformed ID is silently left out of the response.
 
 - Playtime looks too low for an old account: `playtime_forever` only counts play since early 2009, when Steam began tracking it. Earlier play is not recorded by Steam and cannot be recovered.
+
+- Per-platform playtime or last played time is missing for some accounts: This is expected. The Steam Web API only returns them for the account that owns the API key, whatever that account's privacy settings, and leaves them out for everyone else.
 
 - Per-platform playtimes do not add up to the total: This is expected. Steam added per-platform tracking later than the overall total, so `steam.playtime.windows.minutes` and its siblings genuinely do not sum to `steam.playtime.forever.minutes`. Do not derive one from the others. The per-platform breakdown is only available from `owned_game`; `GetRecentlyPlayedGames` does not report it.
 
@@ -1201,7 +1203,7 @@ A title leaving the two-week window is recorded by the absence of a document rat
 | steam.app.name | Name of the game, from `name`. Matches `steam.app.name` on the player summary data stream. | keyword |  |  |
 | steam.player.id | 64-bit Steam ID (SteamID64) of the account that owns the playtime this document describes. Used as a time series dimension for this data stream. | keyword |  |  |
 | steam.playtime.forever.minutes | Minutes the account has played this game in total, from `playtime_forever`. Counts only from early 2009, when Steam began tracking playtime, so it understates older games. | long | m | gauge |
-| steam.playtime.two_weeks.minutes | Minutes the account played this game in the rolling two week window, from `playtime_2weeks`. The headline metric of this data stream, and the only playtime field the Steam Web API reports exclusively here: `GetOwnedGames` does not return it. A game drops out of the response entirely once this reaches zero, so the absence of a document is how a game leaving the window is recorded. | long | m | gauge |
+| steam.playtime.two_weeks.minutes | Minutes the account played this game in the rolling two week window, from `playtime_2weeks`. The headline metric of this data stream. `GetOwnedGames` also returns it for games played recently, but the owned game data stream deliberately does not map it, so this is the only place it is recorded. A game drops out of the response entirely once this reaches zero, so the absence of a document is how a game leaving the window is recorded. | long | m | gauge |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
@@ -1274,7 +1276,7 @@ An example event for `recently_played` looks as following:
 
 #### owned_game
 
-The `owned_game` data stream provides a periodic snapshot of each configured account's library from `IPlayerService/GetOwnedGames`, as one document per account and application, with lifetime and per-platform playtime and the time each title was last played. All playtime values are in minutes.
+The `owned_game` data stream provides a periodic snapshot of each configured account's library from `IPlayerService/GetOwnedGames`, as one document per account and application, with lifetime playtime. For the account that owns the API key only, it also carries per-platform playtime and the time each title was last played: the Steam Web API does not return those for any other account. All playtime values are in minutes.
 
 A title that has never been launched has no last-played value at all, rather than a zero or epoch timestamp.
 
@@ -1303,13 +1305,13 @@ A title that has never been launched has no last-played value at all, rather tha
 | steam.app.id | Steam application ID of the game this document describes. Used as a time series dimension for this data stream. | keyword |  |  |
 | steam.app.name | Name of the game, from `name`. Only returned because the request sends `include_appinfo=true`. Matches `steam.app.name` on the player summary and recently played games data streams. | keyword |  |  |
 | steam.player.id | 64-bit Steam ID (SteamID64) of the account that owns the playtime this document describes. Used as a time series dimension for this data stream. | keyword |  |  |
-| steam.playtime.deck.minutes | Minutes the account has played this game on a Steam Deck, from `playtime_deck_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total. | long | m | gauge |
-| steam.playtime.disconnected.minutes | Minutes the account played this game while the client was offline, from `playtime_disconnected`. Reported only by this endpoint. Already counted inside `steam.playtime.forever.minutes` once the client has synced, so it is a breakdown of the total rather than an addition to it. | long | m | gauge |
+| steam.playtime.deck.minutes | Minutes the account has played this game on a Steam Deck, from `playtime_deck_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total. Only reported for the account that owns the API key; the Steam Web API leaves it out for every other account. | long | m | gauge |
+| steam.playtime.disconnected.minutes | Minutes the account played this game while the client was offline, from `playtime_disconnected`. Reported only by this endpoint. Already counted inside `steam.playtime.forever.minutes` once the client has synced, so it is a breakdown of the total rather than an addition to it. Only reported for the account that owns the API key; the Steam Web API leaves it out for every other account. | long | m | gauge |
 | steam.playtime.forever.minutes | Minutes the account has played this game in total, from `playtime_forever`. Counts only from early 2009, when Steam began tracking playtime, so it understates older games. `0` is a game the account owns but has not played. | long | m | gauge |
-| steam.playtime.last_played | When the account last played this game, from the `rtime_last_played` Unix timestamp. Absent for a game that has never been launched: the API reports `0` for those, and the CEL program removes the field rather than letting a date conversion turn the sentinel into 1970-01-01. Treat the absence of this field, not an epoch date, as "never launched". | date |  |  |
-| steam.playtime.linux.minutes | Minutes the account has played this game on Linux, from `playtime_linux_forever`. Playtime on a Steam Deck is reported separately in `steam.playtime.deck.minutes` rather than counted here, even though the Deck runs Linux. | long | m | gauge |
-| steam.playtime.mac.minutes | Minutes the account has played this game on macOS, from `playtime_mac_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total. | long | m | gauge |
-| steam.playtime.windows.minutes | Minutes the account has played this game on Windows, from `playtime_windows_forever`. Steam began per-platform tracking later than total tracking, so this and the other per-platform fields do not necessarily add up to `steam.playtime.forever.minutes`; none of these values may be derived from the others. | long | m | gauge |
+| steam.playtime.last_played | When the account last played this game, from the `rtime_last_played` Unix timestamp. Absent for a game that has never been launched: the API reports `0` for those, and the CEL program removes the field rather than letting a date conversion turn the sentinel into 1970-01-01. Treat the absence of this field, not an epoch date, as "never launched". Only reported for the account that owns the API key, so for every other account the field is absent on every game and does not mean the game was never launched. | date |  |  |
+| steam.playtime.linux.minutes | Minutes the account has played this game on Linux, from `playtime_linux_forever`. Playtime on a Steam Deck is reported separately in `steam.playtime.deck.minutes` rather than counted here, even though the Deck runs Linux. Only reported for the account that owns the API key; the Steam Web API leaves it out for every other account. | long | m | gauge |
+| steam.playtime.mac.minutes | Minutes the account has played this game on macOS, from `playtime_mac_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total. Only reported for the account that owns the API key; the Steam Web API leaves it out for every other account. | long | m | gauge |
+| steam.playtime.windows.minutes | Minutes the account has played this game on Windows, from `playtime_windows_forever`. Steam began per-platform tracking later than total tracking, so this and the other per-platform fields do not necessarily add up to `steam.playtime.forever.minutes`; none of these values may be derived from the others. Only reported for the account that owns the API key; the Steam Web API leaves it out for every other account. | long | m | gauge |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 

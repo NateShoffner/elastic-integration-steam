@@ -25,7 +25,7 @@
   unit: m
   metric_type: gauge
   description: >-
-    Minutes the account played this game in the rolling two week window, from `playtime_2weeks`. The headline metric of this data stream, and the only playtime field the Steam Web API reports exclusively here: `GetOwnedGames` does not return it. A game drops out of the response entirely once this reaches zero, so the absence of a document is how a game leaving the window is recorded.
+    Minutes the account played this game in the rolling two week window, from `playtime_2weeks`. The headline metric of this data stream. `GetOwnedGames` also returns it for games played recently, but the owned game data stream deliberately does not map it, so this is the only place it is recorded. A game drops out of the response entirely once this reaches zero, so the absence of a document is how a game leaving the window is recorded.
 - name: steam.playtime.forever.minutes
   type: long
   unit: m

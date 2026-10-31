@@ -6,6 +6,9 @@ vars:
   api_key: xxxxx
   steam_ids:
     - "76561197971489072"
+    # Malformed on purpose: the API answers HTTP 400 for this ID alone, and the
+    # walk has to step past it for the three accounts below to be polled.
+    - "not-a-steamid"
     - "76561197971489073"
     - "76561197971489074"
     - "76561197971489075"
@@ -23,5 +26,7 @@ assert:
   # none for ...074 which is private and answers with an empty response object,
   # and one for ...075. The two accounts with nothing to report publish a
   # dropped placeholder rather than a document, so they contribute no hits but
-  # still let the walk reach the account after them.
+  # still let the walk reach the account after them. The malformed ID's
+  # error event is dropped by the pipeline, so it contributes no hit either;
+  # if the walk stopped at it, only ...072's three games would be counted.
   hit_count: 4

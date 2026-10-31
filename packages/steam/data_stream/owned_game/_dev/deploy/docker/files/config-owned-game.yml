@@ -15,8 +15,11 @@ rules:
           Content-Type:
             - 'text/html; charset=UTF-8'
         body: |-
-          <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify that your key parameter is correct.</body></html>
-  # A malformed steamid is rejected with HTTP 400, also with an HTML body.
+          <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify your <pre>key=</pre> parameter.</body></html>
+  # A malformed steamid is rejected with HTTP 400, also with an HTML body. The
+  # body text is the one the live API returns. The system test configures this
+  # ID second in the list, so the walk must step past the 400 for the accounts
+  # after it to be requested at all.
   - path: /IPlayerService/GetOwnedGames/v1/
     methods: ['GET']
     query_params:
@@ -30,7 +33,7 @@ rules:
           Content-Type:
             - 'text/html; charset=UTF-8'
         body: |-
-          <html><head><title>Bad Request</title></head><body><h1>Bad Request</h1>Please verify that all required parameters are being sent.</body></html>
+          <html><head><title>Bad Request</title></head><body><h1>Bad Request</h1>Missing required routing parameter</body></html>
   # ...072  public, a library of three games. Two response bodies are defined
   # and the server alternates between them, so a repeat poll observes changed
   # playtime: Team Fortress 2 and Dota 2 both gain minutes, and appid 730 is
@@ -76,6 +79,7 @@ rules:
                   "playtime_forever": 58896,
                   "img_icon_url": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
                   "has_community_visible_stats": true,
+                  "has_leaderboards": true,
                   "playtime_windows_forever": 41200,
                   "playtime_mac_forever": 0,
                   "playtime_linux_forever": 3150,
@@ -130,6 +134,7 @@ rules:
                   "playtime_forever": 58954,
                   "img_icon_url": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
                   "has_community_visible_stats": true,
+                  "has_leaderboards": true,
                   "playtime_windows_forever": 41258,
                   "playtime_mac_forever": 0,
                   "playtime_linux_forever": 3150,

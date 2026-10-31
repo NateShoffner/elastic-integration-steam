@@ -1,32 +1,32 @@
 {
-    "@timestamp": "2026-10-31T12:21:05.405Z",
+    "@timestamp": "2026-10-31T15:05:14.878Z",
     "agent": {
-        "ephemeral_id": "f978618c-534d-40f3-b95b-2932a7f4ca7c",
-        "id": "0adc3b85-8086-40ff-bfdb-24c4949e3e2e",
-        "name": "elastic-agent-86232",
+        "ephemeral_id": "cc76a172-b1f4-46a6-9227-4547a190fd1f",
+        "id": "470a9429-040d-42f4-8ba4-8e9174f220b0",
+        "name": "elastic-agent-67281",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.owned_game",
-        "namespace": "87096",
+        "namespace": "76942",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "0adc3b85-8086-40ff-bfdb-24c4949e3e2e",
+        "id": "470a9429-040d-42f4-8ba4-8e9174f220b0",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "steam.owned_game",
-        "ingested": "2026-10-31T12:21:09Z",
+        "ingested": "2026-10-31T15:05:18Z",
         "kind": "metric",
         "module": "steam",
-        "original": "{\"appid\":730,\"has_community_visible_stats\":true,\"img_icon_url\":\"9e2a461db0c85f37214ba6d9c08e7f351ad64b20\",\"name\":\"Counter-Strike 2\",\"playtime_deck_forever\":0,\"playtime_disconnected\":0,\"playtime_forever\":0,\"playtime_linux_forever\":0,\"playtime_mac_forever\":0,\"playtime_windows_forever\":0,\"steamid\":\"76561197971489072\"}"
+        "original": "{\"appid\":440,\"has_community_visible_stats\":true,\"has_leaderboards\":true,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"name\":\"Team Fortress 2\",\"playtime_deck_forever\":0,\"playtime_disconnected\":0,\"playtime_forever\":58896,\"playtime_linux_forever\":3150,\"playtime_mac_forever\":0,\"playtime_windows_forever\":41200,\"rtime_last_played\":1771996800,\"steamid\":\"76561197971489072\"}"
     },
     "input": {
         "type": "cel"
@@ -34,12 +34,13 @@
     "steam": {
         "app": {
             "has_community_visible_stats": true,
+            "has_leaderboards": true,
             "icon": {
-                "hash": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
-                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/730/9e2a461db0c85f37214ba6d9c08e7f351ad64b20.jpg"
+                "hash": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
+                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/440/4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4.jpg"
             },
-            "id": "730",
-            "name": "Counter-Strike 2"
+            "id": "440",
+            "name": "Team Fortress 2"
         },
         "player": {
             "id": "76561197971489072"
@@ -52,16 +53,17 @@
                 "minutes": 0
             },
             "forever": {
-                "minutes": 0
+                "minutes": 58896
             },
+            "last_played": "2026-02-25T05:20:00.000Z",
             "linux": {
-                "minutes": 0
+                "minutes": 3150
             },
             "mac": {
                 "minutes": 0
             },
             "windows": {
-                "minutes": 0
+                "minutes": 41200
             }
         }
     },

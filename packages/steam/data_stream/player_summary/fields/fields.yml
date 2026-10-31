@@ -22,7 +22,7 @@
 - name: steam.player.visibility.code
   type: long
   description: >-
-    Raw `communityvisibilitystate` value. Documented as `1` Private, `2` Friends only, `3` Friends of Friends, `4` Users Only, `5` Public, but in practice the API only ever returns `1` or `3`, where `3` means the profile is visible to the requesting key.
+    Raw `communityvisibilitystate` value. Documented as `1` Private, `2` Friends only, `3` Friends of Friends, `4` Users Only, `5` Public, but in practice `3` means the profile is visible to the requesting key. Private profiles of the key owner's friends have been observed as `1`, and non-public profiles of other accounts as `2`; which privacy setting those `2` profiles actually use cannot be told from the response.
 - name: steam.player.visibility.name
   type: keyword
   description: >-

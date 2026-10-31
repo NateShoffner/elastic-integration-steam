@@ -142,13 +142,13 @@ To confirm data is flowing:
 
 - No Web API data and the agent log shows a 403: The API key is invalid, revoked, or not yet active. Steam returns an HTML error body rather than JSON for this case. Re-register the key at [steamcommunity.com/dev/apikey](https://steamcommunity.com/dev/apikey).
 
-- Web API data arrives for presence but not playtime: The account's profile or game details are private. Steam does not report an error for this; it returns a successful response with no games. Set **Game details** to Public in the account's Steam privacy settings.
+- Web API data arrives for presence but not playtime: The account's profile or game details are private. A profile can itself be public while its game details are private, and Steam does not report an error for either; it returns a successful, empty response. Set **Game details** to Public in the account's Steam privacy settings.
 
-- A Web API data stream returns nothing for one account only: Confirm the value is a SteamID64, not a vanity name or a 32-bit account ID. A malformed ID returns HTTP 400 for that account while the others continue normally.
+- A Web API data stream returns nothing for one account only: Confirm the value is a SteamID64, not a vanity name or a 32-bit account ID. For `recently_played` and `owned_game`, a malformed ID returns HTTP 400 for that account, which is logged by the agent while the other accounts continue normally. `player_summary` does not report an error at all: a malformed ID is silently left out of the response.
 
 - Playtime looks too low for an old account: `playtime_forever` only counts play since early 2009, when Steam began tracking it. Earlier play is not recorded by Steam and cannot be recovered.
 
-- Per-platform playtimes do not add up to the total: This is expected. Steam added per-platform tracking later than the overall total, so `steam.playtime.windows.minutes` and its siblings genuinely do not sum to `steam.playtime.forever.minutes`. Do not derive one from the others.
+- Per-platform playtimes do not add up to the total: This is expected. Steam added per-platform tracking later than the overall total, so `steam.playtime.windows.minutes` and its siblings genuinely do not sum to `steam.playtime.forever.minutes`. Do not derive one from the others. The per-platform breakdown is only available from `owned_game`; `GetRecentlyPlayedGames` does not report it.
 
 ## Performance and scaling
 

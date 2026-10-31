@@ -143,13 +143,13 @@ To confirm data is flowing:
 
 - No Web API data and the agent log shows a 403: The API key is invalid, revoked, or not yet active. Steam returns an HTML error body rather than JSON for this case. Re-register the key at [steamcommunity.com/dev/apikey](https://steamcommunity.com/dev/apikey).
 
-- Web API data arrives for presence but not playtime: The account's profile or game details are private. Steam does not report an error for this; it returns a successful response with no games. Set **Game details** to Public in the account's Steam privacy settings.
+- Web API data arrives for presence but not playtime: The account's profile or game details are private. A profile can itself be public while its game details are private, and Steam does not report an error for either; it returns a successful, empty response. Set **Game details** to Public in the account's Steam privacy settings.
 
-- A Web API data stream returns nothing for one account only: Confirm the value is a SteamID64, not a vanity name or a 32-bit account ID. A malformed ID returns HTTP 400 for that account while the others continue normally.
+- A Web API data stream returns nothing for one account only: Confirm the value is a SteamID64, not a vanity name or a 32-bit account ID. For `recently_played` and `owned_game`, a malformed ID returns HTTP 400 for that account, which is logged by the agent while the other accounts continue normally. `player_summary` does not report an error at all: a malformed ID is silently left out of the response.
 
 - Playtime looks too low for an old account: `playtime_forever` only counts play since early 2009, when Steam began tracking it. Earlier play is not recorded by Steam and cannot be recovered.
 
-- Per-platform playtimes do not add up to the total: This is expected. Steam added per-platform tracking later than the overall total, so `steam.playtime.windows.minutes` and its siblings genuinely do not sum to `steam.playtime.forever.minutes`. Do not derive one from the others.
+- Per-platform playtimes do not add up to the total: This is expected. Steam added per-platform tracking later than the overall total, so `steam.playtime.windows.minutes` and its siblings genuinely do not sum to `steam.playtime.forever.minutes`. Do not derive one from the others. The per-platform breakdown is only available from `owned_game`; `GetRecentlyPlayedGames` does not report it.
 
 ## Performance and scaling
 
@@ -1086,7 +1086,7 @@ Two caveats are worth knowing. A private profile is reported as offline, so offl
 | steam.player.profile_state | `1` when the account has set up a community profile, absent or `0` when it has not. | long |
 | steam.player.profile_url | URL of the account's community profile, either the vanity form (`/id/\<name\>/`) if one is set or the numeric form (`/profiles/\<steamid\>/`). | keyword |
 | steam.player.real_name | Real name the account owner chose to publish on their profile. Optional, and absent unless the profile is public and the field was filled in. | keyword |
-| steam.player.visibility.code | Raw `communityvisibilitystate` value. Documented as `1` Private, `2` Friends only, `3` Friends of Friends, `4` Users Only, `5` Public, but in practice the API only ever returns `1` or `3`, where `3` means the profile is visible to the requesting key. | long |
+| steam.player.visibility.code | Raw `communityvisibilitystate` value. Documented as `1` Private, `2` Friends only, `3` Friends of Friends, `4` Users Only, `5` Public, but in practice `3` means the profile is visible to the requesting key. Private profiles of the key owner's friends have been observed as `1`, and non-public profiles of other accounts as `2`; which privacy setting those `2` profiles actually use cannot be told from the response. | long |
 | steam.player.visibility.name | Human readable form of `steam.player.visibility.code`. Note `3` is reported as `Public` rather than its documented name `Friends of Friends`: Steam returns `3` for any profile readable by the requesting key and never returns `5`, so every public profile arrives as `3`. Use `steam.player.visibility.code` if you need the literal API value. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.full_name | User's full name, if available. | keyword |
@@ -1102,34 +1102,34 @@ An example event for `player_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-31T12:18:25.186Z",
+    "@timestamp": "2026-10-31T15:06:42.777Z",
     "agent": {
-        "ephemeral_id": "81fa54f0-3216-4281-a408-a962e619f9a7",
-        "id": "c2b8a735-1710-4fb2-924c-de7986b10d07",
-        "name": "elastic-agent-28941",
+        "ephemeral_id": "d6cd4b5e-6803-436b-aa1a-2f240fcf5f54",
+        "id": "ca12c7b5-907c-48de-84c3-00fed46acb17",
+        "name": "elastic-agent-41826",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.player_summary",
-        "namespace": "68944",
+        "namespace": "92175",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c2b8a735-1710-4fb2-924c-de7986b10d07",
+        "id": "ca12c7b5-907c-48de-84c3-00fed46acb17",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "steam.player_summary",
-        "ingested": "2026-10-31T12:18:29Z",
+        "ingested": "2026-10-31T15:06:46Z",
         "kind": "metric",
         "module": "steam",
-        "original": "{\"avatar\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg\",\"avatarfull\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg\",\"avatarhash\":\"3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f\",\"avatarmedium\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg\",\"communityvisibilitystate\":1,\"personaname\":\"example_player_private\",\"personastate\":0,\"profilestate\":1,\"profileurl\":\"https://steamcommunity.com/profiles/76561197971489074/\",\"steamid\":\"76561197971489074\"}"
+        "original": "{\"avatar\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg\",\"avatarfull\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg\",\"avatarhash\":\"3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f\",\"avatarmedium\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg\",\"commentpermission\":1,\"communityvisibilitystate\":1,\"lastlogoff\":1771400000,\"personaname\":\"example_player_private\",\"personastate\":0,\"personastateflags\":0,\"profilestate\":1,\"profileurl\":\"https://steamcommunity.com/profiles/76561197971489074/\",\"steamid\":\"76561197971489074\"}"
     },
     "input": {
         "type": "cel"
@@ -1142,13 +1142,16 @@ An example event for `player_summary` looks as following:
                 "medium": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg",
                 "small": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg"
             },
+            "comment_permission": 1,
             "id": "76561197971489074",
             "in_game": false,
+            "last_logoff": "2026-02-18T07:33:20.000Z",
             "persona_name": "example_player_private",
             "persona_state": {
                 "code": 0,
                 "name": "Offline"
             },
+            "persona_state_flags": 0,
             "profile_state": 1,
             "profile_url": "https://steamcommunity.com/profiles/76561197971489074/",
             "visibility": {
@@ -1197,12 +1200,8 @@ A title leaving the two-week window is recorded by the absence of a document rat
 | steam.app.id | Steam application ID of the game this document describes. Used as a time series dimension for this data stream. | keyword |  |  |
 | steam.app.name | Name of the game, from `name`. Matches `steam.app.name` on the player summary data stream. | keyword |  |  |
 | steam.player.id | 64-bit Steam ID (SteamID64) of the account that owns the playtime this document describes. Used as a time series dimension for this data stream. | keyword |  |  |
-| steam.playtime.deck.minutes | Minutes the account has played this game on a Steam Deck, from `playtime_deck_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total. | long | m | gauge |
 | steam.playtime.forever.minutes | Minutes the account has played this game in total, from `playtime_forever`. Counts only from early 2009, when Steam began tracking playtime, so it understates older games. | long | m | gauge |
-| steam.playtime.linux.minutes | Minutes the account has played this game on Linux, from `playtime_linux_forever`. Playtime on a Steam Deck is reported separately in `steam.playtime.deck.minutes` rather than counted here, even though the Deck runs Linux. | long | m | gauge |
-| steam.playtime.mac.minutes | Minutes the account has played this game on macOS, from `playtime_mac_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total. | long | m | gauge |
 | steam.playtime.two_weeks.minutes | Minutes the account played this game in the rolling two week window, from `playtime_2weeks`. The headline metric of this data stream, and the only playtime field the Steam Web API reports exclusively here: `GetOwnedGames` does not return it. A game drops out of the response entirely once this reaches zero, so the absence of a document is how a game leaving the window is recorded. | long | m | gauge |
-| steam.playtime.windows.minutes | Minutes the account has played this game on Windows, from `playtime_windows_forever`. Steam began per-platform tracking later than total tracking, so this and the other per-platform fields do not necessarily add up to `steam.playtime.forever.minutes`; none of these values may be derived from the others. | long | m | gauge |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
@@ -1212,34 +1211,34 @@ An example event for `recently_played` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-31T12:19:47.328Z",
+    "@timestamp": "2026-10-31T15:07:53.615Z",
     "agent": {
-        "ephemeral_id": "e0efaaae-6a47-426b-a4c6-f5fd4ae68dc4",
-        "id": "5039073d-64cc-4984-84d9-3882ab971e5f",
-        "name": "elastic-agent-30994",
+        "ephemeral_id": "5ec4b937-08d2-4427-a664-2452c8a04818",
+        "id": "bed026da-01df-4b77-94e0-9ac0e2dd31d5",
+        "name": "elastic-agent-34772",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.recently_played",
-        "namespace": "58385",
+        "namespace": "38088",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "5039073d-64cc-4984-84d9-3882ab971e5f",
+        "id": "bed026da-01df-4b77-94e0-9ac0e2dd31d5",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "steam.recently_played",
-        "ingested": "2026-10-31T12:19:51Z",
+        "ingested": "2026-10-31T15:07:57Z",
         "kind": "metric",
         "module": "steam",
-        "original": "{\"appid\":730,\"img_icon_url\":\"9e2a461db0c85f37214ba6d9c08e7f351ad64b20\",\"name\":\"Counter-Strike 2\",\"playtime_2weeks\":58,\"playtime_deck_forever\":0,\"playtime_forever\":7310,\"playtime_linux_forever\":0,\"playtime_mac_forever\":0,\"playtime_windows_forever\":7310,\"steamid\":\"76561197971489072\"}"
+        "original": "{\"appid\":440,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"name\":\"Team Fortress 2\",\"playtime_2weeks\":126,\"playtime_forever\":58896,\"steamid\":\"76561197971489072\"}"
     },
     "input": {
         "type": "cel"
@@ -1247,33 +1246,21 @@ An example event for `recently_played` looks as following:
     "steam": {
         "app": {
             "icon": {
-                "hash": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
-                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/730/9e2a461db0c85f37214ba6d9c08e7f351ad64b20.jpg"
+                "hash": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
+                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/440/4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4.jpg"
             },
-            "id": "730",
-            "name": "Counter-Strike 2"
+            "id": "440",
+            "name": "Team Fortress 2"
         },
         "player": {
             "id": "76561197971489072"
         },
         "playtime": {
-            "deck": {
-                "minutes": 0
-            },
             "forever": {
-                "minutes": 7310
-            },
-            "linux": {
-                "minutes": 0
-            },
-            "mac": {
-                "minutes": 0
+                "minutes": 58896
             },
             "two_weeks": {
-                "minutes": 58
-            },
-            "windows": {
-                "minutes": 7310
+                "minutes": 126
             }
         }
     },
@@ -1310,6 +1297,7 @@ A title that has never been launched has no last-played value at all, rather tha
 | input.type | Type of filebeat input. | keyword |  |  |
 | steam.app.content_descriptors | Mature content flags declared for the game, from the `content_descriptorids` array. Absent for most games. The values are Valve's content descriptor IDs and are not documented as an enum. | long |  |  |
 | steam.app.has_community_visible_stats | Whether the game publishes achievement and stat data to the Steam community, from `has_community_visible_stats`. A property of the game rather than of the account, and absent for games that publish nothing. | boolean |  |  |
+| steam.app.has_leaderboards | Whether the game has Steam leaderboards, from `has_leaderboards`. A property of the game rather than of the account, and absent for games without leaderboards. | boolean |  |  |
 | steam.app.icon.hash | Hash identifying the game's icon image, from `img_icon_url`. Despite the API field name this is a bare hash and not a URL; the image lives at `https://media.steampowered.com/steamcommunity/public/images/apps/\<appid\>/\<hash\>.jpg`. | keyword |  |  |
 | steam.app.icon.url | Full URL of the game's icon image, built from `steam.app.id` and `steam.app.icon.hash`. Not returned by the API. | keyword |  |  |
 | steam.app.id | Steam application ID of the game this document describes. Used as a time series dimension for this data stream. | keyword |  |  |
@@ -1331,34 +1319,34 @@ An example event for `owned_game` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-31T12:21:05.405Z",
+    "@timestamp": "2026-10-31T15:05:14.878Z",
     "agent": {
-        "ephemeral_id": "f978618c-534d-40f3-b95b-2932a7f4ca7c",
-        "id": "0adc3b85-8086-40ff-bfdb-24c4949e3e2e",
-        "name": "elastic-agent-86232",
+        "ephemeral_id": "cc76a172-b1f4-46a6-9227-4547a190fd1f",
+        "id": "470a9429-040d-42f4-8ba4-8e9174f220b0",
+        "name": "elastic-agent-67281",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.owned_game",
-        "namespace": "87096",
+        "namespace": "76942",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "0adc3b85-8086-40ff-bfdb-24c4949e3e2e",
+        "id": "470a9429-040d-42f4-8ba4-8e9174f220b0",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "steam.owned_game",
-        "ingested": "2026-10-31T12:21:09Z",
+        "ingested": "2026-10-31T15:05:18Z",
         "kind": "metric",
         "module": "steam",
-        "original": "{\"appid\":730,\"has_community_visible_stats\":true,\"img_icon_url\":\"9e2a461db0c85f37214ba6d9c08e7f351ad64b20\",\"name\":\"Counter-Strike 2\",\"playtime_deck_forever\":0,\"playtime_disconnected\":0,\"playtime_forever\":0,\"playtime_linux_forever\":0,\"playtime_mac_forever\":0,\"playtime_windows_forever\":0,\"steamid\":\"76561197971489072\"}"
+        "original": "{\"appid\":440,\"has_community_visible_stats\":true,\"has_leaderboards\":true,\"img_icon_url\":\"4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4\",\"name\":\"Team Fortress 2\",\"playtime_deck_forever\":0,\"playtime_disconnected\":0,\"playtime_forever\":58896,\"playtime_linux_forever\":3150,\"playtime_mac_forever\":0,\"playtime_windows_forever\":41200,\"rtime_last_played\":1771996800,\"steamid\":\"76561197971489072\"}"
     },
     "input": {
         "type": "cel"
@@ -1366,12 +1354,13 @@ An example event for `owned_game` looks as following:
     "steam": {
         "app": {
             "has_community_visible_stats": true,
+            "has_leaderboards": true,
             "icon": {
-                "hash": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
-                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/730/9e2a461db0c85f37214ba6d9c08e7f351ad64b20.jpg"
+                "hash": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
+                "url": "https://media.steampowered.com/steamcommunity/public/images/apps/440/4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4.jpg"
             },
-            "id": "730",
-            "name": "Counter-Strike 2"
+            "id": "440",
+            "name": "Team Fortress 2"
         },
         "player": {
             "id": "76561197971489072"
@@ -1384,16 +1373,17 @@ An example event for `owned_game` looks as following:
                 "minutes": 0
             },
             "forever": {
-                "minutes": 0
+                "minutes": 58896
             },
+            "last_played": "2026-02-25T05:20:00.000Z",
             "linux": {
-                "minutes": 0
+                "minutes": 3150
             },
             "mac": {
                 "minutes": 0
             },
             "windows": {
-                "minutes": 0
+                "minutes": 41200
             }
         }
     },

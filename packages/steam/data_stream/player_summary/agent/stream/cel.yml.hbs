@@ -45,8 +45,9 @@ program: |-
         // A private profile is not an error. It arrives inside a normal 200
         // with communityvisibilitystate 1 and most optional fields absent, so
         // nothing below may assume any field other than steamid is present.
-        // The failure branch never decodes the body: an invalid key returns 403
-        // and a malformed steamid 400, both with an HTML body.
+        // A malformed or unknown SteamID64 is not an error either: the player
+        // is simply missing from the list. The failure branch never decodes
+        // the body: an invalid key returns 403 with an HTML body.
         (resp.StatusCode == 200) ?
           resp.Body.decode_json().as(body,
             {
@@ -62,10 +63,9 @@ program: |-
             }
           )
         :
-          // The array error shape, not the single-object one. The only two
-          // errors this endpoint produces are 403 for an invalid key and 400
-          // for a malformed SteamID64, and neither is transient: the
-          // single-object shape discards the returned state and re-runs from
+          // The array error shape, not the single-object one. The error this
+          // endpoint actually produces is a 403 for an invalid key, which is
+          // not transient: the single-object shape discards the returned state and re-runs from
           // the last good state, so it would retry both of them on every
           // evaluation forever and the batch_offset reset below would never be
           // persisted. With the array shape the reset does persist, so a

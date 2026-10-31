@@ -1,32 +1,32 @@
 {
-    "@timestamp": "2026-10-31T12:18:25.186Z",
+    "@timestamp": "2026-10-31T15:06:42.777Z",
     "agent": {
-        "ephemeral_id": "81fa54f0-3216-4281-a408-a962e619f9a7",
-        "id": "c2b8a735-1710-4fb2-924c-de7986b10d07",
-        "name": "elastic-agent-28941",
+        "ephemeral_id": "d6cd4b5e-6803-436b-aa1a-2f240fcf5f54",
+        "id": "ca12c7b5-907c-48de-84c3-00fed46acb17",
+        "name": "elastic-agent-41826",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "steam.player_summary",
-        "namespace": "68944",
+        "namespace": "92175",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c2b8a735-1710-4fb2-924c-de7986b10d07",
+        "id": "ca12c7b5-907c-48de-84c3-00fed46acb17",
         "snapshot": false,
         "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "steam.player_summary",
-        "ingested": "2026-10-31T12:18:29Z",
+        "ingested": "2026-10-31T15:06:46Z",
         "kind": "metric",
         "module": "steam",
-        "original": "{\"avatar\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg\",\"avatarfull\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg\",\"avatarhash\":\"3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f\",\"avatarmedium\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg\",\"communityvisibilitystate\":1,\"personaname\":\"example_player_private\",\"personastate\":0,\"profilestate\":1,\"profileurl\":\"https://steamcommunity.com/profiles/76561197971489074/\",\"steamid\":\"76561197971489074\"}"
+        "original": "{\"avatar\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg\",\"avatarfull\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg\",\"avatarhash\":\"3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f\",\"avatarmedium\":\"https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg\",\"commentpermission\":1,\"communityvisibilitystate\":1,\"lastlogoff\":1771400000,\"personaname\":\"example_player_private\",\"personastate\":0,\"personastateflags\":0,\"profilestate\":1,\"profileurl\":\"https://steamcommunity.com/profiles/76561197971489074/\",\"steamid\":\"76561197971489074\"}"
     },
     "input": {
         "type": "cel"
@@ -39,13 +39,16 @@
                 "medium": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg",
                 "small": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f.jpg"
             },
+            "comment_permission": 1,
             "id": "76561197971489074",
             "in_game": false,
+            "last_logoff": "2026-02-18T07:33:20.000Z",
             "persona_name": "example_player_private",
             "persona_state": {
                 "code": 0,
                 "name": "Offline"
             },
+            "persona_state_flags": 0,
             "profile_state": 1,
             "profile_url": "https://steamcommunity.com/profiles/76561197971489074/",
             "visibility": {

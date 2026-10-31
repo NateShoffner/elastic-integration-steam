@@ -4,14 +4,14 @@
             "error": {
                 "code": "403",
                 "id": "403 Forbidden",
-                "message": "GET /ISteamUser/GetPlayerSummaries/v2/: <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify that your key parameter is correct.</body></html>"
+                "message": "GET /ISteamUser/GetPlayerSummaries/v2/: <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify your <pre>key=</pre> parameter.</body></html>"
             }
         },
         {
             "error": {
                 "code": "400",
                 "id": "400 Bad Request",
-                "message": "GET /ISteamUser/GetPlayerSummaries/v2/: <html><head><title>Bad Request</title></head><body><h1>Bad Request</h1>Please verify that all required parameters are being sent.</body></html>"
+                "message": "GET /ISteamUser/GetPlayerSummaries/v2/: <html><head><title>Bad Request</title></head><body><h1>Bad Request</h1>Missing required routing parameter</body></html>"
             }
         }
     ]

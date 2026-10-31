@@ -13,20 +13,21 @@ rules:
           Content-Type:
             - 'text/html; charset=UTF-8'
         body: |-
-          <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify that your key parameter is correct.</body></html>
-  # A malformed steamid is rejected with HTTP 400, also with an HTML body.
+          <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify your <pre>key=</pre> parameter.</body></html>
+  # A malformed steamid is NOT rejected by this endpoint, unlike the
+  # per-account IPlayerService ones: the live API answers HTTP 200 with an
+  # empty players array, exactly as for an ID that resolves to no account.
   - path: /ISteamUser/GetPlayerSummaries/v2/
     methods: ['GET']
     query_params:
       key: '{key:.*}'
       steamids: 'not-a-steamid'
     responses:
-      - status_code: 400
+      - status_code: 200
         headers:
           Content-Type:
-            - 'text/html; charset=UTF-8'
-        body: |-
-          <html><head><title>Bad Request</title></head><body><h1>Bad Request</h1>Please verify that all required parameters are being sent.</body></html>
+            - 'application/json; charset=UTF-8'
+        body: '{"response":{"players":[]}}'
   # A SteamID64 that does not resolve to an account is not an error: the call
   # succeeds and the player is simply absent from the list, so a batch made up
   # entirely of such IDs comes back with an empty players array.
@@ -51,19 +52,15 @@ rules:
   #   ...073  public, not in a game        <-> public, in Counter-Strike 2
   #                                             with gameserverip 0.0.0.0:0
   #   ...074  private (communityvisibilitystate 1), reduced field set,
-  #           no lastlogoff (UNVERIFIED, see below), unchanged between
-  #           snapshots
+  #           unchanged between snapshots
   #
-  # UNVERIFIED: the omission of lastlogoff from the private player is not
-  # observed behaviour. Nothing here was validated against the live API, and
-  # the research brief's field-presence table lists lastlogoff in the Always
-  # present column, alongside steamid and personastate, rather than among the
-  # conditional fields a private profile sheds. The field is left out here
-  # purely as defensive coverage, so that the pipeline is exercised against a
-  # player document with no lastlogoff at all; the documented form, with
-  # lastlogoff present, is covered by ...072 and ...073 in both response
-  # bodies. Do not cite this player as evidence that a private profile omits
-  # lastlogoff.
+  # The private player's field set is the one observed on the live API for a
+  # private profile: lastlogoff, personastateflags and commentpermission are
+  # still present, while primaryclanid, timecreated, realname and the loc*
+  # fields are not. Non-public profiles of accounts that are not friends of the
+  # key owner have also been observed as communityvisibilitystate 2 with an
+  # even smaller set, without lastlogoff or personastateflags; the pipeline
+  # tolerates every one of these fields being absent.
   - path: /ISteamUser/GetPlayerSummaries/v2/
     methods: ['GET']
     query_params:
@@ -129,7 +126,10 @@ rules:
                   "avatarmedium": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg",
                   "avatarfull": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg",
                   "avatarhash": "3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f",
-                  "personastate": 0
+                  "commentpermission": 1,
+                  "lastlogoff": 1771400000,
+                  "personastate": 0,
+                  "personastateflags": 0
                 }
               ]
             }
@@ -194,7 +194,10 @@ rules:
                   "avatarmedium": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_medium.jpg",
                   "avatarfull": "https://avatars.steamstatic.com/3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f_full.jpg",
                   "avatarhash": "3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f",
-                  "personastate": 0
+                  "commentpermission": 1,
+                  "lastlogoff": 1771400000,
+                  "personastate": 0,
+                  "personastateflags": 0
                 }
               ]
             }

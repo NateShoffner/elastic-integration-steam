@@ -1,0 +1,27 @@
+wait_for_data_timeout: 1m
+input: cel
+service: steam-owned-game-cel
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_key: xxxxx
+  steam_ids:
+    - "76561197971489072"
+    - "76561197971489073"
+    - "76561197971489074"
+    - "76561197971489075"
+data_stream:
+  vars:
+    # One poll per test run. This endpoint has no pagination and no incremental
+    # filter, so a shorter interval would simply re-snapshot the same libraries
+    # and make hit_count depend on how many polls fit in the window. The four
+    # configured IDs are still walked one per evaluation within that one poll.
+    interval: 10m
+    preserve_original_event: true
+assert:
+  # Four player-game pairs across the four configured accounts: three games for
+  # ...072, including one that has never been launched, none for ...073 which is
+  # public but owns nothing, none for ...074 which is private and answers with
+  # an empty response object, and one for ...075. The two accounts with nothing
+  # to report publish a dropped placeholder rather than a document, so they
+  # contribute no hits but still let the walk reach the account after them.
+  hit_count: 4

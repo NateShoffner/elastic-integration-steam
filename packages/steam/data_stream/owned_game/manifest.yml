@@ -1,14 +1,78 @@
 title: "Steam owned games"
 type: metrics
 streams:
-  - input: sample/metrics
-    title: Sample metrics
-    description: Collect sample metrics
+  - input: cel
+    title: Steam owned games
+    description: >-
+      Poll `IPlayerService/GetOwnedGames` for the library of every account listed in the `steam_ids` setting of this integration, one document per account and game with its total and per-platform playtime in minutes and when it was last played. The accounts, the API key and the API URL are shared with the other Steam Web API data streams and are configured once on the integration.
+    template_path: cel.yml.hbs
     vars:
-      - name: period
+      - name: interval
         type: text
-        title: Period
-        default: 10s
+        title: Interval
+        description: >-
+          How often the Steam Web API is polled, as a duration. Each poll is a complete snapshot of every configured account's whole library, since this endpoint has no incremental filter. This endpoint takes one account per call, so a poll costs one request per account: at the default six hourly interval that is 4 of the 100,000 calls a key is allowed per day per account. A library changes slowly and this stream emits a document per owned game, so a few hundred documents per account per poll, which is why the default is much coarser than the recently played games stream.
+        multi: false
+        required: true
+        show_user: true
+        default: 6h
+      - name: http_client_timeout
+        type: text
+        title: HTTP client timeout
+        description: Duration before a request to the Steam Web API is abandoned.
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - steam-owned-game
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        multi: false
+        required: false
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracer
+        description: >-
+          Log every request and response to `../../logs/cel/http-request-trace-*.ndjson` for troubleshooting. The API key is redacted, but traces are verbose and should not be left enabled.
+        multi: false
+        required: false
+        show_user: false
+        default: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: URL of the proxy to use when reaching the Steam Web API, including the scheme.
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL configuration
+        description: >-
+          TLS settings for the connection to the Steam Web API. See [SSL](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for details.
+        multi: false
+        required: false
+        show_user: false
 elasticsearch:
   source_mode: synthetic
   index_mode: time_series

@@ -8,3 +8,63 @@
   dimension: true
   description: >-
     Steam application ID of the game this document describes. Used as a time series dimension for this data stream.
+- name: steam.app.name
+  type: keyword
+  description: >-
+    Name of the game, from `name`. Only returned because the request sends `include_appinfo=true`. Matches `steam.app.name` on the player summary and recently played games data streams.
+- name: steam.app.icon.hash
+  type: keyword
+  description: >-
+    Hash identifying the game's icon image, from `img_icon_url`. Despite the API field name this is a bare hash and not a URL; the image lives at `https://media.steampowered.com/steamcommunity/public/images/apps/<appid>/<hash>.jpg`.
+- name: steam.app.icon.url
+  type: keyword
+  description: >-
+    Full URL of the game's icon image, built from `steam.app.id` and `steam.app.icon.hash`. Not returned by the API.
+- name: steam.app.has_community_visible_stats
+  type: boolean
+  description: >-
+    Whether the game publishes achievement and stat data to the Steam community, from `has_community_visible_stats`. A property of the game rather than of the account, and absent for games that publish nothing.
+- name: steam.app.content_descriptors
+  type: long
+  description: >-
+    Mature content flags declared for the game, from the `content_descriptorids` array. Absent for most games. The values are Valve's content descriptor IDs and are not documented as an enum.
+- name: steam.playtime.forever.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account has played this game in total, from `playtime_forever`. Counts only from early 2009, when Steam began tracking playtime, so it understates older games. `0` is a game the account owns but has not played.
+- name: steam.playtime.windows.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account has played this game on Windows, from `playtime_windows_forever`. Steam began per-platform tracking later than total tracking, so this and the other per-platform fields do not necessarily add up to `steam.playtime.forever.minutes`; none of these values may be derived from the others.
+- name: steam.playtime.mac.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account has played this game on macOS, from `playtime_mac_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total.
+- name: steam.playtime.linux.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account has played this game on Linux, from `playtime_linux_forever`. Playtime on a Steam Deck is reported separately in `steam.playtime.deck.minutes` rather than counted here, even though the Deck runs Linux.
+- name: steam.playtime.deck.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account has played this game on a Steam Deck, from `playtime_deck_forever`. See `steam.playtime.windows.minutes` for why the per-platform fields do not sum to the total.
+- name: steam.playtime.disconnected.minutes
+  type: long
+  unit: m
+  metric_type: gauge
+  description: >-
+    Minutes the account played this game while the client was offline, from `playtime_disconnected`. Reported only by this endpoint. Already counted inside `steam.playtime.forever.minutes` once the client has synced, so it is a breakdown of the total rather than an addition to it.
+- name: steam.playtime.last_played
+  type: date
+  description: >-
+    When the account last played this game, from the `rtime_last_played` Unix timestamp. Absent for a game that has never been launched: the API reports `0` for those, and the CEL program removes the field rather than letting a date conversion turn the sentinel into 1970-01-01. Treat the absence of this field, not an epoch date, as "never launched".

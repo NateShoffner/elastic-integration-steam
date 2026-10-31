@@ -1,0 +1,264 @@
+rules:
+  # An invalid Steam Web API key is rejected with HTTP 403 and an HTML body,
+  # not JSON. Driven with key=invalid-api-key so the CEL error path can be
+  # exercised without disturbing the system test, which sends a valid key.
+  - path: /IPlayerService/GetOwnedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: 'invalid-api-key'
+      steamid: '{steamid:.*}'
+      include_appinfo: 'true'
+      include_played_free_games: 'true'
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - 'text/html; charset=UTF-8'
+        body: |-
+          <html><head><title>Forbidden</title></head><body><h1>Forbidden</h1>Access is denied. Retrying will not help. Please verify that your key parameter is correct.</body></html>
+  # A malformed steamid is rejected with HTTP 400, also with an HTML body.
+  - path: /IPlayerService/GetOwnedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: 'not-a-steamid'
+      include_appinfo: 'true'
+      include_played_free_games: 'true'
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - 'text/html; charset=UTF-8'
+        body: |-
+          <html><head><title>Bad Request</title></head><body><h1>Bad Request</h1>Please verify that all required parameters are being sent.</body></html>
+  # ...072  public, a library of three games. Two response bodies are defined
+  # and the server alternates between them, so a repeat poll observes changed
+  # playtime: Team Fortress 2 and Dota 2 both gain minutes, and appid 730 is
+  # launched for the first time between the two polls, which is the transition
+  # out of the never launched state described below. game_count stays at 3 in
+  # both bodies, because a library does not shrink the way the recently played
+  # window does.
+  #
+  # appid 730 has rtime_last_played 0 in the first body. That is the sentinel
+  # for a game that has never been launched, not a timestamp near the epoch,
+  # and it is the most mis-handled value on this endpoint: a naive UNIX date
+  # conversion turns it into 1970-01-01. The CEL program removes the key
+  # instead of passing the sentinel on, so this game has to be here for that
+  # to be observable.
+  #
+  # The per-platform playtimes deliberately do not sum to playtime_forever on
+  # appids 440 and 570, which is how the real API behaves: Steam only began
+  # per-platform tracking later, so the platform fields cover a shorter history
+  # than playtime_forever does. Nothing may derive one from the others.
+  # content_descriptorids is present on appid 570 only, since it is absent far
+  # more often than not.
+  - path: /IPlayerService/GetOwnedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: '76561197971489072'
+      include_appinfo: 'true'
+      include_played_free_games: 'true'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: |-
+          {{ minify_json `
+          {
+            "response": {
+              "game_count": 3,
+              "games": [
+                {
+                  "appid": 440,
+                  "name": "Team Fortress 2",
+                  "playtime_forever": 58896,
+                  "img_icon_url": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
+                  "has_community_visible_stats": true,
+                  "playtime_windows_forever": 41200,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 3150,
+                  "playtime_deck_forever": 0,
+                  "rtime_last_played": 1771996800,
+                  "playtime_disconnected": 0
+                },
+                {
+                  "appid": 570,
+                  "name": "Dota 2",
+                  "playtime_forever": 12045,
+                  "img_icon_url": "0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57",
+                  "has_community_visible_stats": true,
+                  "playtime_windows_forever": 9800,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 420,
+                  "playtime_deck_forever": 622,
+                  "rtime_last_played": 1769904000,
+                  "playtime_disconnected": 95,
+                  "content_descriptorids": [2, 5]
+                },
+                {
+                  "appid": 730,
+                  "name": "Counter-Strike 2",
+                  "playtime_forever": 0,
+                  "img_icon_url": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
+                  "has_community_visible_stats": true,
+                  "playtime_windows_forever": 0,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 0,
+                  "playtime_deck_forever": 0,
+                  "rtime_last_played": 0,
+                  "playtime_disconnected": 0
+                }
+              ]
+            }
+          }
+          ` }}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: |-
+          {{ minify_json `
+          {
+            "response": {
+              "game_count": 3,
+              "games": [
+                {
+                  "appid": 440,
+                  "name": "Team Fortress 2",
+                  "playtime_forever": 58954,
+                  "img_icon_url": "4b1f2a90c6d3e78051bc9a4e2f6d08b7c531e9a4",
+                  "has_community_visible_stats": true,
+                  "playtime_windows_forever": 41258,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 3150,
+                  "playtime_deck_forever": 0,
+                  "rtime_last_played": 1772083200,
+                  "playtime_disconnected": 0
+                },
+                {
+                  "appid": 570,
+                  "name": "Dota 2",
+                  "playtime_forever": 12064,
+                  "img_icon_url": "0c7d5e18b24af3690d1e85c7b3a2f40968d1ec57",
+                  "has_community_visible_stats": true,
+                  "playtime_windows_forever": 9800,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 420,
+                  "playtime_deck_forever": 641,
+                  "rtime_last_played": 1772078400,
+                  "playtime_disconnected": 95,
+                  "content_descriptorids": [2, 5]
+                },
+                {
+                  "appid": 730,
+                  "name": "Counter-Strike 2",
+                  "playtime_forever": 42,
+                  "img_icon_url": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
+                  "has_community_visible_stats": true,
+                  "playtime_windows_forever": 42,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 0,
+                  "playtime_deck_forever": 0,
+                  "rtime_last_played": 1772086800,
+                  "playtime_disconnected": 0
+                }
+              ]
+            }
+          }
+          ` }}
+  # ...073  public profile that owns nothing. The call succeeds, game_count is
+  # 0 and games is an empty array, so no event may be emitted for this account
+  # and the walk must still carry on to the next configured ID.
+  - path: /IPlayerService/GetOwnedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: '76561197971489073'
+      include_appinfo: 'true'
+      include_played_free_games: 'true'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: '{"response":{"game_count":0,"games":[]}}'
+  # ...074  private profile. Also a plain HTTP 200, but the response object is
+  # empty: there is no games key at all, and no game_count either. Every access
+  # in the program has to tolerate the key being absent rather than merely
+  # empty.
+  - path: /IPlayerService/GetOwnedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: '76561197971489074'
+      include_appinfo: 'true'
+      include_played_free_games: 'true'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: '{"response":{}}'
+  # ...075  public, a single game, played almost entirely on a Steam Deck.
+  # Present so that more than one configured account returns games: the
+  # SteamID64 each event carries then has to track the account being walked
+  # rather than being fixed, and the asserted hit_count changes if the walk
+  # ever stops advancing. playtime_windows_forever is 0 while playtime_forever
+  # is not, which is the other direction the per-platform fields diverge in,
+  # and playtime_disconnected is non-zero, which is time played offline and is
+  # already included in playtime_forever.
+  - path: /IPlayerService/GetOwnedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: '76561197971489075'
+      include_appinfo: 'true'
+      include_played_free_games: 'true'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: |-
+          {{ minify_json `
+          {
+            "response": {
+              "game_count": 1,
+              "games": [
+                {
+                  "appid": 730,
+                  "name": "Counter-Strike 2",
+                  "playtime_forever": 21480,
+                  "img_icon_url": "9e2a461db0c85f37214ba6d9c08e7f351ad64b20",
+                  "has_community_visible_stats": true,
+                  "playtime_windows_forever": 0,
+                  "playtime_mac_forever": 0,
+                  "playtime_linux_forever": 0,
+                  "playtime_deck_forever": 20950,
+                  "rtime_last_played": 1772080000,
+                  "playtime_disconnected": 1337
+                }
+              ]
+            }
+          }
+          ` }}
+  # Catch-all on steamid, last so the rules above win. A well formed SteamID64
+  # that does not resolve to a readable account is not an error either: the
+  # call succeeds with the same empty response object a private profile
+  # returns. This keeps an unexpected configured ID on the normal path instead
+  # of turning it into an error event.
+  - path: /IPlayerService/GetOwnedGames/v1/
+    methods: ['GET']
+    query_params:
+      key: '{key:.*}'
+      steamid: '{steamid:.*}'
+      include_appinfo: 'true'
+      include_played_free_games: 'true'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json; charset=UTF-8'
+        body: '{"response":{}}'

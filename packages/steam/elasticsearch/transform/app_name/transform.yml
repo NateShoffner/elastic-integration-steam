@@ -16,6 +16,12 @@ source:
       filter:
         - exists:
             field: steam.app.name
+        # Each checkpoint re-aggregates every changed application over the
+        # whole source, so only look at recent polls. Entries for applications
+        # not reported since are kept, not removed.
+        - range:
+            "@timestamp":
+              gte: now-30d
       must_not:
         - exists:
             field: error.message
@@ -24,12 +30,31 @@ dest:
   aliases:
     - alias: "steam_lookup.app_name"
       move_on_creation: true
-latest:
-  # Application names are global, so every account and namespace that
-  # reports an application contributes to the same single entry.
-  unique_key:
-    - steam.app.id
-  sort: "@timestamp"
+# A pivot rather than a latest transform so each document holds only the join
+# key and the name: a latest transform copies the whole source document, and
+# Fleet does not allow uploaded packages to ship the ingest pipeline that would
+# strip it. Application names are global, so every account and namespace that
+# reports an application contributes to the same single entry.
+pivot:
+  group_by:
+    steam.app.id:
+      terms:
+        field: steam.app.id
+  aggregations:
+    # The most recently reported name, written straight to steam.app.name.
+    steam.app.name:
+      scripted_metric:
+        init_script: "state.ts = -1L; state.name = null;"
+        map_script: >-
+          if (doc['steam.app.name'].size() > 0) {
+            long t = doc['@timestamp'].value.toInstant().toEpochMilli();
+            if (t > state.ts) { state.ts = t; state.name = doc['steam.app.name'].value; }
+          }
+        combine_script: "return state;"
+        reduce_script: >-
+          long ts = -1L; String name = null;
+          for (s in states) { if (s != null && s.name != null && s.ts > ts) { ts = s.ts; name = s.name; } }
+          return name;
 description: >-
   Latest name reported by the Steam Web API for each Steam application, kept in a lookup index so client log data,
   which only records application IDs, can be enriched with game names using ES|QL LOOKUP JOIN on steam.app.id.

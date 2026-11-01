@@ -13,3 +13,6 @@ samples/private/
 
 # scratch workspace for build-time helper scripts
 .scratch/
+
+# Local working notes
+notes/

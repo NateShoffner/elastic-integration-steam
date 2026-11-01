@@ -56,9 +56,9 @@ The three Web API data streams are time series (TSDB) data streams, dimensioned 
 
 The integration installs three dashboards, linked to each other from a navigation bar at the top of each:
 
-- **[Logs Steam] Game activity**: game processes started, abnormal exits and their exit codes, application updates, download rates and content errors, from `gameprocess` and `content`.
-- **[Logs Steam] Client connectivity and sync**: connection manager latency, the connection lifecycle and disconnect reasons, connectivity tests, Steam Cloud sync activity and Workshop activity and failures, from `connection`, `cloud` and `workshop`.
-- **[Metrics Steam] Players and playtime**: account presence, who is in game, two-week and lifetime playtime by game, playtime by platform and recently launched games, from the three Web API data streams.
+- **[Logs Steam] Game activity**: games played, game processes and executables, abnormal exits and their exit codes, the most updated games, peak download rate and content errors, from `gameprocess` and `content`.
+- **[Logs Steam] Client connectivity and sync**: connection manager latency, connection problems (disconnects, failed pings and failed connectivity tests) and their reasons, Steam Cloud sync by game and Workshop failures, from `connection`, `cloud` and `workshop`.
+- **[Metrics Steam] Players and playtime**: account presence, who is in game, two-week and lifetime playtime by game and recently launched games, from the three Web API data streams.
 
 The client logs identify games by Steam application ID only. To show game names on the two log dashboards, the integration installs a transform, `app_name`, that keeps the latest name the Web API data streams have reported for each application in the lookup index `steam_lookup.app_name`, and the panels that list applications join against it with ES|QL `LOOKUP JOIN`. Names therefore need the Steam Web API policy template configured, and only cover applications that appear in a polled account's library, recent games or presence; anything else, such as the Steam client itself (application `7`) or a game no polled account owns, is shown by its application ID. Users viewing these dashboards need `read` privileges on `steam_lookup.*` as well as the `logs-steam.*` data streams.
 

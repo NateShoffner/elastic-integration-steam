@@ -151,76 +151,6 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Accounts polled in the time range.",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "l": {
-                                            "columnOrder": [
-                                                "m"
-                                            ],
-                                            "columns": {
-                                                "m": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "",
-                                                    "operationType": "unique_count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "steam.player.id"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.player_summary\""
-                            },
-                            "visualization": {
-                                "layerId": "l",
-                                "layerType": "data",
-                                "metricAccessor": "m"
-                            }
-                        },
-                        "title": "Accounts",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "description": "Accounts polled in the time range.",
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "p1",
-                    "w": 12,
-                    "x": 0,
-                    "y": 3
-                },
-                "panelIndex": "p1",
-                "title": "Accounts",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
                         "description": "Accounts in a game during the last 15 minutes of the time range.",
                         "references": [
                             {
@@ -280,12 +210,12 @@
                 },
                 "gridData": {
                     "h": 6,
-                    "i": "p2",
-                    "w": 12,
-                    "x": 12,
+                    "i": "p1",
+                    "w": 16,
+                    "x": 0,
                     "y": 3
                 },
-                "panelIndex": "p2",
+                "panelIndex": "p1",
                 "title": "In game now",
                 "type": "lens"
             },
@@ -432,12 +362,12 @@
                 },
                 "gridData": {
                     "h": 6,
-                    "i": "p3",
-                    "w": 12,
-                    "x": 24,
+                    "i": "p2",
+                    "w": 16,
+                    "x": 16,
                     "y": 3
                 },
-                "panelIndex": "p3",
+                "panelIndex": "p2",
                 "title": "Lifetime playtime",
                 "type": "lens"
             },
@@ -502,12 +432,12 @@
                 },
                 "gridData": {
                     "h": 6,
-                    "i": "p4",
-                    "w": 12,
-                    "x": 36,
+                    "i": "p3",
+                    "w": 16,
+                    "x": 32,
                     "y": 3
                 },
-                "panelIndex": "p4",
+                "panelIndex": "p3",
                 "title": "Games owned",
                 "type": "lens"
             },
@@ -684,12 +614,12 @@
                 },
                 "gridData": {
                     "h": 12,
-                    "i": "p5",
+                    "i": "p4",
                     "w": 24,
                     "x": 0,
                     "y": 9
                 },
-                "panelIndex": "p5",
+                "panelIndex": "p4",
                 "title": "Account status",
                 "type": "lens"
             },
@@ -833,12 +763,12 @@
                 },
                 "gridData": {
                     "h": 12,
-                    "i": "p6",
+                    "i": "p5",
                     "w": 24,
                     "x": 24,
                     "y": 9
                 },
-                "panelIndex": "p6",
+                "panelIndex": "p5",
                 "title": "Accounts in game",
                 "type": "lens"
             },
@@ -1046,12 +976,12 @@
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "p7",
+                    "i": "p6",
                     "w": 24,
                     "x": 0,
                     "y": 21
                 },
-                "panelIndex": "p7",
+                "panelIndex": "p6",
                 "title": "Two-week playtime by game",
                 "type": "lens"
             },
@@ -1258,418 +1188,13 @@
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "p8",
+                    "i": "p7",
                     "w": 24,
                     "x": 24,
                     "y": 21
                 },
-                "panelIndex": "p8",
+                "panelIndex": "p7",
                 "title": "Most played games",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "Lifetime playtime by platform. Only reported for the API key's owner, and does not add up to the lifetime total.",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "b",
-                                                "y1",
-                                                "y2",
-                                                "y3",
-                                                "y4",
-                                                "y1X0",
-                                                "y1X1",
-                                                "y2X0",
-                                                "y2X1",
-                                                "y3X0",
-                                                "y3X1",
-                                                "y4X0",
-                                                "y4X1"
-                                            ],
-                                            "columns": {
-                                                "b": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Game",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "fallback": false,
-                                                            "type": "alphabetical"
-                                                        },
-                                                        "orderDirection": "asc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10000
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.app.id"
-                                                },
-                                                "x": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Account",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y1X0",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 20
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.player.id"
-                                                },
-                                                "y1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Windows",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 1,
-                                                                "suffix": " h"
-                                                            }
-                                                        },
-                                                        "formula": "max(steam.playtime.windows.minutes) / 60",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "y1X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "y1X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Windows",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "steam.playtime.windows.minutes"
-                                                },
-                                                "y1X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Windows",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "y1X0",
-                                                                60
-                                                            ],
-                                                            "location": {
-                                                                "max": 40,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "max(steam.playtime.windows.minutes) / 60",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "y1X0"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "y2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Linux",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 1,
-                                                                "suffix": " h"
-                                                            }
-                                                        },
-                                                        "formula": "max(steam.playtime.linux.minutes) / 60",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "y2X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "y2X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Linux",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "steam.playtime.linux.minutes"
-                                                },
-                                                "y2X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Linux",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "y2X0",
-                                                                60
-                                                            ],
-                                                            "location": {
-                                                                "max": 38,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "max(steam.playtime.linux.minutes) / 60",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "y2X0"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "y3": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "macOS",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 1,
-                                                                "suffix": " h"
-                                                            }
-                                                        },
-                                                        "formula": "max(steam.playtime.mac.minutes) / 60",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "y3X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "y3X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of macOS",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "steam.playtime.mac.minutes"
-                                                },
-                                                "y3X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of macOS",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "y3X0",
-                                                                60
-                                                            ],
-                                                            "location": {
-                                                                "max": 36,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "max(steam.playtime.mac.minutes) / 60",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "y3X0"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "y4": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Steam Deck",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 1,
-                                                                "suffix": " h"
-                                                            }
-                                                        },
-                                                        "formula": "max(steam.playtime.deck.minutes) / 60",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "y4X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "y4X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Steam Deck",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "steam.playtime.deck.minutes"
-                                                },
-                                                "y4X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Steam Deck",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "y4X0",
-                                                                60
-                                                            ],
-                                                            "location": {
-                                                                "max": 37,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "max(steam.playtime.deck.minutes) / 60",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "y4X0"
-                                                    ],
-                                                    "scale": "ratio"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.owned_game\" and steam.playtime.windows.minutes: *"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": false
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "y1",
-                                            "y2",
-                                            "y3",
-                                            "y4"
-                                        ],
-                                        "collapseFn": "sum",
-                                        "layerId": "l",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_horizontal_stacked",
-                                        "showGridlines": false,
-                                        "splitAccessor": "b",
-                                        "xAccessor": "x"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_horizontal_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Lifetime playtime by platform",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "Lifetime playtime by platform. Only reported for the API key's owner, and does not add up to the lifetime total.",
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "p9",
-                    "w": 24,
-                    "x": 0,
-                    "y": 35
-                },
-                "panelIndex": "p9",
-                "title": "Lifetime playtime by platform",
                 "type": "lens"
             },
             {
@@ -1870,13 +1395,13 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 12,
-                    "i": "p10",
-                    "w": 24,
-                    "x": 24,
+                    "h": 10,
+                    "i": "p8",
+                    "w": 48,
+                    "x": 0,
                     "y": 35
                 },
-                "panelIndex": "p10",
+                "panelIndex": "p8",
                 "title": "Recently launched games",
                 "type": "lens"
             }
@@ -1941,16 +1466,6 @@
         {
             "id": "metrics-*",
             "name": "p8:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "p9:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "p10:indexpattern-datasource-layer-l",
             "type": "index-pattern"
         },
         {

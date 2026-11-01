@@ -607,89 +607,85 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Connects, disconnects, reconnects and failed pings.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "description": "Disconnects, failed pings and failed connectivity tests.",
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "81b59097be130d077a6cc1be3d30793ba57e16cfaabb0d0528c4f90597500375": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "81b59097be130d077a6cc1be3d30793ba57e16cfaabb0d0528c4f90597500375",
+                                    "name": "logs-steam.connection-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-steam.connection-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "81b59097be130d077a6cc1be3d30793ba57e16cfaabb0d0528c4f90597500375",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-steam.connection-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "s",
-                                                "y"
-                                            ],
-                                            "columns": {
-                                                "s": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "timestamp",
                                                     "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Action",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.action"
-                                                },
-                                                "x": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
+                                                    "fieldName": "timestamp",
                                                     "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
                                                     },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "date"
+                                                        }
+                                                    }
                                                 },
-                                                "y": {
+                                                {
+                                                    "columnId": "problem",
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Events",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "fieldName": "problem",
+                                                    "label": "Problem",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "problems",
+                                                    "customLabel": true,
+                                                    "fieldName": "problems",
+                                                    "inMetricDimension": true,
+                                                    "label": "Problems",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
                                                 }
+                                            ],
+                                            "index": "81b59097be130d077a6cc1be3d30793ba57e16cfaabb0d0528c4f90597500375",
+                                            "query": {
+                                                "esql": "FROM logs-steam.connection-*\n| WHERE event.action IN (\"cm-connection-disconnected\", \"cm-ping-failed\")\n    OR (event.action == \"connectivity-test-completed\" AND steam.connection.connectivity_test.result != \"OK!\")\n    OR (event.action == \"ip-stack-connectivity-test-completed\" AND event.outcome == \"failure\")\n| EVAL problem = CASE(event.action == \"cm-connection-disconnected\", \"Disconnect\",\n    event.action == \"cm-ping-failed\", \"Ping failure\", \"Connectivity test failed\"),\n  reason = COALESCE(steam.connection.disconnect.reason, steam.connection.ping.failure_reason,\n    steam.connection.connectivity_test.result, steam.connection.ip_stack_test.outcome)\n| STATS problems = COUNT(*) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), problem"
                                             },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.connection\" and event.action: (\"cm-connection-started\" or \"cm-connection-completed\" or \"cm-connection-disconnected\" or \"cm-auto-reconnect-scheduled\" or \"cm-ping-failed\")"
+                                "esql": "FROM logs-steam.connection-*\n| WHERE event.action IN (\"cm-connection-disconnected\", \"cm-ping-failed\")\n    OR (event.action == \"connectivity-test-completed\" AND steam.connection.connectivity_test.result != \"OK!\")\n    OR (event.action == \"ip-stack-connectivity-test-completed\" AND event.outcome == \"failure\")\n| EVAL problem = CASE(event.action == \"cm-connection-disconnected\", \"Disconnect\",\n    event.action == \"cm-ping-failed\", \"Ping failure\", \"Connectivity test failed\"),\n  reason = COALESCE(steam.connection.disconnect.reason, steam.connection.ping.failure_reason,\n    steam.connection.connectivity_test.result, steam.connection.ip_stack_test.outcome)\n| STATS problems = COUNT(*) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), problem"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -711,15 +707,15 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "y"
+                                            "problems"
                                         ],
                                         "layerId": "l",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "bar_stacked",
                                         "showGridlines": false,
-                                        "splitAccessor": "s",
-                                        "xAccessor": "x"
+                                        "splitAccessor": "problem",
+                                        "xAccessor": "timestamp"
                                     }
                                 ],
                                 "legend": {
@@ -735,12 +731,16 @@
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "Connection lifecycle",
+                        "title": "Connection problems over time",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Connects, disconnects, reconnects and failed pings.",
-                    "enhancements": {}
+                    "description": "Disconnects, failed pings and failed connectivity tests.",
+                    "enhancements": {},
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-steam.connection-*\n| WHERE event.action IN (\"cm-connection-disconnected\", \"cm-ping-failed\")\n    OR (event.action == \"connectivity-test-completed\" AND steam.connection.connectivity_test.result != \"OK!\")\n    OR (event.action == \"ip-stack-connectivity-test-completed\" AND event.outcome == \"failure\")\n| EVAL problem = CASE(event.action == \"cm-connection-disconnected\", \"Disconnect\",\n    event.action == \"cm-ping-failed\", \"Ping failure\", \"Connectivity test failed\"),\n  reason = COALESCE(steam.connection.disconnect.reason, steam.connection.ping.failure_reason,\n    steam.connection.connectivity_test.result, steam.connection.ip_stack_test.outcome)\n| STATS problems = COUNT(*) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), problem"
+                    }
                 },
                 "gridData": {
                     "h": 12,
@@ -750,558 +750,149 @@
                     "y": 9
                 },
                 "panelIndex": "p6",
-                "title": "Connection lifecycle",
+                "title": "Connection problems over time",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Why connections to Steam closed.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "description": "Disconnects, failed pings and failed connectivity tests, by reason.",
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "81b59097be130d077a6cc1be3d30793ba57e16cfaabb0d0528c4f90597500375": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "81b59097be130d077a6cc1be3d30793ba57e16cfaabb0d0528c4f90597500375",
+                                    "name": "logs-steam.connection-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-steam.connection-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "81b59097be130d077a6cc1be3d30793ba57e16cfaabb0d0528c4f90597500375",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-steam.connection-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "y"
-                                            ],
-                                            "columns": {
-                                                "x": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "problem",
                                                     "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Reason",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 8
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.connection.disconnect.reason"
+                                                    "fieldName": "problem",
+                                                    "label": "Problem",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
                                                 },
-                                                "y": {
+                                                {
+                                                    "columnId": "reason",
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Disconnects",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
+                                                    "fieldName": "reason",
+                                                    "label": "Reason",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "count",
+                                                    "customLabel": true,
+                                                    "fieldName": "count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "last_seen",
+                                                    "customLabel": true,
+                                                    "fieldName": "last_seen",
+                                                    "label": "Last seen",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "date"
+                                                        }
+                                                    }
                                                 }
+                                            ],
+                                            "index": "81b59097be130d077a6cc1be3d30793ba57e16cfaabb0d0528c4f90597500375",
+                                            "query": {
+                                                "esql": "FROM logs-steam.connection-*\n| WHERE event.action IN (\"cm-connection-disconnected\", \"cm-ping-failed\")\n    OR (event.action == \"connectivity-test-completed\" AND steam.connection.connectivity_test.result != \"OK!\")\n    OR (event.action == \"ip-stack-connectivity-test-completed\" AND event.outcome == \"failure\")\n| EVAL problem = CASE(event.action == \"cm-connection-disconnected\", \"Disconnect\",\n    event.action == \"cm-ping-failed\", \"Ping failure\", \"Connectivity test failed\"),\n  reason = COALESCE(steam.connection.disconnect.reason, steam.connection.ping.failure_reason,\n    steam.connection.connectivity_test.result, steam.connection.ip_stack_test.outcome)\n| STATS count = COUNT(*), last_seen = MAX(@timestamp) BY problem, reason\n| SORT count DESC\n| LIMIT 20"
                                             },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.connection\" and event.action: \"cm-connection-disconnected\""
+                                "esql": "FROM logs-steam.connection-*\n| WHERE event.action IN (\"cm-connection-disconnected\", \"cm-ping-failed\")\n    OR (event.action == \"connectivity-test-completed\" AND steam.connection.connectivity_test.result != \"OK!\")\n    OR (event.action == \"ip-stack-connectivity-test-completed\" AND event.outcome == \"failure\")\n| EVAL problem = CASE(event.action == \"cm-connection-disconnected\", \"Disconnect\",\n    event.action == \"cm-ping-failed\", \"Ping failure\", \"Connectivity test failed\"),\n  reason = COALESCE(steam.connection.disconnect.reason, steam.connection.ping.failure_reason,\n    steam.connection.connectivity_test.result, steam.connection.ip_stack_test.outcome)\n| STATS count = COUNT(*), last_seen = MAX(@timestamp) BY problem, reason\n| SORT count DESC\n| LIMIT 20"
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": false
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
+                                "columns": [
                                     {
-                                        "accessors": [
-                                            "y"
-                                        ],
-                                        "layerId": "l",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_horizontal",
-                                        "showGridlines": false,
-                                        "xAccessor": "x"
+                                        "columnId": "problem",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "reason",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "count",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "last_seen",
+                                        "isTransposed": false
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": false,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_horizontal",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
+                                "layerId": "l",
+                                "layerType": "data",
+                                "sorting": {
+                                    "columnId": "count",
+                                    "direction": "desc"
+                                }
                             }
                         },
-                        "title": "Disconnect reasons",
+                        "title": "Connection problems",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsDatatable"
                     },
-                    "description": "Why connections to Steam closed.",
-                    "enhancements": {}
+                    "description": "Disconnects, failed pings and failed connectivity tests, by reason.",
+                    "enhancements": {},
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-steam.connection-*\n| WHERE event.action IN (\"cm-connection-disconnected\", \"cm-ping-failed\")\n    OR (event.action == \"connectivity-test-completed\" AND steam.connection.connectivity_test.result != \"OK!\")\n    OR (event.action == \"ip-stack-connectivity-test-completed\" AND event.outcome == \"failure\")\n| EVAL problem = CASE(event.action == \"cm-connection-disconnected\", \"Disconnect\",\n    event.action == \"cm-ping-failed\", \"Ping failure\", \"Connectivity test failed\"),\n  reason = COALESCE(steam.connection.disconnect.reason, steam.connection.ping.failure_reason,\n    steam.connection.connectivity_test.result, steam.connection.ip_stack_test.outcome)\n| STATS count = COUNT(*), last_seen = MAX(@timestamp) BY problem, reason\n| SORT count DESC\n| LIMIT 20"
+                    }
                 },
                 "gridData": {
-                    "h": 10,
+                    "h": 12,
                     "i": "p7",
-                    "w": 16,
+                    "w": 24,
                     "x": 0,
                     "y": 21
                 },
                 "panelIndex": "p7",
-                "title": "Disconnect reasons",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "Why pings to connection managers failed.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "y"
-                                            ],
-                                            "columns": {
-                                                "x": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Reason",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 8
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.connection.ping.failure_reason"
-                                                },
-                                                "y": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Failures",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.connection\" and event.action: \"cm-ping-failed\""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": false
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "y"
-                                        ],
-                                        "layerId": "l",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_horizontal",
-                                        "showGridlines": false,
-                                        "xAccessor": "x"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": false,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_horizontal",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Ping failures",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "Why pings to connection managers failed.",
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 10,
-                    "i": "p8",
-                    "w": 16,
-                    "x": 16,
-                    "y": 21
-                },
-                "panelIndex": "p8",
-                "title": "Ping failures",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "Results of Steam's internet connectivity tests.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "y"
-                                            ],
-                                            "columns": {
-                                                "x": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Result",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 8
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.connection.connectivity_test.result"
-                                                },
-                                                "y": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Tests",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.connection\" and event.action: \"connectivity-test-completed\""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": false
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "y"
-                                        ],
-                                        "layerId": "l",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_horizontal",
-                                        "showGridlines": false,
-                                        "xAccessor": "x"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": false,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_horizontal",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Connectivity test results",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "Results of Steam's internet connectivity tests.",
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 10,
-                    "i": "p9",
-                    "w": 16,
-                    "x": 32,
-                    "y": 21
-                },
-                "panelIndex": "p9",
-                "title": "Connectivity test results",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "Steam Cloud sync passes by outcome.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "s",
-                                                "y"
-                                            ],
-                                            "columns": {
-                                                "s": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Action",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 6
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.action"
-                                                },
-                                                "x": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "y": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Events",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.cloud\" and event.action: (\"cloud-sync-started\" or \"cloud-sync-completed\" or \"cloud-sync-deferred\" or \"cloud-sync-not-needed\" or \"cloud-download-completed\" or \"cloud-file-upload-started\")"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": false
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "y"
-                                        ],
-                                        "layerId": "l",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_stacked",
-                                        "showGridlines": false,
-                                        "splitAccessor": "s",
-                                        "xAccessor": "x"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "bottom"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Cloud sync activity",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "Steam Cloud sync passes by outcome.",
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "p10",
-                    "w": 24,
-                    "x": 0,
-                    "y": 31
-                },
-                "panelIndex": "p10",
-                "title": "Cloud sync activity",
+                "title": "Connection problems",
                 "type": "lens"
             },
             {
@@ -1427,7 +1018,7 @@
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "Cloud sync by application",
+                        "title": "Cloud sync by game",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -1440,162 +1031,13 @@
                 },
                 "gridData": {
                     "h": 12,
-                    "i": "p11",
+                    "i": "p8",
                     "w": 24,
                     "x": 24,
-                    "y": 31
+                    "y": 21
                 },
-                "panelIndex": "p11",
-                "title": "Cloud sync by application",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "Workshop items subscribed, downloaded, removed or failing to update.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "s",
-                                                "y"
-                                            ],
-                                            "columns": {
-                                                "s": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Action",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 6
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.action"
-                                                },
-                                                "x": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "y": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Events",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.workshop\" and event.action: (\"workshop-item-subscription-added\" or \"workshop-item-downloaded\" or \"workshop-item-removed\" or \"workshop-item-details-lookup-failed\" or \"workshop-item-details-update-failed\" or \"workshop-item-manifest-changed\")"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": false
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "y"
-                                        ],
-                                        "layerId": "l",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_stacked",
-                                        "showGridlines": false,
-                                        "splitAccessor": "s",
-                                        "xAccessor": "x"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "bottom"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Workshop activity",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "Workshop items subscribed, downloaded, removed or failing to update.",
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "p12",
-                    "w": 24,
-                    "x": 0,
-                    "y": 43
-                },
-                "panelIndex": "p12",
-                "title": "Workshop activity",
+                "panelIndex": "p8",
+                "title": "Cloud sync by game",
                 "type": "lens"
             },
             {
@@ -1744,13 +1186,13 @@
                     }
                 },
                 "gridData": {
-                    "h": 12,
-                    "i": "p13",
-                    "w": 24,
-                    "x": 24,
-                    "y": 43
+                    "h": 10,
+                    "i": "p9",
+                    "w": 48,
+                    "x": 0,
+                    "y": 33
                 },
-                "panelIndex": "p13",
+                "panelIndex": "p9",
                 "title": "Workshop failures",
                 "type": "lens"
             }
@@ -1800,36 +1242,6 @@
         {
             "id": "logs-*",
             "name": "p5:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p6:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p7:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p8:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p9:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p10:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p12:indexpattern-datasource-layer-l",
             "type": "index-pattern"
         },
         {

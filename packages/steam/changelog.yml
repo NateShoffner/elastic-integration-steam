@@ -1,4 +1,12 @@
 # newer versions go on top
+- version: "0.1.1"
+  changes:
+    - description: Use the Steam logo as the package icon.
+      type: enhancement
+      link: https://github.com/NateShoffner/elastic-integration-steam/issues/2
+    - description: Remove low-value dashboard panels and summarise connection problems in one chart and table.
+      type: enhancement
+      link: https://github.com/NateShoffner/elastic-integration-steam/issues/2
 - version: "0.1.0"
   changes:
     - description: Initial release.

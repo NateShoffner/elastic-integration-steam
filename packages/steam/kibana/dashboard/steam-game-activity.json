@@ -53,7 +53,7 @@
             },
             "showApplySelections": false
         },
-        "description": "Games the Steam client ran on this machine and the content it downloaded for them, from the gameprocess and content logs. The client logs identify games by Steam application ID only; open [Metrics Steam] Players and playtime for game names.",
+        "description": "Games launched on this machine and the content Steam downloaded for them. Game names come from the Steam Web API data streams; games they have not reported show their application ID.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -165,7 +165,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Processes the Steam client started tracking for a running game. A single launch often starts several, such as a launcher, the game and a crash or bug reporter, so this is not a count of play sessions.",
+                        "description": "Processes Steam tracked for running games. One launch can start several, such as a launcher and a crash reporter, so this is not a count of sessions.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -218,7 +218,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Processes the Steam client started tracking for a running game. A single launch often starts several, such as a launcher, the game and a crash or bug reporter, so this is not a count of play sessions.",
+                    "description": "Processes Steam tracked for running games. One launch can start several, such as a launcher and a crash reporter, so this is not a count of sessions.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -235,7 +235,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Distinct Steam applications that had at least one tracked game process started.",
+                        "description": "Games with at least one process started.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -288,7 +288,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Distinct Steam applications that had at least one tracked game process started.",
+                    "description": "Games with at least one process started.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -305,7 +305,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Tracked game processes that exited with a non-zero exit code. On Windows, -1073741819 (0xC0000005) is an access violation, which is how most crashes appear.",
+                        "description": "Game processes that exited with a non-zero code. -1073741819 is a Windows access violation, the usual crash.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -358,7 +358,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Tracked game processes that exited with a non-zero exit code. On Windows, -1073741819 (0xC0000005) is an access violation, which is how most crashes appear.",
+                    "description": "Game processes that exited with a non-zero code. -1073741819 is a Windows access violation, the usual crash.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -375,7 +375,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Application updates the Steam client started downloading.",
+                        "description": "Game updates Steam started downloading.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -428,7 +428,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Application updates the Steam client started downloading.",
+                    "description": "Game updates Steam started downloading.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -445,89 +445,85 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Tracked game processes started, by Steam application ID.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "description": "Game processes started, by game.",
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                    "name": "logs-steam.gameprocess-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-steam.gameprocess-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-steam.gameprocess-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "s",
-                                                "y"
-                                            ],
-                                            "columns": {
-                                                "s": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "timestamp",
                                                     "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Application",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 8
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.app.id"
-                                                },
-                                                "x": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
+                                                    "fieldName": "timestamp",
                                                     "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
                                                     },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "date"
+                                                        }
+                                                    }
                                                 },
-                                                "y": {
+                                                {
+                                                    "columnId": "application",
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
+                                                    "fieldName": "application",
+                                                    "label": "Application",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "processes",
+                                                    "customLabel": true,
+                                                    "fieldName": "processes",
+                                                    "inMetricDimension": true,
                                                     "label": "Processes",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
                                                 }
+                                            ],
+                                            "index": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                            "query": {
+                                                "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-start\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS processes = COUNT(*) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), application"
                                             },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.gameprocess\" and event.action: \"tracked-process-start\""
+                                "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-start\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS processes = COUNT(*) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), application"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -549,15 +545,15 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "y"
+                                            "processes"
                                         ],
                                         "layerId": "l",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "bar_stacked",
                                         "showGridlines": false,
-                                        "splitAccessor": "s",
-                                        "xAccessor": "x"
+                                        "splitAccessor": "application",
+                                        "xAccessor": "timestamp"
                                     }
                                 ],
                                 "legend": {
@@ -577,8 +573,12 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Tracked game processes started, by Steam application ID.",
-                    "enhancements": {}
+                    "description": "Game processes started, by game.",
+                    "enhancements": {},
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-start\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS processes = COUNT(*) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), application"
+                    }
                 },
                 "gridData": {
                     "h": 12,
@@ -594,75 +594,70 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Steam applications ranked by tracked game processes started.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "description": "Games ranked by processes started.",
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                    "name": "logs-steam.gameprocess-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-steam.gameprocess-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-steam.gameprocess-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "y"
-                                            ],
-                                            "columns": {
-                                                "x": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "application",
                                                     "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
+                                                    "fieldName": "application",
                                                     "label": "Application",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.app.id"
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
                                                 },
-                                                "y": {
+                                                {
+                                                    "columnId": "processes",
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
+                                                    "fieldName": "processes",
+                                                    "inMetricDimension": true,
                                                     "label": "Processes",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
                                                 }
+                                            ],
+                                            "index": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                            "query": {
+                                                "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-start\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS processes = COUNT(*) BY application\n| SORT processes DESC\n| LIMIT 10"
                                             },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.gameprocess\" and event.action: \"tracked-process-start\""
+                                "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-start\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS processes = COUNT(*) BY application\n| SORT processes DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -684,14 +679,14 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "y"
+                                            "processes"
                                         ],
                                         "layerId": "l",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "bar_horizontal",
                                         "showGridlines": false,
-                                        "xAccessor": "x"
+                                        "xAccessor": "application"
                                     }
                                 ],
                                 "legend": {
@@ -711,8 +706,12 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Steam applications ranked by tracked game processes started.",
-                    "enhancements": {}
+                    "description": "Games ranked by processes started.",
+                    "enhancements": {},
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-start\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS processes = COUNT(*) BY application\n| SORT processes DESC\n| LIMIT 10"
+                    }
                 },
                 "gridData": {
                     "h": 12,
@@ -728,143 +727,119 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Executables the Steam client tracked as game processes, with the number of times each was started.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "description": "Executables Steam tracked for each game, and how often each started.",
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                    "name": "logs-steam.gameprocess-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-steam.gameprocess-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-steam.gameprocess-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "l": {
-                                            "columnOrder": [
-                                                "r1",
-                                                "r2",
-                                                "m1",
-                                                "m3"
-                                            ],
-                                            "columns": {
-                                                "m1": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "executable",
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "event.action: \"tracked-process-start\""
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Started",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "m3": {
-                                                    "customLabel": true,
-                                                    "dataType": "date",
-                                                    "isBucketed": false,
-                                                    "label": "Last seen",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "r1": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
+                                                    "fieldName": "executable",
                                                     "label": "Executable",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "m1",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 20
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "process.name"
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
                                                 },
-                                                "r2": {
+                                                {
+                                                    "columnId": "application",
                                                     "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
+                                                    "fieldName": "application",
                                                     "label": "Application",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "m1",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 1
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "started",
+                                                    "customLabel": true,
+                                                    "fieldName": "started",
+                                                    "inMetricDimension": true,
+                                                    "label": "Started",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "last_seen",
+                                                    "customLabel": true,
+                                                    "fieldName": "last_seen",
+                                                    "label": "Last seen",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
                                                     },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.app.id"
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "date"
+                                                        }
+                                                    }
                                                 }
+                                            ],
+                                            "index": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                            "query": {
+                                                "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-start\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS started = COUNT(*), last_seen = MAX(@timestamp) BY executable = process.name, application\n| SORT started DESC\n| LIMIT 20"
                                             },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.gameprocess\""
+                                "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-start\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS started = COUNT(*), last_seen = MAX(@timestamp) BY executable = process.name, application\n| SORT started DESC\n| LIMIT 20"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "r1",
+                                        "columnId": "executable",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "r2",
+                                        "columnId": "application",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "m1",
+                                        "columnId": "started",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "m3",
+                                        "columnId": "last_seen",
                                         "isTransposed": false
                                     }
                                 ],
                                 "layerId": "l",
                                 "layerType": "data",
                                 "sorting": {
-                                    "columnId": "m1",
+                                    "columnId": "started",
                                     "direction": "desc"
                                 }
                             }
@@ -873,8 +848,12 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Executables the Steam client tracked as game processes, with the number of times each was started.",
-                    "enhancements": {}
+                    "description": "Executables Steam tracked for each game, and how often each started.",
+                    "enhancements": {},
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-start\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS started = COUNT(*), last_seen = MAX(@timestamp) BY executable = process.name, application\n| SORT started DESC\n| LIMIT 20"
+                    }
                 },
                 "gridData": {
                     "h": 12,
@@ -890,139 +869,119 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Tracked game processes that exited with a non-zero code, by application and exit code. Exit lines record only the process ID, not the executable name.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "description": "Non-zero exits by game and exit code. Exit lines do not record the executable.",
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                    "name": "logs-steam.gameprocess-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-steam.gameprocess-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-steam.gameprocess-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "l": {
-                                            "columnOrder": [
-                                                "r1",
-                                                "r2",
-                                                "m1",
-                                                "m2"
-                                            ],
-                                            "columns": {
-                                                "m1": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "application",
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Exits",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "m2": {
-                                                    "customLabel": true,
-                                                    "dataType": "date",
-                                                    "isBucketed": false,
-                                                    "label": "Last seen",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "r1": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
+                                                    "fieldName": "application",
                                                     "label": "Application",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "m1",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 20
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.app.id"
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
                                                 },
-                                                "r2": {
+                                                {
+                                                    "columnId": "exit_code",
                                                     "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
+                                                    "fieldName": "exit_code",
                                                     "label": "Exit code",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "m1",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "exits",
+                                                    "customLabel": true,
+                                                    "fieldName": "exits",
+                                                    "inMetricDimension": true,
+                                                    "label": "Exits",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "last_seen",
+                                                    "customLabel": true,
+                                                    "fieldName": "last_seen",
+                                                    "label": "Last seen",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
                                                     },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "process.exit_code"
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "date"
+                                                        }
+                                                    }
                                                 }
+                                            ],
+                                            "index": "ce600c8a4bd56dd2a49d6cebf87ce973bdbe381df6d6dcf59ee1f8fd9215dde1",
+                                            "query": {
+                                                "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-end\" AND process.exit_code != 0\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS exits = COUNT(*), last_seen = MAX(@timestamp) BY application, exit_code = TO_STRING(process.exit_code)\n| SORT exits DESC\n| LIMIT 20"
                                             },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.gameprocess\" and event.action: \"tracked-process-end\" and not process.exit_code: 0"
+                                "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-end\" AND process.exit_code != 0\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS exits = COUNT(*), last_seen = MAX(@timestamp) BY application, exit_code = TO_STRING(process.exit_code)\n| SORT exits DESC\n| LIMIT 20"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "r1",
+                                        "columnId": "application",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "r2",
+                                        "columnId": "exit_code",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "m1",
+                                        "columnId": "exits",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "m2",
+                                        "columnId": "last_seen",
                                         "isTransposed": false
                                     }
                                 ],
                                 "layerId": "l",
                                 "layerType": "data",
                                 "sorting": {
-                                    "columnId": "m1",
+                                    "columnId": "exits",
                                     "direction": "desc"
                                 }
                             }
@@ -1031,8 +990,12 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Tracked game processes that exited with a non-zero code, by application and exit code. Exit lines record only the process ID, not the executable name.",
-                    "enhancements": {}
+                    "description": "Non-zero exits by game and exit code. Exit lines do not record the executable.",
+                    "enhancements": {},
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-steam.gameprocess-*\n| WHERE event.action == \"tracked-process-end\" AND process.exit_code != 0\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS exits = COUNT(*), last_seen = MAX(@timestamp) BY application, exit_code = TO_STRING(process.exit_code)\n| SORT exits DESC\n| LIMIT 20"
+                    }
                 },
                 "gridData": {
                     "h": 12,
@@ -1048,75 +1011,70 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Steam applications ranked by the number of updates the client started for them.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "description": "Games ranked by updates started.",
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "edeb908e170bef9bc7c07e1afe08db3c09221e342112e38faaf820e3913829a2": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "edeb908e170bef9bc7c07e1afe08db3c09221e342112e38faaf820e3913829a2",
+                                    "name": "logs-steam.content-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-steam.content-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "edeb908e170bef9bc7c07e1afe08db3c09221e342112e38faaf820e3913829a2",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-steam.content-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "y"
-                                            ],
-                                            "columns": {
-                                                "x": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "application",
                                                     "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
+                                                    "fieldName": "application",
                                                     "label": "Application",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.app.id"
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
                                                 },
-                                                "y": {
+                                                {
+                                                    "columnId": "updates",
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
+                                                    "fieldName": "updates",
+                                                    "inMetricDimension": true,
                                                     "label": "Updates",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
                                                 }
+                                            ],
+                                            "index": "edeb908e170bef9bc7c07e1afe08db3c09221e342112e38faaf820e3913829a2",
+                                            "query": {
+                                                "esql": "FROM logs-steam.content-*\n| WHERE event.action == \"app-update-started\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS updates = COUNT(*) BY application\n| SORT updates DESC\n| LIMIT 10"
                                             },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.content\" and event.action: \"app-update-started\""
+                                "esql": "FROM logs-steam.content-*\n| WHERE event.action == \"app-update-started\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS updates = COUNT(*) BY application\n| SORT updates DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1138,14 +1096,14 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "y"
+                                            "updates"
                                         ],
                                         "layerId": "l",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "bar_horizontal",
                                         "showGridlines": false,
-                                        "xAccessor": "x"
+                                        "xAccessor": "application"
                                     }
                                 ],
                                 "legend": {
@@ -1165,8 +1123,12 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Steam applications ranked by the number of updates the client started for them.",
-                    "enhancements": {}
+                    "description": "Games ranked by updates started.",
+                    "enhancements": {},
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-steam.content-*\n| WHERE event.action == \"app-update-started\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS updates = COUNT(*) BY application\n| SORT updates DESC\n| LIMIT 10"
+                    }
                 },
                 "gridData": {
                     "h": 12,
@@ -1182,7 +1144,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Highest download rate the Steam client reported while downloading content, in megabits per second. Rates are only reported while a download is running.",
+                        "description": "Highest download rate reported while downloading.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -1293,7 +1255,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Highest download rate the Steam client reported while downloading content, in megabits per second. Rates are only reported while a download is running.",
+                    "description": "Highest download rate reported while downloading.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -1310,7 +1272,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Content events by action: application state changes, depot updates, CDN connections and download interfaces. Noisy LAN peer-server discovery is excluded.",
+                        "description": "Content events by action, excluding LAN peer discovery.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -1442,7 +1404,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Content events by action: application state changes, depot updates, CDN connections and download interfaces. Noisy LAN peer-server discovery is excluded.",
+                    "description": "Content events by action, excluding LAN peer discovery.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -1459,7 +1421,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Failed content operations, such as CDN manifest requests, by depot and reason. CDN lines identify the depot being downloaded rather than the application.",
+                        "description": "Failed content operations by depot and reason.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -1631,7 +1593,7 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Failed content operations, such as CDN manifest requests, by depot and reason. CDN lines identify the depot being downloaded rather than the application.",
+                    "description": "Failed content operations by depot and reason.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -1686,31 +1648,6 @@
         {
             "id": "logs-*",
             "name": "p4:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p5:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p6:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p7:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p8:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p9:indexpattern-datasource-layer-l",
             "type": "index-pattern"
         },
         {

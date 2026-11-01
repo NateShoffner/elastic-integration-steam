@@ -61,7 +61,7 @@ The integration installs three dashboards, linked to each other from a navigatio
 - **[Logs Steam] Client connectivity and sync**: connection manager latency, the connection lifecycle and disconnect reasons, connectivity tests, Steam Cloud sync activity and Workshop activity and failures, from `connection`, `cloud` and `workshop`.
 - **[Metrics Steam] Players and playtime**: account presence, who is in game, two-week and lifetime playtime by game, playtime by platform and recently launched games, from the three Web API data streams.
 
-The client logs identify games by Steam application ID only, so the two log dashboards show application IDs; game names come from the Web API data streams.
+The client logs identify games by Steam application ID only. To show game names on the two log dashboards, the integration installs a transform, `app_name`, that keeps the latest name the Web API data streams have reported for each application in the lookup index `steam_lookup.app_name`, and the panels that list applications join against it with ES|QL `LOOKUP JOIN`. Names therefore need the Steam Web API policy template configured, and only cover applications that appear in a polled account's library, recent games or presence; anything else, such as the Steam client itself (application `7`) or a game no polled account owns, is shown by its application ID. Users viewing these dashboards need `read` privileges on `steam_lookup.*` as well as the `logs-steam.*` data streams.
 
 ## What do I need to use this integration?
 
@@ -1410,4 +1410,18 @@ An example event for `owned_game` looks as following:
 
 
 
+
+### Transforms used
+
+#### app_name
+* Description: Latest name reported by the Steam Web API for each Steam application, kept in a lookup index so client log data, which only records application IDs, can be enriched with game names using ES|QL LOOKUP JOIN on steam.app.id.
+* Source Index: metrics-steam.owned_game-\*
+* Destination Index: steam_lookup.dest_app_name-1
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| steam.app.id | Steam application ID. The key the client-log dashboards join on. | keyword |
+| steam.app.name | Most recent name the Steam Web API reported for the application. | keyword |
 

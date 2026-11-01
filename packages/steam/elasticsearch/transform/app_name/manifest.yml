@@ -1,0 +1,13 @@
+start: true
+destination_index_template:
+  settings:
+    index:
+      # A lookup index is what ES|QL LOOKUP JOIN reads from: the client-log
+      # dashboards join steam.app.id against it to show game names.
+      mode: lookup
+  mappings:
+    # Each document is a whole Web API source document, but only the join key
+    # and the name are needed. Leaving the rest unmapped keeps them out of
+    # LOOKUP JOIN results, where a mapped @timestamp or data_stream field would
+    # overwrite the log document's own.
+    dynamic: false

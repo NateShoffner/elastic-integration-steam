@@ -1,0 +1,49 @@
+# Keeps the most recent name the Steam Web API reported for each Steam
+# application, so dashboards built on the client logs, which only record
+# application IDs, can show game names with ES|QL LOOKUP JOIN.
+#
+# The version suffix on dest.index must be incremented for any breaking change
+# to the destination mappings or settings, together with fleet_transform_version,
+# and the dashboards that join against it updated to match. The old destination
+# index is not removed automatically.
+source:
+  index:
+    - "metrics-steam.owned_game-*"
+    - "metrics-steam.recently_played-*"
+    - "metrics-steam.player_summary-*"
+  query:
+    bool:
+      filter:
+        - exists:
+            field: steam.app.name
+      must_not:
+        - exists:
+            field: error.message
+dest:
+  index: "steam_lookup.dest_app_name-1"
+  aliases:
+    - alias: "steam_lookup.app_name"
+      move_on_creation: true
+latest:
+  # Application names are global, so every account and namespace that
+  # reports an application contributes to the same single entry.
+  unique_key:
+    - steam.app.id
+  sort: "@timestamp"
+description: >-
+  Latest name reported by the Steam Web API for each Steam application, kept in a lookup index so client log data,
+  which only records application IDs, can be enriched with game names using ES|QL LOOKUP JOIN on steam.app.id.
+frequency: 5m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 120s
+settings:
+  # Prevents the transform from replacing the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: false
+  # Bump to delete, reinstall and restart the transform on package upgrade.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

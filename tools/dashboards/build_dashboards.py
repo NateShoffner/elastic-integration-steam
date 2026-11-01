@@ -12,6 +12,7 @@ and commit the regenerated files under packages/steam/kibana/dashboard/.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 
@@ -19,6 +20,15 @@ OUT = pathlib.Path(__file__).resolve().parents[2] / "packages" / "steam" / "kiba
 
 LOGS = "logs-*"
 METRICS = "metrics-*"
+
+# Lookup index the package's app_name transform maintains from the Web API data
+# streams: one document per steam.app.id with its latest steam.app.name. The
+# client logs only record application IDs, so panels that show applications
+# are ES|QL queries that join against it. Applications no polled account has
+# reported, such as the Steam client itself, keep their ID.
+APP_LOOKUP = "steam_lookup.app_name"
+WITH_APP_NAME = (f"| LOOKUP JOIN {APP_LOOKUP} ON steam.app.id\n"
+                 "| EVAL application = COALESCE(steam.app.name, steam.app.id)\n")
 
 
 # --------------------------------------------------------------------------
@@ -205,11 +215,16 @@ def metric_panel(title, description, index, query, columns, accessor, subtitle=N
 
 
 def xy_panel(title, description, index, query, columns, x, ys, series="bar_stacked", split=None,
-             collapse=None, legend=True, y_title=None):
+             collapse=None, legend=True, y_title=None, legend_position=None):
     if series == "line" and columns[x]["operationType"] == "date_histogram":
         # Sparse series: connect the points that exist rather than breaking the
         # line at every empty interval.
         columns[x]["params"]["includeEmptyRows"] = False
+    vis = _xy_vis(x, ys, series, split, collapse, legend, y_title, legend_position)
+    return lens(title, description, index, query, columns, "lnsXY", vis)
+
+
+def _xy_vis(x, ys, series, split, collapse, legend, y_title, legend_position):
     layer = {
         "accessors": ys,
         "layerId": "l",
@@ -231,14 +246,15 @@ def xy_panel(title, description, index, query, columns, x, ys, series="bar_stack
         "layers": [layer],
         # Split series are labelled by event.action and similar long values,
         # which a right-hand legend truncates; below the chart they fit.
-        "legend": {"isVisible": legend, "position": "bottom" if split else "right"},
+        "legend": {"isVisible": legend,
+                   "position": legend_position or ("bottom" if split else "right")},
         "preferredSeriesType": series,
         "tickLabelsVisibilitySettings": {"x": True, "yLeft": True, "yRight": True},
         "valueLabels": "hide",
     }
     if y_title:
         vis["yTitle"] = y_title
-    return lens(title, description, index, query, columns, "lnsXY", vis)
+    return vis
 
 
 def table_panel(title, description, index, query, columns, sort=None):
@@ -254,6 +270,71 @@ def table_panel(title, description, index, query, columns, sort=None):
 
 
 # --------------------------------------------------------------------------
+# ES|QL (text-based) Lens panels, used where a panel needs the application
+# names from APP_LOOKUP. Columns are (name, label, type) with type one of
+# number, string or date; name is the ES|QL output column. Dashboard filters,
+# controls and the time range still apply to the FROM index.
+# --------------------------------------------------------------------------
+
+_ES_TYPES = {"number": "long", "string": "keyword", "date": "date"}
+
+
+def esql(title, description, index, query, columns, vis_type, visualization, layer="l"):
+    dv = hashlib.sha256(index.encode()).hexdigest()
+    cols = []
+    for name, label, typ in columns:
+        col = {"columnId": name, "customLabel": True, "fieldName": name, "label": label,
+               "meta": {"esType": _ES_TYPES[typ], "type": typ}}
+        if typ == "number":
+            col["inMetricDimension"] = True
+        if typ == "date":
+            # Without a format, ES|QL dates render as raw ISO 8601 strings.
+            col["params"] = {"format": {"id": "date"}}
+        cols.append(col)
+    return {
+        "title": title,
+        "description": description,
+        "esql": query,
+        "attributes": {
+            "description": description,
+            "references": [],
+            "state": {
+                "adHocDataViews": {dv: {
+                    "allowHidden": False, "allowNoIndex": False, "fieldFormats": {}, "id": dv, "name": index,
+                    "runtimeFieldMap": {}, "sourceFilters": [], "timeFieldName": "@timestamp", "title": index,
+                    "type": "esql"}},
+                "datasourceStates": {"textBased": {
+                    "indexPatternRefs": [{"id": dv, "timeField": "@timestamp", "title": index}],
+                    "layers": {layer: {"columns": cols, "index": dv, "query": {"esql": query},
+                                       "timeField": "@timestamp"}},
+                }},
+                "filters": [],
+                "needsRefresh": False,
+                "query": {"esql": query},
+                "visualization": visualization,
+            },
+            "title": title,
+            "type": "lens",
+            "visualizationType": vis_type,
+        },
+    }
+
+
+def esql_xy(title, description, index, query, columns, x, ys, series="bar_stacked", split=None,
+            legend=True, legend_position=None):
+    vis = _xy_vis(x, ys, series, split, None, legend, None, legend_position)
+    return esql(title, description, index, query, columns, "lnsXY", vis)
+
+
+def esql_table(title, description, index, query, columns, sort=None):
+    vis = {"columns": [{"columnId": c[0], "isTransposed": False} for c in columns],
+           "layerId": "l", "layerType": "data"}
+    if sort:
+        vis["sorting"] = {"columnId": sort, "direction": "desc"}
+    return esql(title, description, index, query, columns, "lnsDatatable", vis)
+
+
+# --------------------------------------------------------------------------
 # Dashboards.
 # --------------------------------------------------------------------------
 
@@ -262,6 +343,15 @@ DASHBOARDS = [
     ("steam-client-connectivity", "Client connectivity and sync"),
     ("steam-players-playtime", "Players and playtime"),
 ]
+
+
+GP = "logs-steam.gameprocess-*"
+CT = "logs-steam.content-*"
+CL = "logs-steam.cloud-*"
+WS = "logs-steam.workshop-*"
+TS = "BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+NAMES = ("Game names come from the Steam Web API data streams; games they have not reported show their "
+         "application ID.")
 
 
 def ds(*names):
@@ -332,6 +422,8 @@ def build(dash_id, title, description, datasets, index, controls, rows):
             })
             if p["description"]:
                 panels[-1]["embeddableConfig"]["description"] = p["description"]
+            if "esql" in p:
+                panels[-1]["embeddableConfig"].update({"filters": [], "query": {"esql": p["esql"]}})
             for ref in p["attributes"]["references"]:
                 references.append({"id": ref["id"], "name": f"{pid}:{ref['name']}", "type": ref["type"]})
             x += w
@@ -399,63 +491,61 @@ def game_activity():
     rows = [
         [
             (12, 6, metric_panel(
-                "Game processes started", "Processes the Steam client started tracking for a running game. A single "
-                "launch often starts several, such as a launcher, the game and a crash or bug reporter, so this is "
-                "not a count of play sessions.",
+                "Game processes started", "Processes Steam tracked for running games. One launch can start several, such as a launcher and a crash reporter, so this is not a count of sessions.",
                 LOGS, f"{gp} and {start}", count("m", ""), "m")),
             (12, 6, metric_panel(
-                "Games played", "Distinct Steam applications that had at least one tracked game process started.",
+                "Games played", "Games with at least one process started.",
                 LOGS, f"{gp} and {start}", metric("m", "unique_count", "steam.app.id", ""), "m")),
             (12, 6, metric_panel(
-                "Abnormal exits", "Tracked game processes that exited with a non-zero exit code. On Windows, "
-                "-1073741819 (0xC0000005) is an access violation, which is how most crashes appear.",
+                "Abnormal exits", "Game processes that exited with a non-zero code. -1073741819 is a Windows access violation, the usual crash.",
                 LOGS, f"{gp} and {abnormal}", count("m", ""), "m")),
             (12, 6, metric_panel(
-                "Updates started", "Application updates the Steam client started downloading.",
+                "Updates started", "Game updates Steam started downloading.",
                 LOGS, f'{ct} and event.action: "app-update-started"', count("m", ""), "m")),
         ],
         [
-            (32, 12, xy_panel(
-                "Game processes started over time", "Tracked game processes started, by Steam application ID.",
-                LOGS, f"{gp} and {start}",
-                {**date_histogram("x"), **terms("s", "steam.app.id", "Application", 8, order_by="y"),
-                 **count("y", "Processes")}, "x", ["y"], split="s")),
-            (16, 12, xy_panel(
-                "Most played applications", "Steam applications ranked by tracked game processes started.",
-                LOGS, f"{gp} and {start}",
-                {**terms("x", "steam.app.id", "Application", 10, order_by="y"), **count("y", "Processes")},
-                "x", ["y"], series="bar_horizontal", legend=False)),
+            (32, 12, esql_xy(
+                "Game processes started over time", "Game processes started, by game.",
+                GP, f"FROM {GP}\n| WHERE event.action == \"tracked-process-start\"\n{WITH_APP_NAME}"
+                    f"| STATS processes = COUNT(*) BY timestamp = {TS}, application",
+                [("timestamp", "@timestamp", "date"), ("application", "Application", "string"),
+                 ("processes", "Processes", "number")],
+                "timestamp", ["processes"], split="application")),
+            (16, 12, esql_xy(
+                "Most played applications", "Games ranked by processes started.",
+                GP, f"FROM {GP}\n| WHERE event.action == \"tracked-process-start\"\n{WITH_APP_NAME}"
+                    "| STATS processes = COUNT(*) BY application\n| SORT processes DESC\n| LIMIT 10",
+                [("application", "Application", "string"), ("processes", "Processes", "number")],
+                "application", ["processes"], series="bar_horizontal", legend=False)),
         ],
         [
-            (24, 12, table_panel(
-                "Game executables", "Executables the Steam client tracked as game processes, with the number of "
-                "times each was started.",
-                LOGS, gp,
-                {**terms("r1", "process.name", "Executable", 20, order_by="m1"),
-                 **terms("r2", "steam.app.id", "Application", 1, order_by="m1"),
-                 **count("m1", "Started", kql=start),
-                 **metric("m3", "max", "@timestamp", "Last seen", data_type="date")},
-                sort="m1")),
-            (24, 12, table_panel(
-                "Abnormal exits", "Tracked game processes that exited with a non-zero code, by application and exit "
-                "code. Exit lines record only the process ID, not the executable name.",
-                LOGS, f"{gp} and {abnormal}",
-                {**terms("r1", "steam.app.id", "Application", 20, order_by="m1"),
-                 **terms("r2", "process.exit_code", "Exit code", 5, order_by="m1"),
-                 **count("m1", "Exits"),
-                 **metric("m2", "max", "@timestamp", "Last seen", data_type="date")},
-                sort="m1")),
+            (24, 12, esql_table(
+                "Game executables", "Executables Steam tracked for each game, and how often each started.",
+                GP, f"FROM {GP}\n| WHERE event.action == \"tracked-process-start\"\n{WITH_APP_NAME}"
+                    "| STATS started = COUNT(*), last_seen = MAX(@timestamp) BY executable = process.name, "
+                    "application\n| SORT started DESC\n| LIMIT 20",
+                [("executable", "Executable", "string"), ("application", "Application", "string"),
+                 ("started", "Started", "number"), ("last_seen", "Last seen", "date")],
+                sort="started")),
+            (24, 12, esql_table(
+                "Abnormal exits", "Non-zero exits by game and exit code. Exit lines do not record the executable.",
+                GP, f"FROM {GP}\n| WHERE event.action == \"tracked-process-end\" AND process.exit_code != 0\n"
+                    f"{WITH_APP_NAME}"
+                    "| STATS exits = COUNT(*), last_seen = MAX(@timestamp) BY application, "
+                    "exit_code = TO_STRING(process.exit_code)\n| SORT exits DESC\n| LIMIT 20",
+                [("application", "Application", "string"), ("exit_code", "Exit code", "string"),
+                 ("exits", "Exits", "number"), ("last_seen", "Last seen", "date")],
+                sort="exits")),
         ],
         [
+            (24, 12, esql_xy(
+                "Most updated applications", "Games ranked by updates started.",
+                CT, f"FROM {CT}\n| WHERE event.action == \"app-update-started\"\n{WITH_APP_NAME}"
+                    "| STATS updates = COUNT(*) BY application\n| SORT updates DESC\n| LIMIT 10",
+                [("application", "Application", "string"), ("updates", "Updates", "number")],
+                "application", ["updates"], series="bar_horizontal", legend=False)),
             (24, 12, xy_panel(
-                "Most updated applications", "Steam applications ranked by the number of updates the client "
-                "started for them.",
-                LOGS, f'{ct} and event.action: "app-update-started"',
-                {**terms("x", "steam.app.id", "Application", 10, order_by="y"), **count("y", "Updates")},
-                "x", ["y"], series="bar_horizontal", legend=False)),
-            (24, 12, xy_panel(
-                "Peak download rate", "Highest download rate the Steam client reported while downloading content, "
-                "in megabits per second. Rates are only reported while a download is running.",
+                "Peak download rate", "Highest download rate reported while downloading.",
                 LOGS, f'{ct} and event.action: "download-rate-reported"',
                 {**date_histogram("x"),
                  **metric("y", "max", "steam.content.download.rate_mbps", "Peak",
@@ -464,14 +554,12 @@ def game_activity():
         ],
         [
             (24, 12, xy_panel(
-                "Content activity", "Content events by action: application state changes, depot updates, CDN "
-                "connections and download interfaces. Noisy LAN peer-server discovery is excluded.",
+                "Content activity", "Content events by action, excluding LAN peer discovery.",
                 LOGS, f'{ct} and event.action: * and not event.action: ("peer-server-added" or "peer-server-removed")',
                 {**date_histogram("x"), **terms("s", "event.action", "Action", 8, order_by="y"),
                  **count("y", "Events")}, "x", ["y"], split="s")),
             (24, 12, table_panel(
-                "Content errors", "Failed content operations, such as CDN manifest requests, by depot and reason. "
-                "CDN lines identify the depot being downloaded rather than the application.",
+                "Content errors", "Failed content operations by depot and reason.",
                 LOGS, f'{ct} and event.outcome: "failure"',
                 {**terms("r1", "event.action", "Action", 10, order_by="m1"),
                  **terms("r2", "steam.content.depot.id", "Depot", 10, order_by="m1", missing=True),
@@ -483,9 +571,8 @@ def game_activity():
     ]
     return build(
         "steam-game-activity", "[Logs Steam] Game activity",
-        "Games the Steam client ran on this machine and the content it downloaded for them, from the gameprocess "
-        "and content logs. The client logs identify games by Steam application ID only; open [Metrics Steam] "
-        "Players and playtime for game names.",
+        "Games launched on this machine and the content Steam downloaded for them. "
+        f"{NAMES}",
         ["gameprocess", "content"], LOGS,
         [("ctl-host", "host.name", "Host"), ("ctl-app", "steam.app.id", "Application")],
         rows)
@@ -501,32 +588,29 @@ def client_connectivity():
     rows = [
         [
             (12, 6, metric_panel(
-                "Connection manager latency", "Average round-trip time of the Steam client's pings to connection "
-                "manager servers.",
+                "Connection manager latency", "Average ping to Steam connection managers.",
                 LOGS, f'{cn} and event.action: "cm-ping-completed"',
                 metric("m", "average", "steam.connection.ping.latency_ms", "", fmt=ms), "m")),
             (12, 6, metric_panel(
-                "Disconnects", "Times the client's connection to a Steam connection manager was closed.",
+                "Disconnects", "Connections to Steam that were closed.",
                 LOGS, f'{cn} and event.action: "cm-connection-disconnected"', count("m", ""), "m")),
             (12, 6, metric_panel(
-                "Cloud syncs completed", "Steam Cloud synchronisation passes that completed for an application.",
+                "Cloud syncs completed", "Steam Cloud sync passes that completed.",
                 LOGS, f'{cl} and event.action: "cloud-sync-completed"', count("m", ""), "m")),
             (12, 6, metric_panel(
-                "Workshop items downloaded", "Workshop items the client finished downloading.",
+                "Workshop items downloaded", "Workshop items downloaded.",
                 LOGS, f'{ws} and event.action: "workshop-item-downloaded"', count("m", ""), "m")),
         ],
         [
             (24, 12, xy_panel(
-                "Connection manager latency over time", "Average and worst round-trip time of pings to Steam "
-                "connection manager servers.",
+                "Connection manager latency over time", "Average and worst ping to Steam connection managers.",
                 LOGS, f'{cn} and event.action: "cm-ping-completed"',
                 {**date_histogram("x"),
                  **metric("y1", "average", "steam.connection.ping.latency_ms", "Average", fmt=ms),
                  **metric("y2", "max", "steam.connection.ping.latency_ms", "Worst", fmt=ms)},
                 "x", ["y1", "y2"], series="line")),
             (24, 12, xy_panel(
-                "Connection lifecycle", "Connection attempts, completed connections, disconnects, scheduled "
-                "reconnects and failed pings to Steam connection managers.",
+                "Connection lifecycle", "Connects, disconnects, reconnects and failed pings.",
                 LOGS, f'{cn} and event.action: ("cm-connection-started" or "cm-connection-completed" or '
                       '"cm-connection-disconnected" or "cm-auto-reconnect-scheduled" or "cm-ping-failed")',
                 {**date_histogram("x"), **terms("s", "event.action", "Action", 5, order_by="y"),
@@ -534,61 +618,65 @@ def client_connectivity():
         ],
         [
             (16, 10, xy_panel(
-                "Disconnect reasons", "Why connections to Steam connection managers were closed.",
+                "Disconnect reasons", "Why connections to Steam closed.",
                 LOGS, f'{cn} and event.action: "cm-connection-disconnected"',
                 {**terms("x", "steam.connection.disconnect.reason", "Reason", 8, order_by="y"),
                  **count("y", "Disconnects")}, "x", ["y"], series="bar_horizontal", legend=False)),
             (16, 10, xy_panel(
-                "Ping failures", "Why pings to Steam connection managers failed.",
+                "Ping failures", "Why pings to connection managers failed.",
                 LOGS, f'{cn} and event.action: "cm-ping-failed"',
                 {**terms("x", "steam.connection.ping.failure_reason", "Reason", 8, order_by="y"),
                  **count("y", "Failures")}, "x", ["y"], series="bar_horizontal", legend=False)),
             (16, 10, xy_panel(
-                "Connectivity test results", "Results of the client's internet connectivity tests.",
+                "Connectivity test results", "Results of Steam's internet connectivity tests.",
                 LOGS, f'{cn} and event.action: "connectivity-test-completed"',
                 {**terms("x", "steam.connection.connectivity_test.result", "Result", 8, order_by="y"),
                  **count("y", "Tests")}, "x", ["y"], series="bar_horizontal", legend=False)),
         ],
         [
             (24, 12, xy_panel(
-                "Cloud sync activity", "Steam Cloud synchronisation passes started, completed, deferred and "
-                "skipped as unnecessary.",
+                "Cloud sync activity", "Steam Cloud sync passes by outcome.",
                 LOGS, f'{cl} and event.action: ("cloud-sync-started" or "cloud-sync-completed" or '
                       '"cloud-sync-deferred" or "cloud-sync-not-needed" or "cloud-download-completed" or '
                       '"cloud-file-upload-started")',
                 {**date_histogram("x"), **terms("s", "event.action", "Action", 6, order_by="y"),
                  **count("y", "Events")}, "x", ["y"], split="s")),
-            (24, 12, xy_panel(
-                "Cloud sync by application", "Steam Cloud synchronisation passes by Steam application ID.",
-                LOGS, f'{cl} and event.action: ("cloud-sync-started" or "cloud-sync-deferred")',
-                {**terms("x", "steam.app.id", "Application", 10, order_by="y"),
-                 **terms("s", "event.action", "Action", 2, order_by="y"),
-                 **count("y", "Syncs")}, "x", ["y"], series="bar_horizontal_stacked", split="s")),
+            (24, 12, esql_xy(
+                "Cloud sync by application", "Sync passes started and deferred, by game.",
+                CL, f"FROM {CL}\n| WHERE event.action IN (\"cloud-sync-started\", \"cloud-sync-deferred\")\n"
+                    f"{WITH_APP_NAME}"
+                    # Capitalised because the legend shows ES|QL column names.
+                    "| STATS Started = COUNT(*) WHERE event.action == \"cloud-sync-started\", "
+                    "Deferred = COUNT(*) WHERE event.action == \"cloud-sync-deferred\" BY application\n"
+                    "| SORT Started + Deferred DESC\n| LIMIT 10",
+                [("application", "Application", "string"), ("Started", "Started", "number"),
+                 ("Deferred", "Deferred", "number")],
+                "application", ["Started", "Deferred"], series="bar_horizontal_stacked",
+                legend_position="right")),
         ],
         [
             (24, 12, xy_panel(
-                "Workshop activity", "Workshop items subscribed, downloaded, removed and failing to update. "
-                "Routine subscription list polling is excluded.",
+                "Workshop activity", "Workshop items subscribed, downloaded, removed or failing to update.",
                 LOGS, f'{ws} and event.action: ("workshop-item-subscription-added" or "workshop-item-downloaded" '
                       'or "workshop-item-removed" or "workshop-item-details-lookup-failed" or '
                       '"workshop-item-details-update-failed" or "workshop-item-manifest-changed")',
                 {**date_histogram("x"), **terms("s", "event.action", "Action", 6, order_by="y"),
                  **count("y", "Events")}, "x", ["y"], split="s")),
-            (24, 12, table_panel(
-                "Workshop failures", "Failed Workshop operations by application and result.",
-                LOGS, f'{ws} and event.outcome: "failure"',
-                {**terms("r1", "steam.app.id", "Application", 10, order_by="m1", missing=True),
-                 **terms("r2", "event.action", "Action", 5, order_by="m1"),
-                 **terms("r3", "steam.workshop.item.result", "Result", 5, order_by="m1", missing=True),
-                 **count("m1", "Failures"),
-                 **metric("m2", "max", "@timestamp", "Last seen", data_type="date")},
-                sort="m1")),
+            (24, 12, esql_table(
+                "Workshop failures", "Failed Workshop operations by game and result.",
+                WS, f"FROM {WS}\n| WHERE event.outcome == \"failure\"\n{WITH_APP_NAME}"
+                    "| STATS failures = COUNT(*), last_seen = MAX(@timestamp) BY application, "
+                    "action = event.action, result = steam.workshop.item.result\n| SORT failures DESC\n| LIMIT 20",
+                [("application", "Application", "string"), ("action", "Action", "string"),
+                 ("result", "Result", "string"), ("failures", "Failures", "number"),
+                 ("last_seen", "Last seen", "date")],
+                sort="failures")),
         ],
     ]
     return build(
         "steam-client-connectivity", "[Logs Steam] Client connectivity and sync",
-        "Health of the Steam client's connection to Steam, its Steam Cloud save synchronisation and its Workshop "
-        "downloads, from the connection, cloud and workshop logs.",
+        "Steam connection health, Steam Cloud save sync and Workshop downloads. "
+        f"{NAMES}",
         ["connection", "cloud", "workshop"], LOGS,
         [("ctl-host", "host.name", "Host"), ("ctl-app", "steam.app.id", "Application")],
         rows)
@@ -600,33 +688,28 @@ def players_playtime():
     ps = 'data_stream.dataset: "steam.player_summary"'
     rp = 'data_stream.dataset: "steam.recently_played"'
     og = 'data_stream.dataset: "steam.owned_game"'
-    lifetime_note = ("Lifetime playtime only ever grows, so the highest value seen in the time range is the most "
-                     "recent one.")
     rows = [
         [
             (12, 6, metric_panel(
-                "Accounts", "Steam accounts with a player summary in the selected time range.",
+                "Accounts", "Accounts polled in the time range.",
                 METRICS, ps, metric("m", "unique_count", "steam.player.id", ""), "m")),
             (12, 6, metric_panel(
-                "In game now", "Accounts reported in a game by their most recent player summaries, from the last "
-                "15 minutes of the time range.",
+                "In game now", "Accounts in a game during the last 15 minutes of the time range.",
                 METRICS, f"{ps} and steam.player.in_game: true",
                 metric("m", "unique_count", "steam.player.id", "", reduced="15m"), "m")),
             (12, 6, metric_panel(
-                "Lifetime playtime", f"Total playtime across every owned game of every account. {lifetime_note}",
+                "Lifetime playtime", "Total playtime across all accounts and games.",
                 METRICS, og,
                 {**per_hour("m", "max", "steam.playtime.forever.minutes", "All accounts"),
                  **terms("b", "steam.player.id", "Game", 10000, secondary=["steam.app.id"])},
                 "m", breakdown="b", collapse="sum")),
             (12, 6, metric_panel(
-                "Games owned", "Distinct games across the libraries of every account. Free games only count once "
-                "they have been played.",
+                "Games owned", "Distinct games across all libraries. Free games count once played.",
                 METRICS, og, metric("m", "unique_count", "steam.app.id", ""), "m")),
         ],
         [
             (24, 12, table_panel(
-                "Account status", "Each account's most recent player summary: online status, the game it is in, and "
-                "when it was last online. Private profiles report Offline whatever their real status.",
+                "Account status", "Each account's latest status. Private profiles always show Offline.",
                 METRICS, ps,
                 {**terms("r1", "steam.player.persona_name", "Persona", 50, order_by="m4"),
                  **metric("m1", "last_value", "steam.player.persona_state.name", "Status", data_type="string"),
@@ -636,7 +719,7 @@ def players_playtime():
                  **metric("m4", "max", "@timestamp", "Last polled", data_type="date")},
                 sort="m4")),
             (24, 12, xy_panel(
-                "Accounts in game", "Accounts reported in a game, over time.",
+                "Accounts in game", "Accounts in a game over time, by game.",
                 METRICS, f"{ps} and steam.player.in_game: true",
                 {**date_histogram("x"), **terms("s", "steam.app.name", "Game", 8, order_by="y"),
                  **metric("y", "unique_count", "steam.player.id", "Accounts")},
@@ -644,16 +727,14 @@ def players_playtime():
         ],
         [
             (24, 14, xy_panel(
-                "Two-week playtime by game", "Playtime in Steam's rolling two-week window, from each account's "
-                "most recent report in the time range, stacked by account. A game that has left the window keeps "
-                "its last reported value until it falls out of the time range.",
+                "Two-week playtime by game", "Playtime in Steam's rolling two-week window, by game and account.",
                 METRICS, rp,
                 {**terms("x", "steam.app.name", "Game", 15, order_by="yX0"),
                  **terms("s", "steam.player.id", "Account", 20, order_by="yX0"),
                  **per_hour("y", "last_value", "steam.playtime.two_weeks.minutes", "Two-week playtime")},
                 "x", ["y"], series="bar_horizontal_stacked", split="s")),
             (24, 14, xy_panel(
-                "Most played games", f"Lifetime playtime per game, stacked by account. {lifetime_note}",
+                "Most played games", "Lifetime playtime by game and account.",
                 METRICS, og,
                 {**terms("x", "steam.app.name", "Game", 15, order_by="yX0"),
                  **terms("s", "steam.player.id", "Account", 20, order_by="yX0"),
@@ -662,10 +743,7 @@ def players_playtime():
         ],
         [
             (24, 12, xy_panel(
-                "Lifetime playtime by platform", "Lifetime playtime per account, split by the platform it was "
-                "played on. The Steam Web API only reports platforms for the account that owns the API key, so "
-                "other accounts are not listed. Steam began tracking platforms later than total playtime, so the "
-                f"platforms do not add up to the lifetime total. {lifetime_note}",
+                "Lifetime playtime by platform", "Lifetime playtime by platform. Only reported for the API key's owner, and does not add up to the lifetime total.",
                 METRICS, f"{og} and steam.playtime.windows.minutes: *",
                 {**terms("x", "steam.player.id", "Account", 20, order_by="y1X0"),
                  **terms("b", "steam.app.id", "Game", 10000),
@@ -673,11 +751,12 @@ def players_playtime():
                  **per_hour("y2", "max", "steam.playtime.linux.minutes", "Linux"),
                  **per_hour("y3", "max", "steam.playtime.mac.minutes", "macOS"),
                  **per_hour("y4", "max", "steam.playtime.deck.minutes", "Steam Deck")},
-                "x", ["y1", "y2", "y3", "y4"], series="bar_horizontal_stacked", split="b", collapse="sum")),
+                "x", ["y1", "y2", "y3", "y4"], series="bar_horizontal_stacked", split="b", collapse="sum",
+                # Four short platform names fit beside the chart; below it the
+                # fourth wraps onto a row the panel height clips.
+                legend_position="right")),
             (24, 12, table_panel(
-                "Recently launched games", "Games by when they were last launched. The Steam Web API only reports "
-                "this for the account that owns the API key, and games that have never been launched are not "
-                "listed.",
+                "Recently launched games", "Games by when they were last launched. Only reported for the API key's owner.",
                 METRICS, f"{og} and steam.playtime.last_played: *",
                 {**terms("r1", "steam.app.name", "Game", 25, order_by="m1"),
                  **terms("r2", "steam.player.id", "Account", 5, order_by="m1"),
@@ -688,8 +767,7 @@ def players_playtime():
     ]
     return build(
         "steam-players-playtime", "[Metrics Steam] Players and playtime",
-        "Presence, recent playtime and lifetime playtime of the Steam accounts polled through the Steam Web API, "
-        "from the player_summary, recently_played and owned_game data streams.",
+        "Presence and playtime of the accounts polled through the Steam Web API.",
         ["player_summary", "recently_played", "owned_game"], METRICS,
         [("ctl-player", "steam.player.id", "Account")],
         rows)

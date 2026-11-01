@@ -53,7 +53,7 @@
             },
             "showApplySelections": false
         },
-        "description": "Health of the Steam client's connection to Steam, its Steam Cloud save synchronisation and its Workshop downloads, from the connection, cloud and workshop logs.",
+        "description": "Steam connection health, Steam Cloud save sync and Workshop downloads. Game names come from the Steam Web API data streams; games they have not reported show their application ID.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -171,7 +171,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Average round-trip time of the Steam client's pings to connection manager servers.",
+                        "description": "Average ping to Steam connection managers.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -231,7 +231,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Average round-trip time of the Steam client's pings to connection manager servers.",
+                    "description": "Average ping to Steam connection managers.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -248,7 +248,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Times the client's connection to a Steam connection manager was closed.",
+                        "description": "Connections to Steam that were closed.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -301,7 +301,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Times the client's connection to a Steam connection manager was closed.",
+                    "description": "Connections to Steam that were closed.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -318,7 +318,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Steam Cloud synchronisation passes that completed for an application.",
+                        "description": "Steam Cloud sync passes that completed.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -371,7 +371,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Steam Cloud synchronisation passes that completed for an application.",
+                    "description": "Steam Cloud sync passes that completed.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -388,7 +388,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Workshop items the client finished downloading.",
+                        "description": "Workshop items downloaded.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -441,7 +441,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Workshop items the client finished downloading.",
+                    "description": "Workshop items downloaded.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -458,7 +458,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Average and worst round-trip time of pings to Steam connection manager servers.",
+                        "description": "Average and worst ping to Steam connection managers.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -590,7 +590,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average and worst round-trip time of pings to Steam connection manager servers.",
+                    "description": "Average and worst ping to Steam connection managers.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -607,7 +607,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Connection attempts, completed connections, disconnects, scheduled reconnects and failed pings to Steam connection managers.",
+                        "description": "Connects, disconnects, reconnects and failed pings.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -739,7 +739,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Connection attempts, completed connections, disconnects, scheduled reconnects and failed pings to Steam connection managers.",
+                    "description": "Connects, disconnects, reconnects and failed pings.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -756,7 +756,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Why connections to Steam connection managers were closed.",
+                        "description": "Why connections to Steam closed.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -873,7 +873,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Why connections to Steam connection managers were closed.",
+                    "description": "Why connections to Steam closed.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -890,7 +890,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Why pings to Steam connection managers failed.",
+                        "description": "Why pings to connection managers failed.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -1007,7 +1007,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Why pings to Steam connection managers failed.",
+                    "description": "Why pings to connection managers failed.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -1024,7 +1024,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Results of the client's internet connectivity tests.",
+                        "description": "Results of Steam's internet connectivity tests.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -1141,7 +1141,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Results of the client's internet connectivity tests.",
+                    "description": "Results of Steam's internet connectivity tests.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -1158,7 +1158,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Steam Cloud synchronisation passes started, completed, deferred and skipped as unnecessary.",
+                        "description": "Steam Cloud sync passes by outcome.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -1290,7 +1290,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Steam Cloud synchronisation passes started, completed, deferred and skipped as unnecessary.",
+                    "description": "Steam Cloud sync passes by outcome.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -1307,102 +1307,81 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Steam Cloud synchronisation passes by Steam application ID.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "description": "Sync passes started and deferred, by game.",
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "81d26ec03e9f59ad9e1779e11a1dfa9ffaa99bb67c699f2f72dafbd953029120": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "81d26ec03e9f59ad9e1779e11a1dfa9ffaa99bb67c699f2f72dafbd953029120",
+                                    "name": "logs-steam.cloud-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-steam.cloud-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "81d26ec03e9f59ad9e1779e11a1dfa9ffaa99bb67c699f2f72dafbd953029120",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-steam.cloud-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "l": {
-                                            "columnOrder": [
-                                                "x",
-                                                "s",
-                                                "y"
-                                            ],
-                                            "columns": {
-                                                "s": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "application",
                                                     "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Action",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 2
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.action"
-                                                },
-                                                "x": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
+                                                    "fieldName": "application",
                                                     "label": "Application",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "y",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.app.id"
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
                                                 },
-                                                "y": {
+                                                {
+                                                    "columnId": "Started",
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Syncs",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "fieldName": "Started",
+                                                    "inMetricDimension": true,
+                                                    "label": "Started",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Deferred",
+                                                    "customLabel": true,
+                                                    "fieldName": "Deferred",
+                                                    "inMetricDimension": true,
+                                                    "label": "Deferred",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
                                                 }
+                                            ],
+                                            "index": "81d26ec03e9f59ad9e1779e11a1dfa9ffaa99bb67c699f2f72dafbd953029120",
+                                            "query": {
+                                                "esql": "FROM logs-steam.cloud-*\n| WHERE event.action IN (\"cloud-sync-started\", \"cloud-sync-deferred\")\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS Started = COUNT(*) WHERE event.action == \"cloud-sync-started\", Deferred = COUNT(*) WHERE event.action == \"cloud-sync-deferred\" BY application\n| SORT Started + Deferred DESC\n| LIMIT 10"
                                             },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.cloud\" and event.action: (\"cloud-sync-started\" or \"cloud-sync-deferred\")"
+                                "esql": "FROM logs-steam.cloud-*\n| WHERE event.action IN (\"cloud-sync-started\", \"cloud-sync-deferred\")\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS Started = COUNT(*) WHERE event.action == \"cloud-sync-started\", Deferred = COUNT(*) WHERE event.action == \"cloud-sync-deferred\" BY application\n| SORT Started + Deferred DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1424,20 +1403,20 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "y"
+                                            "Started",
+                                            "Deferred"
                                         ],
                                         "layerId": "l",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "bar_horizontal_stacked",
                                         "showGridlines": false,
-                                        "splitAccessor": "s",
-                                        "xAccessor": "x"
+                                        "xAccessor": "application"
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "bottom"
+                                    "position": "right"
                                 },
                                 "preferredSeriesType": "bar_horizontal_stacked",
                                 "tickLabelsVisibilitySettings": {
@@ -1452,8 +1431,12 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Steam Cloud synchronisation passes by Steam application ID.",
-                    "enhancements": {}
+                    "description": "Sync passes started and deferred, by game.",
+                    "enhancements": {},
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-steam.cloud-*\n| WHERE event.action IN (\"cloud-sync-started\", \"cloud-sync-deferred\")\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS Started = COUNT(*) WHERE event.action == \"cloud-sync-started\", Deferred = COUNT(*) WHERE event.action == \"cloud-sync-deferred\" BY application\n| SORT Started + Deferred DESC\n| LIMIT 10"
+                    }
                 },
                 "gridData": {
                     "h": 12,
@@ -1469,7 +1452,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Workshop items subscribed, downloaded, removed and failing to update. Routine subscription list polling is excluded.",
+                        "description": "Workshop items subscribed, downloaded, removed or failing to update.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -1601,7 +1584,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Workshop items subscribed, downloaded, removed and failing to update. Routine subscription list polling is excluded.",
+                    "description": "Workshop items subscribed, downloaded, removed or failing to update.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -1618,170 +1601,133 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Failed Workshop operations by application and result.",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-l",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "description": "Failed Workshop operations by game and result.",
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "1877c1c71b4f0a1008ac8552c379ed237212f5d71cedaa8703ae1fc529852a4a": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "1877c1c71b4f0a1008ac8552c379ed237212f5d71cedaa8703ae1fc529852a4a",
+                                    "name": "logs-steam.workshop-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-steam.workshop-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "1877c1c71b4f0a1008ac8552c379ed237212f5d71cedaa8703ae1fc529852a4a",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-steam.workshop-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "l": {
-                                            "columnOrder": [
-                                                "r1",
-                                                "r2",
-                                                "r3",
-                                                "m1",
-                                                "m2"
-                                            ],
-                                            "columns": {
-                                                "m1": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "application",
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Failures",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "m2": {
-                                                    "customLabel": true,
-                                                    "dataType": "date",
-                                                    "isBucketed": false,
-                                                    "label": "Last seen",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "r1": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
+                                                    "fieldName": "application",
                                                     "label": "Application",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": true,
-                                                        "orderBy": {
-                                                            "columnId": "m1",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.app.id"
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
                                                 },
-                                                "r2": {
+                                                {
+                                                    "columnId": "action",
                                                     "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
+                                                    "fieldName": "action",
                                                     "label": "Action",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "m1",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.action"
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
                                                 },
-                                                "r3": {
+                                                {
+                                                    "columnId": "result",
                                                     "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
+                                                    "fieldName": "result",
                                                     "label": "Result",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": true,
-                                                        "orderBy": {
-                                                            "columnId": "m1",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "failures",
+                                                    "customLabel": true,
+                                                    "fieldName": "failures",
+                                                    "inMetricDimension": true,
+                                                    "label": "Failures",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "last_seen",
+                                                    "customLabel": true,
+                                                    "fieldName": "last_seen",
+                                                    "label": "Last seen",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
                                                     },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "steam.workshop.item.result"
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "date"
+                                                        }
+                                                    }
                                                 }
+                                            ],
+                                            "index": "1877c1c71b4f0a1008ac8552c379ed237212f5d71cedaa8703ae1fc529852a4a",
+                                            "query": {
+                                                "esql": "FROM logs-steam.workshop-*\n| WHERE event.outcome == \"failure\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS failures = COUNT(*), last_seen = MAX(@timestamp) BY application, action = event.action, result = steam.workshop.item.result\n| SORT failures DESC\n| LIMIT 20"
                                             },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset: \"steam.workshop\" and event.outcome: \"failure\""
+                                "esql": "FROM logs-steam.workshop-*\n| WHERE event.outcome == \"failure\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS failures = COUNT(*), last_seen = MAX(@timestamp) BY application, action = event.action, result = steam.workshop.item.result\n| SORT failures DESC\n| LIMIT 20"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "r1",
+                                        "columnId": "application",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "r2",
+                                        "columnId": "action",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "r3",
+                                        "columnId": "result",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "m1",
+                                        "columnId": "failures",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "m2",
+                                        "columnId": "last_seen",
                                         "isTransposed": false
                                     }
                                 ],
                                 "layerId": "l",
                                 "layerType": "data",
                                 "sorting": {
-                                    "columnId": "m1",
+                                    "columnId": "failures",
                                     "direction": "desc"
                                 }
                             }
@@ -1790,8 +1736,12 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Failed Workshop operations by application and result.",
-                    "enhancements": {}
+                    "description": "Failed Workshop operations by game and result.",
+                    "enhancements": {},
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-steam.workshop-*\n| WHERE event.outcome == \"failure\"\n| LOOKUP JOIN steam_lookup.app_name ON steam.app.id\n| EVAL application = COALESCE(steam.app.name, steam.app.id)\n| STATS failures = COUNT(*), last_seen = MAX(@timestamp) BY application, action = event.action, result = steam.workshop.item.result\n| SORT failures DESC\n| LIMIT 20"
+                    }
                 },
                 "gridData": {
                     "h": 12,
@@ -1879,17 +1829,7 @@
         },
         {
             "id": "logs-*",
-            "name": "p11:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "p12:indexpattern-datasource-layer-l",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "p13:indexpattern-datasource-layer-l",
             "type": "index-pattern"
         },
         {

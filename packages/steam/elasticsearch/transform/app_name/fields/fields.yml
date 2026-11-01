@@ -1,0 +1,6 @@
+- name: steam.app.id
+  type: keyword
+  description: Steam application ID. The key the client-log dashboards join on.
+- name: steam.app.name
+  type: keyword
+  description: Most recent name the Steam Web API reported for the application.
